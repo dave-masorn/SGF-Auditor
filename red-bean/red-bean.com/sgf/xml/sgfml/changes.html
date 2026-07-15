@@ -1,0 +1,38 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML lang="en">
+
+<!-- Mirrored from red-bean.com/sgf/xml/sgfml/changes.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 30 Jun 2026 15:28:36 GMT -->
+<HEAD><TITLE>Changes to SGFML</TITLE>
+    <link rel="stylesheet" href="../../main.css">
+</HEAD>
+<BODY>
+<A HREF="../index-2.html"><IMG SRC="../../images/head.png" ALT="[SGF FF[4] - Smart Game Format]" BORDER=0></A>
+
+<H1>Changes to SGFML</H1>
+
+<h2><A HREF="sgfml-0.02.dtd">Version 0.02</A> - 2000-01-15</h2>
+<UL>
+<LI>changed many attributes from "CDATA" to more strict definitions
+like "NMTOKEN", "ID", or "IDREF"
+<LI>changed &lt;game> to have a &lt;gameheader> instead of &lt;header> to
+define allowed elements within different headers
+<LI>created two node types: &lt;node> and &lt;setup>. &lt;setup> element
+from V0.01 was renamed to &lt;addstone>
+<LI>added &lt;gameinfo> element - gameinfo elements have to be stored within it
+<LI>added types to &lt;source>: RECORD, COMMENT, FILE
+<LI>more sophisticated &lt;date>: contains &lt;dateitem> now in order to
+list more than one date and periods of time
+<LI>renamed &lt;people> to &lt;person> - looks more natural
+<LI>Example files: <A HREF="review-002.xml">commented GTL game</A>
+and <A HREF="server-002.xml">server game</A></UL>
+
+<h2><A HREF="sgfml-0.01.dtd">Version 0.01</A> - 2000-01-08</h2>
+<UL><LI>First public release.
+<LI>Example files: <A HREF="review-001.xml">commented GTL game</A>
+and <A HREF="server-001.xml">server game</A>
+</UL>
+
+</BODY>
+
+<!-- Mirrored from red-bean.com/sgf/xml/sgfml/changes.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 30 Jun 2026 15:28:39 GMT -->
+</HTML>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<HTML lang="en">
+
+<!-- Mirrored from red-bean.com/sgf/drafts/sgf-uti-draft-2013-05-05.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 30 Jun 2026 15:27:56 GMT -->
+<HEAD><TITLE>SGF UTI declaration - Draft 2013-05-05</TITLE>
+<meta charset=utf-8">
+    <link rel="stylesheet" href="../main.css">
+<style type="text/css">
+    li { margin-top: 0.7em }
+</style>
+</HEAD>
+<BODY>
+<A HREF="../index.html"><IMG src="../images/head.png" ALT="[SGF FF[4] - Smart Game Format]" BORDER=0></A>
+
+<h1>Draft for an SGF UTI declaration</h1>
+<b>Date: 2013-05-05</b>
+
+<pre>
+&lt;key&gt;UTImportedTypeDeclarations&lt;/key&gt;
+&lt;array&gt;
+    &lt;dict&gt;
+        &lt;key&gt;UTTypeConformsTo&lt;/key&gt;
+        &lt;array&gt;
+            &lt;string&gt;public.text&lt;/string&gt;
+        &lt;/array&gt;
+        &lt;key&gt;UTTypeDescription&lt;/key&gt;
+        &lt;string&gt;Smart Game File (SGF)&lt;/string&gt;
+        &lt;key&gt;UTTypeIdentifier&lt;/key&gt;
+        &lt;string&gt;com.red-bean.sgf&lt;/string&gt;
+        &lt;key&gt;UTTypeReferenceURL&lt;/key&gt;
+        &lt;string&gt;http://www.red-bean.com/sgf/&lt;/string&gt;
+        &lt;key&gt;UTTypeTagSpecification&lt;/key&gt;
+        &lt;dict&gt;
+            &lt;key&gt;public.filename-extension&lt;/key&gt;
+            &lt;string&gt;sgf&lt;/string&gt;
+            &lt;key&gt;public.mime-type&lt;/key&gt;
+            &lt;string&gt;application/x-go-sgf&lt;/string&gt;
+        &lt;/dict&gt;
+    &lt;/dict&gt;
+&lt;/array&gt;
+</pre>
+
+<p>This is based on Apple's UTI specifications [1] and [2] (links are at the bottom). Here are the reasons why this draft looks as it does:</p>
+
+<ol>
+<li>SGF is a text-based format. This fact can be encoded with the "UTTypeConformsTo" key. Any text-processing application such as a text editor might thus be able to process the SGF file. Also, previewing and printing an SGF file (in case someone really wants to do that) becomes much simpler, e.g. in [3] it is stated that the Quick Look framework has support for files with UTI public.text.
+
+<li>Which UTI should be used for the "UTTypeConformsTo" key? It certainly should be one of the system-declared UTIs that are specified by Apple in [2], but which one? Let's have a look at public.plain-text. This UTI is interesting notably because it makes no claim about the text encoding, and the SGF format also does not specify any particular encoding (applications write the encoding into the SGF file). But then again, Apple says that public.plain-text files have no markup, which clearly is not the case for SGF. Since public.plain-text is out, the best choice therefore is public.text. This is supported by the fact that other UTIs for file types with markup such as public.html, public.xml or public.rtf are also declared to derive from (or "conform to") public.text.
+
+<li>In [1] Apple says that a UTI should declare both its physical and functional conformance. So far the thoughts for the new SGF UTI were about functional conformance, but what about physical conformance? Basically, what we want to specify is that the UTI describes a file. Conveniently, by deriving the new SGF UTI from public.text we have already satisfied this requirement. Why? If we examine the inheritance tree for public.text (both in [1] and [2]) we see this: public.text > public.data > public.item. Because public.data directly derives from public.item, it and all derived UTIs (such as our own SGF UTI) automatically are blessed with the status of a file. This automatic blessing can be inferred from the fact that items that are *not* files apparently have their own specific UTI (e.g. public.directory or public.symlink).
+
+<li>The "UTTypeTagSpecification" key: The file extension .sgf is obvious. As for the MIME type, a sensible choice is application/x-go-sgf because this seems to be well-known around the Internet. Open questions here are: Do we need additional MIME types? Do we need additional entries in the "UTTypeTagSpecification" dictionary for "com.apple.ostype" and "com.apple.nspboard-type" (these are mentioned in [2])?
+
+<li>The "UTTypeIdentifier" key: Here we need a globally unique identifier that must use the reverse-DNS format (see [1]). A choice is somewhat difficult because the SGF format is a community format, i.e. nobody formally "owns" the format. The draft uses com.red-bean.sgf because it associates the UTI with the site that hosts the SGF specification. If in the end some other identifier is chosen, it would probably be best not to associate the UTI with any particular software or product.
+
+<li>The "UTImportedTypeDeclarations" key: An application can export or import a UTI in its Info.plist to make the UTI known to the system. Exporting a UTI basically states that the application "owns" the UTI, while importing the UTI states that the application does not own the UTI but can still process files/data identified by the UTI. This draft uses the key for importing because the goal is to create a community-owned UTI specification, so no Mac or iOS application should export the SGF UTI. Instead all apps should import the UTI.
+
+<li>As an afterthought: Although the goal is that everybody will use the final version of the SGF UTI declaration, it might be interesting to research what happens when multiple differing declarations for the same UTI exist on a system. As the Apple docs are vague about this, research would need to include experimentation. In this StackOverflow question [4] someone says that exported UTIs take precedence over imported UTIs.
+</ol>
+
+<h2>Appendix: How to make use of the UTI</h2>
+
+<p>First, a Mac or iOS application must include a copy of the UTI declaration in its Info.plist, because it cannot rely on the declaration being provided by someone else on the system. As noted above, the application should import the UTI declaration.
+
+<p>Second, the application can now refer to the UTI by adding the "CFBundleDocumentTypes" key to its Info.plist, like this:
+
+<pre>
+&lt;key&gt;CFBundleDocumentTypes&lt;/key&gt;
+&lt;array&gt;
+    &lt;dict&gt;
+        &lt;key&gt;CFBundleTypeName&lt;/key&gt;
+        &lt;string&gt;com.red-bean.sgf&lt;/string&gt;
+        &lt;key&gt;LSItemContentTypes&lt;/key&gt;
+        &lt;array&gt;
+            &lt;string&gt;com.red-bean.sgf&lt;/string&gt;
+        &lt;/array&gt;
+        [...]
+    &lt;/dict&gt;
+&lt;/array&gt;
+</pre>
+
+<p>This is just a fragment. The Apple docs [5] have more information on other keys such as "CFBundleTypeRole" and "LSHandlerRank" that should also be added. Some remarks about the keys in the fragment above:
+
+<ol>
+<li>The "LSItemContentTypes" key is issential because it references the UTI. On iOS, for instance, this key causes an app to show up in the "Open in..." menu when an SGF file is selected in, let's say, the Mail app, or any other application that works with a UIDocumentInteractionController.
+
+<li>The "CFBundleTypeName" key is also required, but it is not entirely clear what the value of this key should be. In [5] it says that the string is localizable, so apparently this string is/can be user visible. On the other hand, [5] also says that "[...] If you are concerned about this key being unique, you should consider using a uniform type identifier (UTI) for this string instead." At least on iOS there appears to be no difference whether the UTI identifier or a plain text description such as "SGF File" is used.
+</ol>
+
+<h2>References</h2>
+
+<p>[1] Uniform Type Identifiers Overview: <a href="http://developer.apple.com/library/ios/#documentation/FileManagement/Conceptual/understanding_utis/understand_utis_intro/understand_utis_intro.html">http://developer.apple.com/library/ios/#documentation/FileManagement/Conceptual/understanding_utis/understand_utis_intro/understand_utis_intro.html</a>
+
+<p>[2] System-Declared Uniform Type Identifiers: <a href="http://developer.apple.com/library/ios/#documentation/Miscellaneous/Reference/UTIRef/Articles/System-DeclaredUniformTypeIdentifiers.html">http://developer.apple.com/library/ios/#documentation/Miscellaneous/Reference/UTIRef/Articles/System-DeclaredUniformTypeIdentifiers.html</a>
+
+<p>[3] Using the Quick Look Framework: <a href="http://developer.apple.com/library/ios/#documentation/FileManagement/Conceptual/DocumentInteraction_TopicsForIOS/Articles/UsingtheQuickLookFramework.html">http://developer.apple.com/library/ios/#documentation/FileManagement/Conceptual/DocumentInteraction_TopicsForIOS/Articles/UsingtheQuickLookFramework.html</a>
+
+<p>[4] Stackoverflow: What are �Imported UTIs� in Xcode 4?: <a href="http://stackoverflow.com/questions/6661714/what-are-imported-utis-in-xcode-4">http://stackoverflow.com/questions/6661714/what-are-imported-utis-in-xcode-4</a>
+
+<p>[5] Core Foundation Keys", a section from the "Information Property List Key Reference: <a href="http://developer.apple.com/library/ios/#documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html">http://developer.apple.com/library/ios/#documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html</a>
+</body>
+
+<!-- Mirrored from red-bean.com/sgf/drafts/sgf-uti-draft-2013-05-05.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 30 Jun 2026 15:27:56 GMT -->
+</html>

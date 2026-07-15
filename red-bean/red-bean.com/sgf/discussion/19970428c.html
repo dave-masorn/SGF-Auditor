@@ -1,0 +1,89 @@
+Date: Mon, 28 Apr 1997 14:55:29 +0200 (MET DST)
+From: Arno Hollosi <hollosi@sbox.tu-graz.ac.at>
+Subject: Re: RE and Date formats
+
+
+David writes:
+
+> You have made me think about the user interface some more, and
+> here is my plan for RE and DT formats now.
+> For RE, I will present a set of radio buttons, similar to YAGO
+>
+> and I will also show a read-only field with the text from the
+> file's RE property value.  This field will be blank and greyed
+> 
+> For date I will do something similar, giving a set of MM/DD/YYYY
+> data entry fields, and a text box for entering more information.
+
+This looks like a good compromise.
+
+> I'm imagining that someone adds an arrow to a game record, the later he
+> selects 'save' and a dialog box pops up "you must first correct the
+> date to ISO format" :)
+
+Ok :) Forcing the user to change date isn't really a good idea.
+
+A note about the required format for DT:
+
+- partial dates are possible (e.g. 1849, 1903-04, ....)
+  (I'll add this to the spec)
+
+- games played on more than one day:
+
+  - for two days use 'date1,date2' where year and/or month may be omitted 
+    in date2 (if they are the same as in date1)
+    Examples: [1997-04-25,26], [1997-03-27,04-01], [1996-12-30,1997-01-02]
+    (this is already in the spec)
+
+  - for more than two days:
+    just specify the first and the last day the game was played and use
+    ':' as delimeter, e.g. [1997-02-10:03-12]
+    Year/month may be omitted for end date if they equal the beginning 
+    date
+
+  - maybe we could even specify a sohisticated format like the one
+    Robert mentioned, i.e. combination of ',' and ':' within the
+    simpletext value.
+    But this might be a little bit too much of a good thing.
+
+I think that the first date is the most important (beginning of game).
+If this is in ISO format I don't care about the rest, i.e.
+it might be bad style, but I would've no problem with:
+DT[1997-04-26 16pm-22pm, rainy afternoon]
+
+Because tools need only one date for sorting/searching etc.
+And this should be the date the game started.
+
+Robert Jasiek writes:
+
+> Where to save non-ISO date texts (like the above or like an Edo 
+> date) so that the program knows that it is to be shown in an
+> accompanying date text field? I can think of three solutions:
+> - format expanded to: (list of [date] | [Adate:Bdate]) | simpletext
+
+This is a nice solution but incompatible to FF[123].
+I don't think that it's worth going through this.
+
+> - format only: simpletext. Try to parse as 
+>   (list of [date] | [Adate:Bdate]) else interpret as simpletext.
+
+As mentioned above: maybe it's best to state that DT[] may be
+followed by any text after an ISO date.
+
+> - second date property ;DC of value simpletext for date comment
+
+No old application could parse this property. That's a disadvantage.
+It's a good idea though.
+
+
+
+I'm still not sure what to do about illegal date/result fields.
+Anders & David suggest to leave them where they are.
+(maybe the application should at least notify the user that these
+values are incorrect [only if he/she edits those fields - otherwise
+such a message would be too annoying]).
+Other opnions?
+
+
+/Arno
+

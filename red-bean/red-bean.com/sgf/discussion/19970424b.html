@@ -1,0 +1,32 @@
+Date: Thu, 24 Apr 1997 15:13:07 -0400
+From: Robert Jasiek <jasiek@berlin.snafu.de>
+Subject: Re: SGF - request for final comments
+
+>   DS: value: number
+>       0 ... use move numbers
+>       1 ... use 'modulo 100' numbers as known from books/mags
+>       2 ... don't number moves
+>       any DS setting is valid until another DS value is set or
+>       another figure (FG) starts - DS is only valid for the
+>       current variation.
+
+DS together with MN is a useful property. However, if historically
+there is nothing against it, I would like to change the assigned
+numbers, so that boolean expressions are easier to handle and
+possible future amendements (like 3...'modulo 50') can be added
+more readily:
+0 ... don't number moves
+1 ... use move numbers
+2 ... use 'modulo 100' numbers as known from books/mags
+
+DS has some kind of very special property attribute. It resembles
+'inherit'. Is there a reasonable possibility to use an attribute
+instead of an awkward description like the above referring to FG?
+Then our standard would be more elegant.
+
+Is DG redundant now that we have DS? (I do not exactly know what 
+DG was.)
+
+--robert jasiek
+
+

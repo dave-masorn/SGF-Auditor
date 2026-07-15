@@ -1,0 +1,68 @@
+Date: Wed, 26 Mar 1997 12:33:53 -0500
+From: David Fotland <fotland@hpihoah.cup.hp.com>
+Subject: Re: Why we need FF[4] [Was: SGF - some answers] 
+
+
+Another suggestion for the FF[4] Specification: include a list of
+recommended obsolete properties to parse correctly and convert.  This
+would include at least L and M.  The FF[4] spec should specify how to
+convert these obsolete properties to the corresponding FF[4] format.  This
+would ensure that old files are handled consistently by all FF[4] readers
+for those properties that are commonly seen.
+
+> > Suggestion for DG (diagram) property:
+> > -Move numbers are not shown for moves before DG node. This
+> >  is true for all nodes after DG node.
+> > -Move number of next move is range 1-100, that is if next move
+> >  would otherwise be 234, it is changed to 34 (almost modulo 100).
+> > Lauri
+
+DG had some meaning in FF[3].  I'd prefer you select a different two
+characters if this property does something different.
+
+> 
+> >I expect that any FF[4] viewer will continue to read FF[3] files, so by
+> >writing FF[3], I can still be compatible with new viewers.
+> >[david]
+> 
+> It would be very useful if all viewers would write FF[4]. If you care
+> for compability, then you might write simple FF[4], i.e. not using
+> complicated FF[4] features. Thereby FF[3] is simulated. Not too many
+> problems remain. (I am a little confused which do remain, maybe someone
+> could give a good list.) The pass move seems to be one of them. I think
+> if FF[4] contains [] pass, we all should use it instead of creating
+> different file styles forever. Could you accept these fundamental matters
+> or do we need another agreement for maintaining compability? Viewers may
+
+Of course I care for compatibility!  How can I say that my program supports
+sgf format if it not compatible with the existing sgf viewers?
+
+The pass move is the biggest issue for me forcing me to write FF[3], but
+there are others like: enforcing the format of game info properties,
+arrows and lines, and the fact that we don't have a final spec and I
+am finishing my sgf code this week.
+
+> >Third, the triples for describing the position are confusing.  For example
+> >[...]
+> >from FF[4].  Altogether, I count 9 different triples that I could see
+> >in files (DM, UC, GB, GW, BM, CH, TE, DO, IT), and from my readings of
+> >the various specs, only 2 of them (GB and GW) exist in all versions of
+> >the spec.  Does anyone have any recommendation for which ones MFGO should
+> >support?  I'm tempted to read them all, convert them to commentary text,
+> >and not allow the user to edit them.  I would not generate them into an
+> >output file.
+
+I decided to read all triples, but convert them to comments.  MFGO's editor
+won't allow you to set a triple, and it won't write triples.  This avoids
+the cryptic symbols, and is easy to convert to Ishi format.
+
+Please lets not have the metalanguage argument again.  I guess I can see
+that Europeans want language independent symbols, and automatic (even if
+bad) translation for multipl languages.  But my product is English, or
+will be localized separately to each European language.  I'd rather give the
+user clear, correct text in his/her native language, than force him to
+learn some symbology (like the difference between !? and ?!).
+
+-David
+
+

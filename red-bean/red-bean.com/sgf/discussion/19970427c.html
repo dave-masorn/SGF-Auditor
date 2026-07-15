@@ -1,0 +1,30 @@
+Date: Sun, 27 Apr 1997 18:25:25 -0400
+From: Robert Jasiek <jasiek@berlin.snafu.de>
+Subject: Re: tight spec for game-info properties
+
+> Btw, the format specifies how to handle games played on two dates
+> e.g. 1996-05-26,27 or 1996-03-31,04-01
+> But it doesn't define how to specify games that last longer than two
+> days. How could we identify such games, e.g. games that took a month?
+> 
+> /Arno
+
+And I read the old spec. as if dates could be listed separated by 
+commas, one date for each day.
+The nice solution is a compressed date list (like compressed point
+lists):
+
+list of [date] | [Adate:Bdate]
+
+Example:
+;DT[1996-11-20][1996-12-31:1997-01-03][1997-01-05]
+means: On each day of the following days the game has progressed:
+1996-11-20,1996-12-31,1997-01-01,1997-01-02,1997-01-03,1997-01-05
+
+whereas ;DT[1811-4]
+should mean something like: game played in 1811-4 (not necessarily
+each day of that month.
+
+--robert jasiek
+
+

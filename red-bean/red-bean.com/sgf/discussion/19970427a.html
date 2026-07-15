@@ -1,0 +1,64 @@
+Date: Sun, 27 Apr 1997 23:34:03 +0200 (MET DST)
+From: Arno Hollosi <hollosi@sbox.tu-graz.ac.at>
+Subject: tight spec for game-info properties
+
+
+David writes:
+> I agree with all of your reasons for tightly specifying the fields.  And
+> I think that FF[4] should tightly specify the fields.  Many Faces of Go
+> My problem is with importing old sgf files, and allowing the user to
+> enter dates and results as he likes.  I've looked at a lot of old SGF
+
+Anders writes:
+> I think it's better to leave the information in the right fields even if
+> it doesn't follow the standard formatting. At least then there's the
+> chance for somebody to go through it manually and correct the format. If
+> it all gets lumped into the game comment, it's much harder to clean up
+> later.
+
+Yens writes:
+> You say that it
+> is easier to convert old files to the new format if you don't need to
+> follow every thing closly. Why convert old files to FF[4] just for
+> converting. Why not leave it in FF[3]. I don't think it is that hard to
+> support both FF[1-3] and FF[4]. And I think if you load a FF[3] game and
+> wants to save it to FF[4]. Then you should ask the user to convert alla
+> data not understod by the program, and then save it.
+
+I guess we all agree that tightly specified game-info values are important.
+On the other hand I agree with David and Anders that moving faulty 
+values to GC isn't the best solution. And it's impossible to automatically 
+correct those values.
+
+I like what Yens said about it:
+
+- if you load an old file that doesn't stick to the specification
+  then keep it FF[3] - there's no need to convert it.
+  (as long as you don't use FF[4] features)
+  Note:  - go server write correct values (at least since 1 1/2 years ago)
+         - the format for DT&RE was recommended since FF[1]!
+
+- if you create new files then stick to the FF[4] spec and write FF[4]
+
+- if someone edits an old file and wants to insert FF[4] features FORCE
+  him to correct the game-info values too.
+  I don't think that this is too annoying -- the user already invests
+  time to edit the file so why not add some seconds to get two values right?
+
+- for faulty FF[4] files I can't think of a good solution right now.
+  Maybe those values shouldn't be moved to GC - as Anders said:
+  "it's much harder to clean up later"
+
+I understand that Americans (and others) never use ISO format for DT. But 
+that's not the point. The save format should be completely transparent to 
+the user - date may be edited and displayed in any format you like - as long 
+as the application saves it as ISO format.
+
+Btw, the format specifies how to handle games played on two dates
+e.g. 1996-05-26,27 or 1996-03-31,04-01
+But it doesn't define how to specify games that last longer than two
+days. How could we identify such games, e.g. games that took a month?
+
+
+/Arno
+

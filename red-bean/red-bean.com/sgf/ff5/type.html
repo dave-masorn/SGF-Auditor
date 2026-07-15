@@ -1,0 +1,54 @@
+<HTML lang="en">
+
+<!-- Mirrored from red-bean.com/sgf/ff5/type.htm by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 30 Jun 2026 15:27:57 GMT -->
+<HEAD><TITLE>SGF properties value types (FF[5] draft)</TITLE>
+    <link rel="stylesheet" href="../main.css">
+</HEAD>
+<BODY>
+<TABLE CELLPADDING=5><TR>
+<TD class="blue"><A HREF="ff5.html"><FONT COLOR=WHITE SIZE=-1><B>SGF file format FF[5]</B></FONT></A>
+<TD>last updated: 1999-03-17
+</TABLE>
+
+<H1>Property Value Types</H1>
+
+<H2>Composition Type</H2>
+
+This type will be extended to contain an unlimited number of "simple" values.
+For examples, OT uses three values.
+
+<P><TABLE BORDER=1>
+<TR><TD>FF4 definition<TD><TT>Compose = ValueType ":" ValueType</TT>
+<TR><TD>FF5 definition<TD><TT>Compose = ValueType ":" ValueType { ":" ValueType }</TT>
+</TABLE>
+
+<H2>Color Type</H2>
+
+The color type for property values is made ignorant of games.
+For Go (and other two player games) everything remains as it was. One
+player is named B, the other W. For multi-player games the color is
+stored as numerical value (1,2,3,...).
+
+<P><TABLE BORDER=1>
+<TR><TD>FF4 definition<TD><TT>Color = ("B" | "W")</TT>
+<TR><TD VALIGN=TOP>FF5 definition
+<TD><TT>Color = ("B" | "W") for two player games and<BR>
+Color = Digit {Digit} for multi-player games</TT>
+</TABLE>
+
+<H2>New: Extended Color Type</H2>
+
+The new type extended color consists of all entities
+the color type has, plus "A" for <I>all players</I>.
+
+<P><TABLE BORDER=1>
+<TR><TD>FF4 definition<TD>-
+<TR><TD VALIGN=TOP>FF5 definition
+<TD><TT>ExtColor = ("B" | "W" | "A") for two player games and<BR>
+Color = ("A" | Digit {Digit}) for multi-player games</TT>
+</TABLE>
+
+</BODY>
+
+<!-- Mirrored from red-bean.com/sgf/ff5/type.htm by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 30 Jun 2026 15:27:57 GMT -->
+</HTML>

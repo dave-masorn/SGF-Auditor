@@ -1,0 +1,97 @@
+Date: Mon, 24 Mar 1997 20:22:02 +0100 (MET)
+From: Arno Hollosi <hollosi@sbox.tu-graz.ac.at>
+Subject: Why we need FF[4] [Was: SGF - some answers]
+
+
+Davit Fotland writes:
+> > > > - Pass move as '[tt]' for boards <= 19x19
+> > If your that concerned about compatibility then you can't use FF[4] at all.
+> OK, you've convinced me I can't write FF[4].  Too bad, as I was hoping I
+
+You're kidding?
+If no, I'm ... well I'm shocked.
+
+If I've offended you in any way I apologize.
+I didn't mean to be offensive.
+
+But you didn't decide because of '[tt]' alone, did you?
+
+> I am very concerned about compatibility.  Otherwise there is no reason for
+
+I understand your point.
+But FF[4] has more incompatibilities than '[tt]':
+- rectangular boards
+- boards upto 52x52
+- compressed point lists
+- formatted text
+
+Well, I think you wouldn't have implemented to first three options anyway,
+but how about formatted text?
+
+FF[3] applications don't support hard & soft linebreaks.
+Some applications even go their own way (e.g. MGT treats all linebreaks
+preceeded by a space as a soft linebreak).
+
+---------------------------------------------------------
+
+SGF isn't that homogeneous.
+That's why I asked Martin Mueller to write a more complete spec.
+But he hadn't time and that's why I started writing FF[4] and asked other
+programmers to join in.
+
+Let me tell you about my experiences being co-maintainer of the Go 
+Teaching Ladder: the GTL is a source for reviews containing lots
+of markup, comments and variations - and many different applications used
+to create these reviews.
+
+* GoWrite (or was it another program? can't remember) used to write 
+  labels as LB[text:point] instead of LB[point:text]. This got fixed half 
+  a year ago.
+
+* Some applications show variations as siblings, some as children - that's
+  why we introduced the ST[] property.
+
+* WinMGT (a very popular application among PC users) is extremly buggy
+  (or at least it was until half a year ago). If you didn't take care
+  during editing it would produce wrong variations (nesting of '()').
+  WinMGT also knows only a very small subset of properties.
+  E.g. the last version I looked at didn't understand LB! It only
+  knew the old FF[1] property L[].
+
+Because of all the mess I thought it's time to write a clear 
+specification.
+
+> Does anyone know of a spec for FF[3]?  Is it defined by a particular 
+
+See Martin Mueller pages at: http://nobi.ethz.ch/martin/sgfspec.html
+But the specification leaves many questions open and sometimes is 
+errornous (e.g. MN property)
+
+
+Please think about your decision again.
+If noone starts supporting FF[4] until other's do, we'll never migrate to 
+FF[4] and get rid of the current mess.
+
+I'll also try to encourage IGS/NNGS to start writing FF[4] files, once
+the standard is released.
+
+----------------------------------------
+
+I hope that others see a need for FF[4].
+I do.
+
+I think it's important to define the standard clearly and single out
+applications that don't stick to it.
+
+Version 8 of the specification could IMHO pass as the final version.
+
+I'm on vacation for 2 weeks and can't answer email during that time.
+Have a look at the spec again and send in your final comments/suggestions.
+
+I want to release FF[4] as soon as possible, when I'm back.
+
+
+Happy easter :)
+
+/Arno
+

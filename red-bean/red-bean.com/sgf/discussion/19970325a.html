@@ -1,0 +1,84 @@
+Date: Tue, 25 Mar 1997 11:19:49 -0500
+From: Lauri.Paatero@paatero.pp.fi
+Subject: Re: Why we need FF[4] [Was: SGF - some answers]
+
+
+
+Suggestion for DG (diagram) property:
+-Move numbers are not shown for moves before DG node. This
+ is true for all nodes after DG node.
+-Move number of next move is range 1-100, that is if next move
+ would otherwise be 234, it is changed to 34 (almost modulo 100).
+
+
+
+In <Pine.BSF.3.91.970324194251.23762A-100000@freestyle.tu-graz.ac.at>, on
+03/24/97 
+   at 02:10 PM, Arno Hollosi <hollosi@sbox.tu-graz.ac.at> said:
+
+
+>Davit Fotland writes:
+>> > > > - Pass move as '[tt]' for boards <= 19x19
+>> > If your that concerned about compatibility then you can't use FF[4] at all.
+>> OK, you've convinced me I can't write FF[4].  Too bad, as I was hoping I
+
+>You're kidding?
+>If no, I'm ... well I'm shocked.
+
+This seems to be unnecessary incompatibility when board size is  19 or
+less.
+
+This is also major problem that makes me to ONLY read FF[4] and to
+continue to produce something like FF[1]-FF[3] in future.
+
+>> I am very concerned about compatibility.  Otherwise there is no reason for
+
+>I understand your point.
+>But FF[4] has more incompatibilities than '[tt]':
+>- rectangular boards
+>- boards upto 52x52
+>- compressed point lists
+>- formatted text
+
+"compressed point list" is the only feature that any program might use
+without explicit command from user. So in effect user is FORCING program
+to make incompatible files. In other hand user has not requested anything
+that MUST be incompatible when he adds a pass into SGF file.
+
+>Well, I think you wouldn't have implemented to first three options
+>anyway, but how about formatted text?
+
+How bad it is if line breaks go wrong?
+
+>---------------------------------------------------------
+
+>* GoWrite (or was it another program? can't remember) used to write 
+>  labels as LB[text:point] instead of LB[point:text]. This got fixed half 
+>  a year ago.
+
+not GOWrite, I have not fixed such bug :)
+
+>Please think about your decision again.
+>If noone starts supporting FF[4] until other's do, we'll never migrate to
+> FF[4] and get rid of the current mess.
+
+This is major reason to make standard as compatible with
+past versions as possible.
+
+>I'll also try to encourage IGS/NNGS to start writing FF[4] files, once
+>the standard is released.
+
+Please NO. As FF[4] breaks some old programs, let programmers have some
+time to write proper support before making
+new starndard a must.
+
+Lauri
+
+-----------------------------------------------------------------------
+Lauri.Paatero@paatero.pp.fi                   
+http://personal.eunet.fi/pp/paatero tel. +358 -9 -148 1802
+Lauri Paatero
+Porvoonkatu 17 A 12;   00510 Helsinki;   Finland
+-----------------------------------------------------------------------
+
+

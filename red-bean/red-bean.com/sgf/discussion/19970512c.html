@@ -1,0 +1,34 @@
+Date: Mon, 12 May 1997 09:12:06 -0400
+From: mueller@inf.ethz.ch (Martin =?iso-8859-1?Q?M=FCller?= )
+Subject: Re: linebreaks...
+
+Line 1 of http://www.cis.tu-graz.ac.at/home/hollosi/sgf4_draft/sgf4.html says:
+>SGF is a text-only format (not a binary format).
+
+Everyone agrees that different end-of-line conventions are a headache.
+However, they will not go away. I think SGF should remain a text format,
+not go binary. Being able to edit game records is an advantage, so we
+should keep this. All kinds of small transmission errors do happen, and
+then editing helps.
+
+This implies adapting to the local text conventions on each platform. There
+are tools which can convert between those formats easily. E.g. on the Mac,
+I use 'Drop Text' all the time.
+
+I also think about non-roman character sets such as Japanese, which
+probably have their own conventions for line breaks etc. Any experts
+listening? This is probably a point that needs more discussion. The
+standard is not too clear on what should happen if a text is written in a
+script that the machine does not understand. Display random characters?
+Nothing? A warning? What happens if such a file is edited, adding comments
+in another script, and then written out again?
+
+I think we can tolerate each of CR, LF and CRLF as end of line. A program
+should preprocess and convert these combinations to the host's native
+format when reading in the file. I believe this is only a small concession
+to format purity which will turn out very practical.
+
+        Martin
+
+
+

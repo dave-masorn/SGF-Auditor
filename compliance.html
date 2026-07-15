@@ -370,7 +370,7 @@
     </style>
 </head>
 <body>
-    <div class="changelog-version">v=0.0.003 (2026-07-15 21:09:00)</div>
+    <div class="changelog-version">v=0.0.004 (2026-07-15 22:52:00)</div>
 
     <h1>SGF Compliance Auditor</h1>
 
@@ -454,6 +454,8 @@
     <script>
         let currentResult = null;
         let activeFilter = 'all';
+        let wasmModule = null;
+        let wasmOutput = [];
 
         window.onload = function() {
             const content = sessionStorage.getItem('sgf_content');
@@ -467,15 +469,152 @@
             document.getElementById('main-container').style.display = 'block';
             document.getElementById('filename-display').textContent = filename;
 
+            // Attempt to load SGFC WASM
+            loadSGFC((success) => {
+                if (success) {
+                    runWasmAudit(content, filename);
+                } else {
+                    runJSAudit(content, filename);
+                }
+            });
+        };
+
+        function loadSGFC(callback) {
+            const script = document.createElement('script');
+            script.src = 'sgfc.js';
+            script.onload = () => {
+                if (typeof createSGFC !== 'undefined') {
+                    createSGFC({
+                        print: function(text) { wasmOutput.push(text); },
+                        printErr: function(text) { wasmOutput.push(text); }
+                    }).then(Module => {
+                        wasmModule = Module;
+                        callback(true);
+                    }).catch(err => {
+                        console.error("WASM Init failed:", err);
+                        callback(false);
+                    });
+                } else {
+                    callback(false);
+                }
+            };
+            script.onerror = () => {
+                console.warn("sgfc.js not found, falling back to pure JS auditor.");
+                callback(false);
+            };
+            document.head.appendChild(script);
+        }
+
+        function runWasmAudit(content, filename) {
+            wasmOutput = [];
             try {
-                // Execute validation
+                // Write SGF to virtual filesystem
+                wasmModule.FS.writeFile('/input.sgf', content);
+
+                // Call main entry point:
+                // -U = UTF-8 encoding
+                try {
+                    wasmModule.callMain(['-U', '/input.sgf']);
+                } catch (e) {
+                    // Emscripten throws an exit status exception which is normal
+                }
+
+                const report = wasmOutput.join('\n');
+                const issues = [];
+                let hasErrors = false;
+
+                wasmOutput.forEach(line => {
+                    // Match "Line:12 Col:5 - Error 47: ..." or similar
+                    const match = line.match(/^\s*Line:(\d+)\s+Col:(\d+)\s+-\s+([^\s:]+)(?:\s+\d+)?(?:\s*\(critical\))?:\s*(.*)$/i);
+                    if (match) {
+                        const lineNum = parseInt(match[1], 10);
+                        const colNum = parseInt(match[2], 10);
+                        let severity = match[3].toLowerCase();
+                        if (severity.startsWith('fatal') || severity.startsWith('critical')) severity = 'error';
+                        const message = match[4];
+
+                        if (severity === 'error') hasErrors = true;
+
+                        issues.push({
+                            severity: severity === 'error' ? 'error' : 'warning',
+                            message,
+                            position: { line: lineNum, col: colNum }
+                        });
+                    } else {
+                        // Match general errors like "Error 12: ..." or "Warning 5: ..."
+                        const genMatch = line.match(/^\s*(Error|Warning|Fatal\s+error)\s+\d+(?:\s*\(critical\))?:\s*(.*)$/i);
+                        if (genMatch) {
+                            let severity = genMatch[1].toLowerCase();
+                            if (severity.startsWith('fatal') || severity.startsWith('critical')) severity = 'error';
+                            const message = genMatch[2];
+
+                            if (severity === 'error') hasErrors = true;
+
+                            issues.push({
+                                severity: severity === 'error' ? 'error' : 'warning',
+                                message,
+                                position: null
+                            });
+                        }
+                    }
+                });
+
+                // Parse stats from report
+                const nodesMatch = report.match(/Nodes:\s+(\d+)/i);
+                const propsMatch = report.match(/Properties:\s+(\d+)/i);
+                const treesMatch = report.match(/Game trees:\s+(\d+)/i);
+                const variationsMatch = report.match(/Variations:\s+(\d+)/i);
+                const boardMatch = report.match(/Board size:\s+(\d+x\d+)/i);
+
+                // Estimate moves: count number of move properties
+                const moveCount = (content.match(/[BW]\[/g) || []).length;
+
+                const stats = {
+                    nodes: nodesMatch ? parseInt(nodesMatch[1], 10) : 0,
+                    properties: propsMatch ? parseInt(propsMatch[1], 10) : 0,
+                    gameTrees: treesMatch ? parseInt(treesMatch[1], 10) : 1,
+                    variations: variationsMatch ? parseInt(variationsMatch[1], 10) : 0,
+                    moves: moveCount
+                };
+
+                let boardSize = { width: 19, height: 19 };
+                if (boardMatch) {
+                    const parts = boardMatch[1].split('x');
+                    boardSize.width = parseInt(parts[0], 10);
+                    boardSize.height = parseInt(parts[1], 10);
+                }
+
+                currentResult = {
+                    compliant: !hasErrors,
+                    issues,
+                    stats,
+                    board: boardSize,
+                    report
+                };
+
+                displayResults(currentResult);
+
+                // Add indicator that it is running WebAssembly
+                const desc = document.getElementById('status-desc');
+                desc.innerHTML += ' <small style="display:block;margin-top:5px;opacity:0.7;">(Powered by official SGFC v2.3 WebAssembly)</small>';
+            } catch (err) {
+                console.error("WASM audit failed, falling back to JS:", err);
+                runJSAudit(content, filename);
+            }
+        }
+
+        function runJSAudit(content, filename) {
+            try {
                 currentResult = window.SGFCompliance.checkSGFContent(content, filename);
                 displayResults(currentResult);
+
+                const desc = document.getElementById('status-desc');
+                desc.innerHTML += ' <small style="display:block;margin-top:5px;opacity:0.7;">(Powered by SGF Compliance JS Engine)</small>';
             } catch (err) {
                 console.error(err);
                 showFatalError(err);
             }
-        };
+        }
 
         function displayResults(result) {
             // Populate stats
@@ -572,24 +711,20 @@
         }
 
         function switchTab(btn, tabId) {
-            // Deactivate all tabs
             const tabs = document.querySelectorAll('.tab-btn');
             tabs.forEach(t => t.classList.remove('active'));
 
             const contents = document.querySelectorAll('.tab-content');
             contents.forEach(c => c.classList.remove('active'));
 
-            // Activate chosen tab
             btn.classList.add('active');
             document.getElementById(tabId).classList.add('active');
         }
 
         function filterIssues(btn, severity) {
-            // Deactivate filter buttons
             const filterBtns = document.querySelectorAll('.filter-btn');
             filterBtns.forEach(b => b.classList.remove('active'));
 
-            // Activate chosen filter
             btn.classList.add('active');
             activeFilter = severity;
 

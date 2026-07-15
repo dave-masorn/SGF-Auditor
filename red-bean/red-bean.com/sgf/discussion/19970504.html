@@ -1,0 +1,80 @@
+Date: Sun, 4 May 1997 15:39:01 +0200 (MET DST)
+From: Arno Hollosi <hollosi@sbox.tu-graz.ac.at>
+Subject: SGFC V0.6 -- gameinfo statistics
+
+
+Hello all,
+
+A new version of SGFC (SGF syntax checker and converter) is available.
+Have a look at the README to see what has changed.
+SGFC can be downloaded from my SGF draft WWW pages.
+
+Gameinfo statistics:
+--------------------
+
+SGFC is now able to correct almost all dates, results, times and komi
+values. To get an idea of how many gameinfo values are incorrect and
+how many of them can be corrected by SGFC have a look below.
+The given results were reached without user interaction, i.e. the
+values were automatically parsed and corrected.
+
+Note: my game archive consists of about 400 IGS/NNGS games and about
+1800 pro games which were downloaded from the Go FTP archive and
+partially from Jan van der Steen's page.
+
+
+Date (base: David Fotland sent me the date values of about 1000 games)
+----------------------------------------------------------------------
+907 dates
+
+361 dates ok         40%
+546 dates faulty     60%
+
+454 values corrected 83% of 546/ 91% of nonempty false values
+  2 values badly corrected
+    new value: [1950-04-20,22], old value: [1950-04-20..22]
+    new value: [1932-01-06,19], old value: [6 - 19 Januari 1932]
+
+47 empty values      8% of 546
+45 unable to correct 8% of 546 / 9% of 546-47
+   23 unable because of day < 12; e.g DT[2/11/1993]
+    1 no date at all DT[3rd Korean World Title.\\\\]
+   21 3 day games or games stretching over two month
+
+
+Komi: (base: my own SGF collection)
+----------------------------------------------------
+1821 KM values
+
+1775 ok (97%)
+  16 faulty values
+  30 empty values
+
+  16 corrected by SGFC (100% :)
+
+
+Result: (base: my SGF archive)
+------------------------------
+~2200 RE values
+
+~1800 ok (81%)
+~400 bad (19%)
+
+~380 corrected (95% of 400)
+
+
+Time: (base: pro games of my SGF archive only [not server games])
+-----------------------------------------------------------------
+802 TM values
+
+390 ok     (49%)
+412 faulty (51%)
+ 58 empty values
+354 non empty, false (44%)
+
+346 corrected (98% of all false values)
+  8 not corrected
+
+
+/Arno
+

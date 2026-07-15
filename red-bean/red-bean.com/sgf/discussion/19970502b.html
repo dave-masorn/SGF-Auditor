@@ -1,0 +1,35 @@
+Date: Fri, 2 May 1997 13:46:35 +0200 (MET DST)
+From: Arno Hollosi <hollosi@sbox.tu-graz.ac.at>
+Subject: Re: Summary of recent discussion
+
+
+>  So, I should not have moves in the firtst, root, node. And the root node
+> should not be empty. But my program should be able to handle that when I
+> read files. Should we correct such things when we save changes?
+
+There are no limititations - the application may change everything it 
+doesn't like. Loss of imformation should be avoided though (as long as the 
+user doesn't explicitly wish to discard information [i.e. properties/nodes]).
+
+>  A question to you out there. If there is no setup or move for, lets say, 4
+> nodes. Do you step to that posision in the file when you have loaded it.
+
+It depends: if they are empty (i.e. there are no properties) and
+there are NO variations then those nodes could be skipped/deleted.
+If there are properties (e.g. comments) then don't skip it.
+
+> changes to it and save it. Should we save the old begining or convert it to
+> a more "normal" look. This is more style questions then standard questions.
+
+As stated above: do whatever you like - but don't lose information.
+I know at least two games where the first move is made on node 3 or 4.
+In nodes 0,1,2 are comments about the game.
+I don't think that removing those comments (in order to make the first 
+move in node 1) is a good idea.
+
+E.g. SGFC (SGF syntax checker & converter) has an option to remove all 
+empty nodes that are not root nodes and have no siblings.
+
+
+/Arno
+

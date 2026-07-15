@@ -1,0 +1,120 @@
+<HTML lang="en">
+
+<!-- Mirrored from red-bean.com/sgf/ff1_3/sgfcode.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 30 Jun 2026 15:27:56 GMT -->
+<HEAD>
+<TITLE>Smart Game File Format Sample Code</TITLE>
+    <link rel="stylesheet" href="../main.css">
+</HEAD>
+
+<BODY>
+
+<H1>Smart Game File Format Sample Code</H1>
+
+<h2>Contents</h2>
+<UL>
+<LI> <A HREF="#ConvertFormat">Modula code for conversion</A>
+<LI> <A HREF="#Convert Marks">Convert Marks and Triangles</A>
+</UL>
+
+<H3><A NAME="ConvertFormat">Modula code for conversion</A></H3>
+This is the code for converting FF[1] and FF[2] into FF[3] files.
+
+<pre>
+(*============================================================================*)
+(*       convert older file formats                                         *)
+(*============================================================================*)
+(* ConvertFormat (complete source given here) replaces old
+properties by new ones when reading in FF[1] or FF[2] files. Variable
+CurrentFormat indicates which old file format was determined.
+*)
+
+PROCEDURE ConvertFormat (root: NODE);
+VAR node    : NODE;
+    prop    : PROPERTY;
+    spec    : INTEGER;
+    str4    : String4;
+    labels  : LIST;
+    point   : POINT;
+    hasGoodMove : BOOLEAN;
+    hasBadMove  : BOOLEAN;
+BEGIN
+  TRAVERSE(root, preOrder); WHILE NEXTNODE(node) DO
+    hasGoodMove := FALSE;
+    hasBadMove  := FALSE;
+    FORPROP(node); WHILE NEXTPROP(prop) DO
+      CASE prop OF
+        pBlackSpec, pWhiteSpec:
+          IF (CurrentFormat = 1) THEN
+            spec := IntProp(node, prop);
+            IF    (spec = 2) THEN spec := computerPlayer;
+            ELSIF (spec = 3) THEN spec := modemPlayer;
+            ELSE      spec := humanPlayer;
+            END(*IF*);
+            SetProp(node, prop, spec);
+          END(*IF*);
+      | pLetter:
+            IF (CurrentFormat <= 2) THEN
+              str4   := "A";
+              labels := NIL;
+              FOREACH(ListProp(node, pLetter)); WHILE NEXT(point) DO
+                Append(point, labels);
+                AppendL(str4, labels);
+                INC(str4[0]);
+              END(*FOREACH*);
+              (* the following calls do not affect FORPROP *)
+              SetPropL(node, pLabel, labels);
+              DeleteProp(node, pLetter);
+            END(*IF*);
+      | pCheck: (* changed from noType to tInteger *)
+            IF (CurrentFormat <= 2) THEN
+              IF (IntProp(node, prop) <= 0) THEN
+                SetProp(node, prop, 1);
+              END(*IF*);
+            END(*IF*);
+      | pGoodMove:
+            IF hasBadMove THEN
+              DeleteProp(node, pGoodMove);
+              DeleteProp(node, pBadMove);
+              SetProp(node, pDoubtful, 0);
+            END(*IF*);
+            hasGoodMove := TRUE;
+      | pBadMove:
+            IF hasGoodMove THEN
+              DeleteProp(node, pGoodMove);
+              DeleteProp(node, pBadMove);
+              SetProp(node, pInterest, 0);
+            END(*IF*);
+            hasBadMove := TRUE;
+      ELSE (* no adjustment necessary *)
+      END(*CASE*);
+    END(*FORPROP*);
+  END(*TRAVERSE*);
+END ConvertFormat;
+</pre>
+
+<H4><A NAME="Convert Marks">Convert Marks and Triangles</A></H4>
+
+The following code implements the
+changes with marks and triangles from FF[2] to FF[3].
+It cannot go into ConvertFormat, because board
+state is not known there.
+
+<pre>
+IF HasProp(node, pMark) THEN (* convert into new format *)
+  FOREACH(ListProp(node, pMark)); WHILE NEXT(point) DO
+    IF (fBoard[point] = Empty) THEN AddPointToProp(node, pMarked, point);
+                               ELSE AddPointToProp(node, pTriangle, point);
+    END(*IF*);
+  END(*FOREACH*);
+  DeleteProp(node, pMark);
+END(*IF*);
+</pre>
+
+<HR>
+Last modified: Feb 23, 1995<P>
+<ADDRESS>Martin M&uuml;ller, mueller@inf.ethz.ch</ADDRESS>
+
+</BODY>
+
+<!-- Mirrored from red-bean.com/sgf/ff1_3/sgfcode.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 30 Jun 2026 15:27:56 GMT -->
+</HTML>

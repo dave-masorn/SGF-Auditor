@@ -1,0 +1,120 @@
+Date: Mon, 17 Mar 1997 12:20:48 +0100 (MET)
+From: Arno Hollosi <hollosi@sbox.tu-graz.ac.at>
+Subject: SGF - some answers
+
+
+
+Sorry for the lack of activity in the last 3-4 weeks, but I was
+ill and my study has kept me busy too.
+
+Answers to David's, Robert's and Lauri's emails are included.
+
+Short: - keep game-info the way it's defined in FF[4] V7
+       - don't accept '[tt]' pass moves in FF[4]
+       - remove hyperlinks but insert old HO[] property again
+       - keep arrows and add lines
+       - soft linebreak converts to <nothing> instead of <space>
+       - add 'void' or 'no result' to possible RE[] values
+       - use SM instead of MN (for Lauri)
+
+David Fortland writes:
+> I like all the changes except this one:
+> > - new way of handling game-info properties (incremental game-info no 
+> >   longer possible):
+>
+> Game info is much easier to deal with in the root node.  I think you want to
+> do this for game collections.  But:
+> 2 reasons why SGF isn't suitable for storing game collections deleted
+
+I agree, but SGF allows game collections since V1.0
+All I've done is to specify exactly WHERE the necessary game info should 
+be put. That's all. The previous version (FF4,V6) allowed incremental
+game-info which is much more difficult to handle.
+
+
+> I don't like the hypertext links ^A, etc and UM.
+
+As the majority of people seems to dislike this idea, I'm going to delete
+hyperlinks & the UM property in the next version.
+If I receive at least 4 positive votes I'll keep it.
+
+If UM[] gets removed I want to add the HO[] (hotspot) property again, which 
+is an FF[3] property and was removed in the spec. HO[] marks the whole node.
+I didn't see a use for it until I saw it in a GTL review (I'm co-maintainer
+of the Go Teaching Ladder, for those who don't know)
+
+In that review HO[] was used to mark important nodes, e.g. game-deciding
+moves. A viewer could provide a jump to next/previous hotspot navigation
+command. I think this is useful. Opinions?
+
+David Fotland votes for:
+> > - Pass move as '[tt]' for boards <= 19x19
+> I know it looks ugly, but it is important to me that MF interoperate
+> smoothly with what is currently out there.  And I would prefer to
+> make the change to FF[4] invisible to the user, so he doesn't have to
+> remember which format he saved in , or ask his pro which version he supports.
+
+If your that concerned about compatibility then you can't use FF[4] at all.
+You can't even use FF[3] (e.g. mgt doesn't support it).
+
+If you're already grouping 'special markup' etc. in a seperate menu, 
+then move ALL FF[4] functions there. If none of these functions is used 
+write a plain FF[3] file otherwise a FF[4] file WITH pass moves as '[]'!
+
+You can use a lot of restrictions (e.g. split move/setup properties) in 
+FF[3] too. And you may enforce correct game info entries in FF[3] too.
+FF[4] is just more restricted to produce a 'cleaner' SGF file.
+There's no reason why you shouldn't create a clean FF[3] file too.
+
+But if you're writing FF[4] with the new text format, using new properties
+THEN use the new PASS value too! I don't see any reason why we should keep 
+'[tt]' for boards <= 19x19
+
+> > - Soft Linebreak '\<cr>' should be converted to <nothing> instead of space
+This will be done in V8 which is coming soon :)
+
+> How about dropping arrows :-)  Why would someone want to draw a line from
+> one stone to another?  I won't support any change that involves coordinates
+> with finer resolution than a board point...
+
+Finer? Arrows are pointing from one board point to another.
+I guess you've seen this in books: arrows indicating influence, 
+directions, ladders, etc. They ARE useful.
+And if we draw arrows we may draw simple lines too.
+
+
+
+Robert Jasiek writes:
+>>- David: "RE - why specify the french spelling (Forfait) of Forfeit?"
+>>  Hm. I didn't notice this. However it's already defined this way since FF[1].
+>>  Should we change this?
+>
+> Standard computer language is English, so better 'e'.
+> Why are Void and Suspension missing? Suspension might fall into
+> Forfeit or Void, but Void frequently occurs. (E.g. it is the game end 
+> under IGS rules in case of disagreement about removals. All Japanese rules
+> and universalists use void ends.) Note: The _known_ result is 
+> "void", i.e. "no result". So B+V or B+Void should be added.
+
+Agree. We should add 'Void' or 'No Result (NR)'.
+Which one should be used? Opinions?
+
+
+
+Lauri Paatero writes:
+
+> MN or SM does not allow one to force stone 
+> numbers into range 1-100.
+> It would be possible to use MN for this except that 
+> it would need adjustments when number of
+> moves (before MN) changes.
+ 
+That's why we've added SM[] in FF[4].
+SM[] sets the move number (absolute) to the given value, no matter
+how many moves were there before. Does this solve your problem?
+
+
+
+Comments etc. welcome
+/Arno
+

@@ -1,0 +1,162 @@
+Date: Tue, 25 Mar 1997 14:39:52 -0500
+From: Anders Kierulf <anderski@microsoft.com>
+Subject: RE: Pass [] or [tt] [Was: Why we need FF[4]] 
+
+Backwards compatibility is crucial. We need to define FF[4] such that
+programs can write legal FF[4] files that can be read by existing
+viewers. At the very least, all the moves and the most important
+annotations must be read correctly. If not, people will continue to
+write FF[3] instead of adopting the much improved FF[4].
+
+Pass written as [] instead of [tt] is currently the biggest obstacle to
+backwards compatibility, and there's a simple solution. For boards with
+size <= 19, allow [tt] as a legal FF[4] alternative representation of
+Pass, in addition to []. Programs have to read both, but you're free to
+choose which representation to write. If FF[3] compatibility is
+important to you, write [tt] and stay away from compressed point lists.
+
+This requires a few extra lines of code, and is not as aesthetically
+pleasing, but it's a small price to pay for backwards compatibility.
+
+Anders
+
+	-----Original Message-----
+	From:	David Fotland [SMTP:fotland@hpihoah.cup.hp.com]
+	Sent:	Tuesday, March 25, 1997 9:22 AM
+	To:	Anders Kierulf
+	Subject:	Re: Why we need FF[4] [Was: SGF - some answers] 
+
+
+	No, you didn't offend me in any way.  I think it's great that
+you are
+	writing a good spec for SGF.
+
+	But my biggest concern is for compatibility.  For reading sgf, I
+will be
+	able to parse any of FF[1] to FF[4].  So far I have no need to
+look at the
+	FF level on input since there are few changes in specific
+properties that
+	I care about based on the FF level.  Usually there are new
+properties
+	defined and old ones dropped.
+
+	And there doesn't seem to be any definition of FF[1] to FF[3]
+anyway.
+
+	For writing, I want to write SGF files that can be read by other
+sgf viewers.
+	I need to use LB rather than L for marks on the board so I can
+support the
+	Ishi Format marks.  So it seems that I must write FF[3] in the
+file.
+
+	But I can't use FF[4] for many reasons.  Pass as [] is one of
+them.  But
+	for converting from Ishi, I can't deal with some of the
+formatting requirements
+	for game info - ince Ishi Format fields are free format.
+
+	I expect that any FF[4] viewer will continue to read FF[3]
+files, so by
+	writing FF[3], I can still be compatible with new viewers.
+
+	> 
+	> I understand your point.
+	> But FF[4] has more incompatibilities than '[tt]':
+	> - rectangular boards
+	> - boards upto 52x52
+	> - compressed point lists
+	> - formatted text
+	> 
+	> Well, I think you wouldn't have implemented to first three
+options anyway,
+	> but how about formatted text?
+
+	Correct.  I don't like formatted text anyway, and planned to
+ignore your
+	formatting rules.  I have a comment text window, which will have
+different
+	size depending on the screen resolution and board size.  I plan
+to fill text
+	within paragraphs, just as I did with Ishi Format, and ignore
+line breaks
+	within comments, except that two line breaks in a row is a
+paragraph break,
+	displayed as a blank line between paragraphs.
+
+	If I pay attention to line breaks in comments, the text looks
+awful.
+
+	> SGF isn't that homogeneous.
+
+	Right - no spec!  I've seen files without a ; before the root
+node,
+	files with moves in the root node, and many other problems.
+
+	> * WinMGT (a very popular application among PC users) is
+extremly buggy
+	>   (or at least it was until half a year ago). If you didn't
+take care
+	>   during editing it would produce wrong variations (nesting of
+'()').
+	>   WinMGT also knows only a very small subset of properties.
+	>   E.g. the last version I looked at didn't understand LB! It
+only
+	>   knew the old FF[1] property L[].
+
+	I don't know if I can be compatible wih winMGT, but I'll have to
+try since
+	so many people have it.
+
+	> 
+	> Because of all the mess I thought it's time to write a clear 
+	> specification.
+
+	Great!  Ander's spec in his thesis is clear, but everything
+since then
+	seems to be a mess.  And it is too bad that Anders didn't
+include the
+	markup properties needed to produce the marks people are used to
+	seeing in go magazines and books.  That's one of the reasons we
+had to do
+	Ishi Format in the first place.
+
+	> 
+	> > Does anyone know of a spec for FF[3]?  Is it defined by a
+particular 
+	> 
+	> See Martin Mueller pages at:
+http://nobi.ethz.ch/martin/sgfspec.html
+	> But the specification leaves many questions open and sometimes
+is 
+	> errornous (e.g. MN property)
+
+	Thanks, I've looked at this, and it is very incomplete, and has
+many errors.
+
+	> Please think about your decision again.
+	> If noone starts supporting FF[4] until other's do, we'll never
+migrate to 
+	> FF[4] and get rid of the current mess.
+
+	I'll read FF[4], but I can't write it.  I don't have enough time
+to handle
+	the support calls.
+
+	> 
+	> I'll also try to encourage IGS/NNGS to start writing FF[4]
+files, once
+	> the standard is released.
+
+	Good.
+
+	> I hope that others see a need for FF[4].
+	> I do.
+
+	I do too.  But compatibility with other viewers is too important
+to me.
+
+
+	-David
+

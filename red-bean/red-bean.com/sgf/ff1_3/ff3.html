@@ -1,0 +1,416 @@
+<HTML lang="en">
+
+<!-- Mirrored from red-bean.com/sgf/ff1_3/ff3.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 30 Jun 2026 15:27:56 GMT -->
+<HEAD><TITLE>SGF FF[3] specification</TITLE>
+    <link rel="stylesheet" href="../main.css">
+</HEAD>
+
+<BODY>
+<A HREF="../index-2.html"><IMG SRC="../images/head.png" ALT="[SGF FF[4] - Smart Game Format]"
+BORDER=0></A>
+
+<H1>Smart Game File Format FF[3]</H1>
+
+<h2>Contents</h2>
+<UL>
+<li> <a href="#About">About this specification</a>
+<li> <a href="#Basics">Basics of Smart Game File Format</a>
+<li> <a href="#Types">Types</a>
+<li> <a href="#Properties">Properties</a>
+<LI> <A HREF="#SGF4List">Alphabetical List of properties</A>
+<LI> <A HREF="sgfhistory.html">Appendix: File Formats 1 to 3</A>
+<LI> <A HREF="discussion.html">Appendix: Discussion</A>
+<LI> <A HREF="style.html">SGF style guide</A>
+<LI> <A HREF="sgfcode.html">Sample code</A>
+</UL>
+
+<h2><A NAME="About">About this specification</A></h2>
+<p>
+This specification is based on <A HREF="ff1.html">Appendix A (FF[1])</A>
+of Anders Kierulf's Ph.D. Thesis,
+and on earlier drafts by Tim Casey and Martin M&uuml;ller.
+It keeps the game-independent
+spirit of the original SGF specification, but contains Go-specific properties
+in the main text instead of a separate section. Specifications for other
+games have not been attempted in this document.
+<p>
+I have also omitted most properties that are used only in Computer Go from this
+specification. A separate annotation format for computer Go test
+collections is in preparation.
+<h4>Aims of this document</h4>
+<UL>
+<li> Document the status quo of Smart Game Board's and other implementations
+of SGF
+<LI> Document the transitions between file formats 1..3
+<LI> Provide sample code for a reader, and a converter from formats 1..3
+<LI> Offer a style guide for SGF writers
+</UL>
+
+<h2><A NAME="Basics">Basics of Smart Game File Format</A></h2>
+The game collections (documents) of the Smart Game Board are stored as text
+files. 
+<a name="Tree">The Smart Game Board</a> stores the game trees of each
+document, with all their
+nodes and properties, and nothing more. Thus the file format reflects the
+regular internal structure of a tree of property lists. There are no
+exceptions; if a game needs to store some information on file with the
+document, a (game-specific) property must be defined for that purpose.<p>
+We first define the syntax of the game collections, then discuss syntax and
+semantic of various properties.
+
+<br><IMG SRC="TA1.gif"> 
+<br>Example for structure of file format.
+This tree is written in preorder as:
+(root(ab(c)(de))(f(ghi)(j)))
+
+<h3><A NAME="Definitions">Definitions</A></h3>
+<ul>
+<li> A <em>node</em> is a set of zero or more properties.
+Most nodes contain a move as a property.
+<li> A <em>property</em> contains information about a node,
+for example a comment or an annotation.
+</ul>
+
+<h4>Game Collections </h4>
+
+A collection of games is simply the concatenation of the game trees.
+The structure of each tree is indicated by parentheses.
+A tree is written as "(" followed by a sequence of nodes (as long as
+the tree is unbranched) and a tree for each son, and terminated by ")".
+Each node is preceded by a separator ";", and contains a list of zero or
+more properties.
+
+<p>
+Thus the main branch of the game is stored first in the file, and programs can
+easily read that part (until the first closing parenthesis) and ignore the
+rest.<p>
+The conventions of EBNF are discussed in the literature.
+A quick summary:<p>
+<tt>"..." : </tt>terminal symbols<p>
+<tt>[...] : </tt>option: occurs at most once<p>
+<tt>{...} : </tt>repetition: any number of times, including zero<p>
+<tt>(...) : </tt>grouping<p>
+<tt> |  : </tt>exclusive or<p>
+<p>
+The overall definition of the file format is as follows:<p>
+<p>
+<tt>        Collection = {GameTree}.</tt><p>
+<tt>        GameTree   = "(" Sequence {GameTree} ")".</tt><p>
+<tt>        Sequence   = Node {Node}.</tt><p>
+<tt>        Node       = ";" {Property}.</tt><p>
+<p>
+"White space" (Spaces, tabs, carriage return, line feed, line breaks,
+vertical tab and so
+on) can be inserted before the first opening parenthesis or
+anywhere between properties and are ignored when reading a file.
+
+<h3><a name="Types">Types</a></h3>
+<tt>        Number     = ["+"|"-"] Digit {Digit}.</tt><p>
+<tt>        Text       = { any character; "\]" = "]", "\\" = "\"}.</tt><p>
+<tt>        Real       = Number ["." {Digit}].</tt><p>
+<tt>        Triple     = ("1" | "2").</tt>
+<br> It is called a triple because it has three states: 0 (property does not
+exist), 1 and 2.
+The normal value for such properties is one, properties that are
+doubled for emphasis have the value two.<p>
+<p>
+<tt>        Color      = ("B" | "W").</tt><p>
+<p>
+The types Move and Point are game-specific. In Go, Move and Point are the same:
+Two lowercase letters in the range "a"-"s".
+<p>
+<IMG SRC="TA2.gif"> 
+<br>
+Coordinate system for points and moves
+<p>
+The first letter designates the column (left to right), the second the row
+(top to bottom). The upper left part of the board is used for smaller
+boards, e.g. letters "a"-"m" for 13*13. A pass move is
+written as "tt". The board must be quadratic, no smaller than 2*2,
+and no larger than 19*19.
+
+<h3><a name="Properties">Properties</a></h3>
+Each property is identified by one or two capital letters. The property value
+is enclosed in brackets; lists of points or integers are written as a sequence
+of property values. Within text, a closing bracket is prefixed by a backslash,
+and a backslash is doubled.
+<p>
+Only upper case letters are significant in a property ID, so
+LB[] = LaBel[] = LdfgdfgByukyfg[] = ...
+Any white space characters outside of enclosing '[]' pairs are ignored.
+The *only* characters which matter are uppercase, '(', ')', ';', '[', ']'.
+<p>
+Everybody is free to define additional, private properties, as long as they do
+not interfere with the standard properties define in this document.
+Therefore, if one is writing a SGF reader, it is important to skip
+unknown properties. A reader may e.g. issue a warning message in such a case.
+<p>
+Only one of each property type is allowed per node.  For example you cannot
+have two comments in one node:
+<pre>...;C[comment1]...B[dg]...C[comment2];...
+</pre>
+This is an error. One of the comments will be lost.
+<p>
+<tt>        Property   = PropIdent PropValue {PropValue}.</tt><p>
+<tt>        PropIdent  = UpperCase [UpperCase | Digit].</tt><p>
+<tt>        PropValue  = "[" [Number | Text | Real | Triple
+| Color | Move | Point | ...] "]".</tt><p>
+<h4><a name="Moves">Moves</a></h4>
+<tt>        "B" : Black move B[move, game-specific]</tt><p>
+<tt>        "W" : White move W[move, game-specific]</tt><p>
+The Go-specific KO property allows to execute current move even if it is
+       illegal. This is needed for some game records, and for computer 
+			 'what if' analysis.<p>
+<tt>        "KO" : WinKo, allows to execute the current move even if it is
+       illegal.    KO[]
+        </tt><p>
+
+<h4><a name="Setup">Setup Position or Problem</a></h4>
+These properties are used to set up positions in games with only
+black and white stones.
+<p>
+<tt>        "AB": add black stones          AB[point list]</tt><p>
+<tt>        "AW": add white stones          AW[point list]</tt><p>
+<tt>        "AE": add empty = remove stones AE[point list]</tt><p>
+<tt>        "PL": player to play first      PL[color]</tt><p>
+
+<h4><a name="Node Annotation">Node Annotation</a></h4>
+<tt>        "C" : comment    C[text]</tt><p>
+<tt>        "N" : node name  N[text]</tt><p>
+The purpose of providing both a node name and a comment is to have a
+short identifier like "doesn't work" or "Dia. 15" that can be displayed
+directly with the properties of the node, even if the comment is turned off or
+shown in a separate window. 
+<p>
+There is no limit to the length of texts; programs
+must be able to ignore the rest of texts that are too long for them to handle.
+Reasonable limits are 32 characters for node names and at least 2000 characters
+for comments.
+<p> Inside texts, ']' and '\' are written as "\]" and "\\".
+<P>
+<tt>        "SE" : Moves tried so far in        SE[point list]
+       self-test mode</tt><p>
+
+<h4><a name="Move Annotation">Move Annotation</a></h4>
+<tt>        "V" : Node value          V[real]</tt><p>
+Positive values are good for Black, negative values are good for
+White. The interpretation of particular values is game-specific.
+In Go, this is the estimated score, which might include half points,
+therefore I changed the parameter to real.<p>
+<tt>        "CH": check mark          CH[triple]</tt><p>
+<tt>        "GB": good for Black      GB[triple]</tt><p>
+<tt>        "GW": good for White      GW[triple]</tt><p>
+<tt>        "TE": good move (tesuji)  TE[triple]</tt><p>
+<tt>        "BM": bad move            BM[triple]</tt><p>
+<tt>        "DO": doubtful move (?!)  DO[]</tt><p>
+<tt>        "IT": interesting move (!?) IT[]</tt><p>
+<tt>        "UC": Unclear position             UC[triple]</tt><p>
+<tt>        "DM": even position                DM[triple]</tt><p>
+<tt>        "HO": Hotspot node mark            HO[triple]</tt><p> 
+<tt>        "SI": Position marked with a sigma SI[triple]</tt><p>
+Note: all these properties mark the whole node, not
+a particular place on the board.
+
+<h4><a name="Time">Time Control</a></h4>
+All times are given in seconds, or fractions thereof.<p>
+<tt>        "BL": time left for Black          BL[real]</tt><p>
+<tt>        "WL": time left for White          WL[real]</tt><p>
+<tt>        "OB": Number of black stones to play in this byo-yomi period
+OB[number]</tt><p>
+<tt>        "OM": Number of moves for each     
+overtime period OM[number]</tt><p>
+<tt>        "OP": Length of each overtime      
+ period OP[real]</tt><p>
+<tt>        "OV": seconds of operator          
+overhead for each move OV[number]</tt><p>
+<tt>        "OW": Number of white stones to  
+ play in this byo-yomi period  OW[number]</tt><p>
+
+<h4><a name="Time">Diagrams and Printing</a></h4>
+<tt>        "FG": figure [none]</tt><p>
+The figure property is used to divide a game into different figures
+for printing: a new figure starts at the node with a figure property.<p>
+<tt>        "MN": Set the current move number to number provided,
+       used for diagrams           MN[number]</tt><p>
+       
+<h4><a name="Root">Root Properties</a></h4>
+
+The following properties are valid for the whole game. They
+may only be present at the root node:<p>
+<tt>        "FF": file format                FF[number] number = 1..3</tt><p>
+<tt>        "GM": game                       GM[number]
+                                  (Go = 1, Othello = 2, chess = 3,
+                                  Gomoku+Renju = 4, Nine Men's Morris = 5,
+                                  6: not used, Chinese chess = 7, Shogi = 8)
+</tt><p>
+The game number helps a program reject games it cannot handle.<p>
+<tt>        "SZ": board size                 SZ[number]</tt><p>
+<tt>        "BS": black species              BS[number] (human=0, computer&gt;0)</tt><p>
+<tt>        "WS": white species              WS[number]</tt><p>
+The species denotes the kind of player (the source of
+the moves), with different versions of computer algorithms denoted by
+positive numbers (default algorithm = 1).<p>
+<tt>        "LT": enforces losing on time     LT[]</tt><p>
+Go-specific root properties:<p>
+<tt>        "RU": Rules: "Japanese", "Chinese", "Ing", ..., 
+              default is "Japanese" RU[text]</tt><p>
+
+<h4><a name="Game Info">Game Info</a></h4>
+The following properties are part of the game
+info. It is usually stored in the root. When merging a set of games
+into a single tree, game infos are stored at the nodes where a
+game first becomes distinguishable from all other games in the tree.
+<p>
+<tt>        "GN": game name                   GN[text]</tt><p>
+<tt>        "GC": game comment                GC[text]</tt><p>
+<tt>        "EV": event (tournament)          EV[text]</tt><p>
+<tt>        "RO": round                       RO[text]</tt><p>
+<tt>        "DT": date                        DT[text]</tt><p>
+<tt>        "PC": place                       PC[text]</tt><p>
+<tt>        "PB": Black player name           PB[text]</tt><p>
+<tt>        "PW": White player name           PW[text]</tt><p>
+<tt>        "BT": Team of black player        BT[text]</tt><p>
+<tt>        "WT": Team of white player        WT[text]</tt><p>
+<tt>        "RE": result, outcome             RE[W|B+#.#|T|R|F]</tt><p>
+<tt>        "US": user (who entered the game) US[text]</tt><p>
+<tt>        "TM": time limit per player       TM[text]</tt><p>
+<tt>        "SO": source (book, journal, ...) SO[text]</tt><p>
+<tt>        "AN": Who analyzed the game       AN[text]</tt><p>
+<tt>        "CP": Copyright on game comments  CP[text]</tt><p>
+<tt>        "ID": The game ID                 ID[text]</tt><p>
+<tt>        "ON": The opening played          ON[text]</tt><p>
+
+Additional game info properties are defined for Go:                                
+<p>
+<tt>        "BR": Black player rank                BR[text]</tt><p>
+<tt>        "WR": White player rank                WR[text]</tt><p>
+<tt>        "HA": handicap                    HA[number]</tt><p>
+<tt>        "KM": komi                        KM[real]</tt><p>
+
+The format for game-info texts is free, but it is recommended to adhere to
+the <A HREF="style.html">style guide</A>.
+
+<h4><a name="Position Annotation">Position Annotation</a></h4>
+Some games support markings on the board: selected points,
+triangles/crosses, or text labels:<p>
+<tt>        "SL": selected points                 SL[point list]</tt><p>
+<tt>        "MA" : points marked with cross       MA[point list]</tt><p>
+<tt>        "TR" : points marked with triangles   TR[point list]</tt><p>
+<tt>        "CR" : Circle marker                  CR[point list]</tt><p>
+Other position annotations:<p>
+<tt>        "LB" : labels on points               LB[point:label list]</tt><p>
+More <A HREF="sgfhistory.html#label">info on labels</A>.<p>
+
+<h5>Go-specific Properties:</h5>
+Sets of board points can be marked as territory, as secure stones, or
+just as a region of the board (e.g. to designate eye space):<p>
+<tt>        "TB": Black territory                 TB[point list]</tt><p>
+<tt>        "TW": White territory                 TW[point list]</tt><p>
+<tt>        "TC": Territory count                 TC[number]</tt><p>
+<tt>        "SC": secure stones                   SC[point list]</tt><p>
+<tt>        "RG": region of the board             RG[point list]</tt><p>
+
+<h3><A NAME="SGF4List">Alphabetical list of properties</A></h3>
+This is a list of all general and Go-specific properties.
+A reader for a different
+game should ignore or redefine the 
+<A HREF="#gospecificList">Go specific properties</A>. 
+New properties are marked with a '*'.
+
+<pre>
+AB     Edit: Add black stones       AB[point list]
+AE     Edit: add empty points       AE[point list]
+AN     Who did the Analysis         AN[text]
+AW     Edit: Add white stones       AW[point list]
+B      Black move                   B[move]
+BL     Time left for Black, seconds BL[real]
+BM     bad move                     BM[triple]
+BR     Black's Rank                 BR[text]
+BS     black species                BS[number],0..human, 1-n: computer
+BT     Team of black player         BT[text]
+C      Comment                      C[text]
+CH     Check mark                   CH[triple]  
+CP     Copyright on game comments   CP[text]
+CR     Circle marker                CR[point list]
+DG     Diagram, for printing        DG[DiaSpec]
+DM     even position                DM[triple]
+DO     doubtful move                DO[]
+DT     Date                         DT[YYYY-MM-DD]
+EV     Event (tournament)           EV[text]
+FF     File format                  FF[number], number = 1..4
+FG     figure, for printing         FG[]
+GB     Good for black               GB[triple]
+GC     Comment about the game.      GC[text]
+GM     Game type                    GM[number] 1: go, 2: othello, 3: chess,
+GN     Game name                    GN[text]
+GW     Something good for white     GW[triple] 
+HA     Number of handicap stones    HA[number], number = 1..9
+HO     Hotspot node mark            HO[triple]  
+ID     The game ID                  ID[text]
+IT     interesting move             IT[]
+KM     komi                         KM[real]
+KO     WinKo, execute illegal move  KO[]
+LB     label                        LB[point:label list]
+LT     Lose on Time is enforced     LT[]
+MA     Mark: crosses                MA[point list]
+MN     set move number in diagrams  MN[number]
+N      Node name                    N[text]
+OB     # black stones in byo-yomi   OB[number]
+OW     # white stones in byo-yomi   OW[number]
+OM     # moves per overtime period  OM[number]
+ON     The opening                  ON[text]
+OP     Length of overtime  period   OP[real]
+OV     seconds overhead in byo-yomi OV[number]
+OW     # white stones in byo-yomi   OW[number]
+PB     Black player name            PB[text]
+PC     Place                        PC[text]
+PL     Player whose turn it is      PL[color], 1 = Black, 2 = White
+PW     White player name            PW[text]
+RE     Result of the game:          RE[W|B+#.#|T|R|F]
+RG     region on the board          RG[point list]
+RO     Round in tournament          RO[text]
+RU     Rules: Japanese or Chinese   RU[text]
+SC     Secure stones                SC[point list]
+SE     Moves tried in self-test     SE[point list]
+SI     Position marked with a sigma SI[triple]
+SL     Selected points              SL[point list]
+SO     Source: book, journal,...    SO[text]
+SZ     size of the board            SZ[number], number = 2..19
+TB     Black territory              TB[point list]
+TC     Territory count: B-W         TC[number]
+TE     Good move, tesuji            TE[triple]
+TM     Time for each player         TM[text] 
+TR     Triangle markers             TR[point list]
+TW     White territory              TW[point list]
+UC     Unclear position             UC[triple]
+US     User: who entered game       US[text]
+V      Node value                   V[number]
+W      White move                   W[move]
+WL     Time left for White          WL[real] IGS uses seconds
+WR     White's Rank                 WR[text]
+WS     white species                WS[number] 0..human, 1-n: computer
+WT     Team of white player         WT[text]
+
+</pre>
+<h4><A NAME="gospecificList">Alphabetical list of Go-specific properties</A></h4>
+
+<pre>
+HA     Number of handicap stones    HA[number], number = 1..9
+KM     komi                         KM[real]
+KO     WinKo, execute illegal move  KO[]
+RG     region on the board          RG[point list]
+RU     Rules: Japanese or Chinese   RU[text]
+SC     Secure stones                SC[point list]
+TB     Black territory              TB[point list]
+TC     Territory count: B-W         TC[number]
+TW     White territory              TW[point list]
+</pre>
+
+<HR>
+Last modified: Mar 1, 1995<P>
+<ADDRESS>Martin M&uuml;ller, mueller@inf.ethz.ch</ADDRESS>
+
+</BODY>
+
+<!-- Mirrored from red-bean.com/sgf/ff1_3/ff3.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 30 Jun 2026 15:27:56 GMT -->
+</HTML>

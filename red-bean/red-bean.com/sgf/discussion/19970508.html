@@ -1,0 +1,44 @@
+Date: Thu, 8 May 1997 03:33:51 -0400
+From: Jens Yllman <jens.yllman@mailbox.swipnet.se>
+Subject: Re: linebreaks...
+
+At 21.28 1997-05-07 -0400, you wrote:
+>Jens Yllman wrote:
+>> 
+>>  Hello.
+>> 
+>>  I read in the description of the diffrent propertyvalues that in 'Text'
+>> type linebreaks should be LF only. Does this apply to the whole SGF file? I
+>> think that we should not specify this. I think the programs should be able
+>> to handle LF or LFCR or CR. That way users can still read the SGF file in
+>> their favorite text editor. One more thing. In the 'Text' type text it says
+>> that LF equals \n in C. That is NOT true. On UNIX systems yes. But on
+>> MS-DOS/MS-Windows \n equals LFCR.
+>
+>   The original statement was correct.  In C, \n is *ALWAYS* just a LF.  It
+>has to be.  Saying:
+>
+>  char c = '\n';
+>
+>wouldn't work if \n was two characters!
+>   That being said, I propose that "\n" (newline) be a newline, and "\r"
+>(carriage return) be whitespace.  I know of no systems that use *just* "\r"
+>for new line.  Unix uses "\n", and DOS/Windows usually uses "\n\r" or some
+>such.  Making \r whitespace doesn't seem to cause any trouble, so why not?
+>-- 
+>				-Bill (wms@hevanet.com)
+>				 http://www.hevanet.com/wms/
+>
+>
+
+ OK, it's true that '\n' is always just LF when you put it into char. But
+when you work with text streams and with strings it depends on what system
+you have. '\r' is the line break on Macintosh. Making this system depenency
+transperent to your program is very simple.
+
+ BTW: I've not tried the latest version of CGOBAN. So I can not verify that
+the fileselections work for me now. But I'll probably try this on monday.
+
+ Jens Yllman
+
+

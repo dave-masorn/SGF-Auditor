@@ -1,0 +1,182 @@
+<HTML lang="en">
+
+<!-- Mirrored from red-bean.com/sgf/ff1_3/style.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 30 Jun 2026 15:27:56 GMT -->
+<HEAD><TITLE>Smart Game Format Style Guide</TITLE>
+    <link rel="stylesheet" href="../main.css">
+</HEAD>
+
+<BODY>
+<A HREF="../index-2.html"><IMG SRC="../images/head.png" ALT="[SGF FF[4] - Smart Game Format]"
+ BORDER=0></A>
+
+<H1><EM>Draft:</EM> SGF Style Guide (FF[3])</H1>
+The goal of this guide is to provide a uniform look and feel 
+for building game collections.
+If you have any suggestions or comments, please mail me:
+<EM><A HREF="mailto:mueller@inf.ethz.ch">mueller@inf.ethz.ch</A></EM>
+
+<H2>Game tree structure</H2>
+
+<H3>The first branch is the main branch!</H3>
+The first (leftmost) branch of the game tree should always be the real
+game. Variations should go into other branches.
+<H5>Example</H5>
+
+Correct: The game comes first
+<pre>
+(
+(;B[cb];N[The game]W[db];B[bd])
+(;B[ec]N[Diagram 1];W[cb])
+)
+</pre>
+Wrong: the variation comes first, the game is in the side branch
+<pre>
+(
+(;B[ec]N[Diagram 1];W[cb])
+(;B[cb];N[The game]W[db];B[bd])
+)
+</pre>
+<H5>Comments</H5>
+Comment Antoine de Maricourt:
+<br>
+Good !
+
+
+<H3>Cleaning up</H3>
+Omit extra pass plays and empty nodes at the end of the game. The last node
+of the game should contain the last move on the board. Do not put game
+information such as 
+'Black wins and connects Ko' into the comment field, rather add another move 
+to the game which connects the Ko. In this case, two consecutive moves by 
+the same color should be used, rather than a 'capture Ko, Pass, Connect'
+sequence. Pass plays which are in the game record and followed by
+non-pass plays should be given.
+
+
+<H3>Differences between current SGF viewers</H3>
+A good summary can be found in Bill Hosken's  
+<A HREF="http://www.iicm.edu/GTL/text/sgf">documentation</A>
+on the teaching ladder.
+
+<H3>Move and Setup properties</H3>
+Do not mix move and setup properties in the same node. 
+A setup property indicates
+a radical change in the board position. If a move suffices, use a move.
+<p>
+Setup props will rarely be used after moves have already been played, except
+for a 'what-if' type of analysis (see below).
+The usual usage will be:
+<ul>
+<li> Maybe some empty nodes, e.g. to organize a problem collection
+<li> A setup node with AddBlack and AddWhite properties
+<li> Moves starting from the setup position
+</ul>
+Especially, the AddEmpty property will rarely be used.
+<p>
+Antoine de Maricourt mentions one possibility:
+<ul>
+<li> variation diagrams, i.e. something like 'what if black stone were
+   there instead of there' 
+</ul>
+
+
+<H3>Variations and alternative moves</H3>
+There are many ways to <strong>display</strong> variations on the screen.
+You can show alternatives to the current move, or different follow-up moves.
+There is only one way, however, to <strong>store</strong> variations 
+in an SGF file: use the 
+<A HREF="ff1.html#Tree">tree structure</A>.
+<H4>Put alternative moves at the same tree level</H4> 
+Some popular SGF viewers 
+seem to do the following: To show alternatives to the current move,
+they add a child node (i.e. a follow-up move), remove the current move by
+using an AddEmpty[] property and put the other move into the node.
+<H5>Example</H5>
+
+Correct: Both black moves are on the same level
+<pre>
+(
+(;B[cb];N[The game]W[db];B[bd])
+(;B[ec]N[Diagram 1];W[cb])
+)
+</pre>
+Wrong: the second black move is on the wrong tree level
+<pre>
+(
+B[cb]
+(;N[The game]W[db];B[bd])
+(;AE[cb]N[Diagram 1]B[ec];W[cb])
+)
+</pre>
+<H5>Comments</H5>
+Comment Antoine de Maricourt:
+<br>
+Right !
+
+<H2>Properties</H2>
+<H3>Date</H3>
+Please use the ISO-standard format "YYYY-MM-DD" for the date field.
+Dates in this format can be sorted alphanumerically. 
+Do not use other separators such as "/", " " or ".".
+For games that last more than one day, we recommend adding the other
+dates as follows:
+Use "YYYY-MM-DD,DD" if the month is the same.
+Use "YYYY-MM-DD,MM-DD" if the month is different, year is the same.
+Use "YYYY-MM-DD,YYYY-MM-DD" if the year is different.
+
+<H3>Result</H3>
+ Use "0" (zero) for a draw (jigo), "B+score" for a black win, 
+ and "W+score" for a white win, e.g. "B+2.5", "W+64". Use .5, not 1/2.
+ For half point results, the format "B+0.5", "W+0.5" is suggested.
+ <br>
+ Use
+ "B+R" and "W+R" for a win by resignation. Please do not write 
+ "Black resigns", as a sorting algorithm may think Black is the winner.
+ Use "B+T" and "W+T" for a win on time,
+ "B+F" and "W+F" for a win by forfait, "?" for unknown result.
+ 
+ 
+<H3>Event, ID, etc.: Identifying a game</H3>
+From Jan:
+<pre>
+The EV[] tag
+------------
+When exchanging pro games we could compile a list of "official"
+EV[] events. We can use the indices which I created for the WWW
+pages for the major Japanese titles to start with:
+When encoding a Tengen game, the appropriate entry for the EV[]
+key would be one of the entries in the list:
+
+        1st Tengen
+        2nd Tengen
+        ...
+        20th Tengen
+
+Other titles similarly.
+
+The ID[] tag
+------------
+I like the way you used it, although I would add the century to it.
+Another story is the league games. How to classify them? I have no
+idea (yet).
+
+</pre>
+
+Comment MM: I used 'YY/Round' as an ID tag. For some leagues (Honinbo, Meijin)
+there is a
+canonical number (as in Kido yearbook), so the ID might be YYYY/L/number,
+with the L indicating the league. For other tournaments,
+sort by some canonical order? E.g. date, black placer, white player.
+
+<H3>Spelling</H3>
+ Names, events, and
+places should be spelled consistently in all games.<p>
+**** Use canonical spelling page on WWW, Jan?
+
+<HR>
+Last modified: Mar 9, 1995<P>
+<ADDRESS>Martin M&uuml;ller, mueller@inf.ethz.ch</ADDRESS>
+</BODY>
+
+<!-- Mirrored from red-bean.com/sgf/ff1_3/style.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 30 Jun 2026 15:27:56 GMT -->
+</HTML>

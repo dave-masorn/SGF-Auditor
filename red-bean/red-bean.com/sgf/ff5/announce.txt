@@ -1,0 +1,88 @@
+From: Arno Hollosi <ahollosi@iicm.tu-graz.ac.at>
+To: sgf-std@onelist.com
+Subject: [sgf-std] ** SGF FF[5] **
+
+Hi,
+
+the results of the CFV are: 7 votes for FF[5], 0 votes against.
+Therefore we start discussing FF[5]. I'll post an announcement to
+rec.games.go as well. The following issues should be discussed
+(suggestions by voters):
+
+
+Main issues for FF[5] 
+=====================
+
+- well defined, consistent property sets (shells, packages)
+
+- gameinfo properties: support for uncovered cases (e.g. team players,
+  period of time), listing of other people involved in game (referees,
+  time keeper, ...), allowing SimpleText after the mandatory part
+  (to give a better description)
+
+- supporting multiple languages: definitions for charset and encoding,
+  way to include multiple languages into property values
+
+- timing properties: computer-readable form of byo-yomi which covers
+  all major professional tournaments, TimeLapsed for realtime replay
+  of games, rest time (lunch break?), defining measurement unit.
+
+- provide properties necessary for Nihon Kiin
+
+
+Other suggestions
+=================
+
+- Introducing XML (or HTML) into C[] property
+
+- Marking final move of game with property (FN[])
+
+- Orientation of board (upside down, turning clockwise, ...)
+
+- points discussed in this mailing list during the past two weeks.
+
+
+
+Note on compatibility
+=====================
+
+If absolutely necessary we could introduce some incompatibilities to
+previous versions of SGF. However, the most common properties have
+to remain the same, i.e. redefining B[], W[], or similar properties
+is out of question. Regarding game-info properties this propblem
+isn't as severe, as most values are SimpleText anyway, and most
+programs don't enforce a strict format.
+
+Basically this means, that we could clean up some seldom used
+properties and define well-behaved property sets instead.
+
+
+Note about mailing list
+-----------------------
+
+You can switch to Digest Mode, if you'd like to receive only one
+email per day (which contains all list-emails sent the previous day).
+For those who don't want to get flooded by SGF mails :o)
+Just go to: http://www.onelist.com click on "User Center" on the left,
+log in, and click on "Digest", then "Change".
+
+
+
+I suggest that those participating in the discussion should go through
+the FF[4] specification again, and through the emails sent to this list.
+
+
+We're moving forward!
+Happy discussion :o)
+
+/Arno
+
+------------------------------------------------------------------------
+To unsubscribe from this mailing list, or to change your subscription
+to digest, go to the ONElist web site, at http://www.onelist.com and
+select the User Center link from the menu bar on the left.
+------------------------------------------------------------------------
+SGF spec: http://www.sbox.tu-graz.ac.at/home/h/hollosi/sgf/
+Moderator: Arno Hollosi <ahollosi@iicm.edu>
+
+

@@ -1,0 +1,61 @@
+Date: Wed, 23 Apr 1997 15:29:27 +0200 (MET DST)
+From: Arno Hollosi <hollosi@sbox.tu-graz.ac.at>
+Subject: SGF - request for final comments
+
+
+Hello folks,
+
+I'm planning to bring the discussion to an end, i.e.
+I want to upload one more version (V10) and then make
+it the official FF[4] SGF standard.
+
+So email your final comments to sgf_std!
+Note: please don't bring up topics that we've discussed AND solved
+in the past.
+
+What has to be changed for version 10?
+
+- remove BO & WO
+  There are so many different byo-yomi systems out there that
+  these properties are no good at all
+
+- I intend to keep SQ (Anders supposed using SC)
+
+- Should we allow text in between game-trees?
+  David misunderstood me last time, so let me make it more clear:
+  An SGF file consists of exactly ONE collection which consists
+  of one or more game-trees.
+  The standard allows text in front of the collection.
+  I want to add allowing text after the collection plus text
+  in between game-trees which are direct decents of the collection,
+  i.e. in between games but not in between variations.
+  Why?
+  Because applications have to skip text there anyway to find
+  out if another game-tree follows or if the end of file is
+  reached. Applications may even use the same FindTreeStart()
+  function they use for finding the start of the collection.
+  Otherwise apps would have to complain about every signature
+  they find at the end of a file sent via email.
+  Opinions?
+
+- I want to add DS (Diagram spec) and modify FG for applications which
+  are used to print diagrams.
+  FG: current value: none
+      should have: (composition of number : simpletext)|none
+      Where number contains some flags (any ideas?)
+      and simpletext contains a title for the diagram.
+  DS: value: number
+      0 ... use move numbers
+      1 ... use 'modulo 100' numbers as known from books/mags
+      2 ... don't number moves
+      any DS setting is valid until another DS value is set or
+      another figure (FG) starts - DS is only valid for the
+      current variation.
+  Opinions?
+ 
+
+That's all what comes to my mind right now.
+
+Comments, criticism etc. welcome
+/Arno
+

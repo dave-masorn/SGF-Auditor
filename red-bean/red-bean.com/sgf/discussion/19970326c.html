@@ -1,0 +1,58 @@
+Date: Wed, 26 Mar 1997 14:34:16 -0500
+From: Robert Jasiek <jasiek@berlin.snafu.de>
+Subject: Re: Why we need FF[4] [Was: SGF - some answers] 
+
+> The pass move is the biggest issue for me forcing me to write FF[3], but
+> there are others like: enforcing the format of game info properties,
+> arrows and lines, and the fact that we don't have a final spec and I
+> am finishing my sgf code this week.
+
+The last point is important, but finally (after a year or so) you will
+probably update your program and then use the new specification. AR and LN
+are no problem, you just ignore and do not use them. Do you intend to 
+continue [tt] even after your next program revision? Else Anders' compromise
+could be used. What exactly are the differences concerning the format of
+game info properties, why can you not use FF[4] for them? (I am not familiar 
+with Ishi-press conversion trouble.)
+
+> I decided to read all triples, but convert them to comments.  MFGO's editor
+> won't allow you to set a triple, and it won't write triples.  This avoids
+> the cryptic symbols, and is easy to convert to Ishi format.
+
+This is reasonable.
+
+> Please lets not have the metalanguage argument again.  I guess I can see
+> that Europeans want language independent symbols, and automatic (even if
+> bad) translation for multipl languages.  But my product is English, or
+> will be localized separately to each European language.  I'd rather give the
+> user clear, correct text in his/her native language, than force him to
+> learn some symbology (like the difference between !? and ?!).
+> -David
+
+Sorry, you have not understood the ML concept. Maybe you stopped reading
+when the discussion was about cryptic symbols. Now there are none. An ML
+property does not create problems for you. You may simply ignore it. Or
+you may treat it like triples and output the text as C text. You do not
+need user input, user interface, or even translation. This may be left
+for other viewers. Any ML text should be stored in English. Even if not
+there is no difference to foreign language in a C property. ML is not
+worse than a triple or often a C text which do not use good English, 
+either.
+
+I would like to hear your opinions:
+- Who needs the doubles' properties?
+- Who cannot tolerate an additional ML property (using text as property   
+  value) by just skipping it?
+- Who likes ML to replace or complete the doubles?
+
+ML can be included in the property list for two years to see whether it is
+used. No one needs to care for handling of ML text other than simple
+skipping or C text conversion. I do not mind to write a user guide for
+interested programmers about advanced text handling. BTW, ML replacing
+the doubles would abandon all their trouble and greatly simplify the
+property specification list.
+
+-- Robert Jasiek   jasiek@berlin.snafu.de
+
+
+

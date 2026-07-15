@@ -1,0 +1,57 @@
+Date: Thu, 24 Apr 1997 15:13:33 +0200 (MET DST)
+From: Arno Hollosi <hollosi@sbox.tu-graz.ac.at>
+Subject: Re: SGF - request for final comments 
+
+
+
+David Fotland writes:
+
+> There are many fields that are more tightly spec'ed for format in FF[4]
+> than before (ISO date, results, etc).  I've looked at what's out there
+> in sgf files and I don't plan to write code to parse and convert it to
+> the standard format.  It's a lot of work, and frankly, it makes the 
+> data less readable for the users.  I also don't plan to move this text
+> to the game comment field.  I think the users would like to see the result
+> in the same place for all game records.
+
+Note: FF[3] already recommended using these formats.
+
+I think it's crucial to specify DT & RE (and others) tightly.
+
+Because in big game archives it's important that you can use tools
+that can automatically check the date or the result (for sorting,
+searching etc.)
+
+With results like RE[Black resigns] or RE[John wins] (and PB[John])
+this cannot be done.
+Same goes for dates in non ISO way, e.g. MM-DD-YYYYY or even writing
+DT[a nice sunny afternoon on the sixth of April 1996]
+
+ISO dates may not be standard in America, but it isn't hard to write
+a function that transforms ISO dates into a nice string (doens't have
+ANSI lib such a function?) which can be used for displaying.
+
+It's just like TM, BL, WL, KM or HA.
+Do you really display 'B has 375 seconds left'?
+Or don't you do a simple calculation and print 'Black time left: 6:15'?
+How should an app calculate the score if the komi is given as
+KM[five and a half points]?
+
+SGF is used world wide. Applications may transform the values into
+(language dependent) strings for presentation.
+But this is only possible if the value is tighlty specified.
+Same is true for tools used for maintaining large SGF archives.
+
+> So, my question is:  since I will be writing files that do not conform
+> to the spec, can I still put FF[4] in them?  I also don't plan to check
+
+Well, I guess there will be incorrect FF[4] files anyway, but writing them
+delibaretly is no good idea.
+
+I don't understand why you don't want to move bad values to the GC field.
+Well, you would have to write some code to check if values are correct,
+but that can't be the reason?
+If yes, use my code written for the SGF Syntax Checker & Converter.
+
+/Arno
+

@@ -1,0 +1,83 @@
+Date: Mon, 28 Oct 1996 17:47:36 +0100 (MET)
+From: Arno Hollosi <hollosi@sbox.tu-graz.ac.at>
+Subject: SGF FF[4] - version 5
+
+
+Changes since version 4:
+
+- DM & UC are no longer setup properties. They are now in the same
+  class as GB & GW.
+
+- New game code: GM[9] == "Lines of Action"
+  as requested by Dave Dyer
+
+- Text formatting:
+
+  Soft line breaks: linebreaks preceeded by a '\'
+		    (should be converted to space)
+  Hard line breaks: any other linebreaks encountered
+
+  This may look inconsistent with the definition of '\' (as Adrian 
+  pointed out) but:
+  * it's compatible with FF[3]
+  * one way to look at it is that '\' deprives the linebreak of its
+    special function and thus gets inserted verbatim (and all WhiteSpace
+    are converted to Space)
+
+- AP property
+  Type changed to: composition of simpletext ':' simpletext
+  Thus the version number may be of any kind.
+
+  Restriction:
+  > The version number itself may be of any kind, but the format
+  > used must ensure that by using an ordinary string-compare,
+  > one is able to tell if the version is lower or higher
+  > than another version number.
+
+- added two new properties: VW (view) & DD (dimmed stones)
+  both were either requested or already discussed at a very early stage
+  of FF[4] (see Martin's pages).
+  I chose VW instead of HN as VW seems more flexible.
+  Of course we can change this, if the discussion shows that my 
+  inital choice is bad.
+
+- VW & DD have a new property attribute called: inherit
+  I.e. the settings by VW&DD are inherited by any subsequent child nodes
+  until a new setting is encountered or the setting gets cleared.
+
+
+Once again I ask for help with the following points:
+
+- computer type properties
+  I think we should include a short list in the standard, so that
+  if one chooses a name for a private property he doesn't use a reserved
+  name or that programmers at least get an idea of which properties exist.
+
+- allow junk in between game trees?
+  Well basically if one writes an error tolerant reader one has to do this
+  anyway, but should we include it in the standard?
+
+- the draft doesn't include anything about other games than Go.
+  If you know coders or people who use SGF for Chess, Othello, Gomuku,
+  Chinese chess, Shogi etc. please ask them to join the list and to
+  write a short spec of the game-dependent properties and types.
+
+- writing a 'practical' user guide for editing SGF files.
+  From differences between a move, a setup-stone and a node to
+  style guide questions: e.g. when to use MA[], when to use CR[]
+  But I can't do this alone - help and suggestions appreciated.
+  The guide should be public domain, so that every SGF-application may
+  include the guide in its distribution.
+
+  ^^^ This is an IMPORTANT point.
+      If users know what SGF is about, they will
+      a) produce nicer looking SGF files
+      b) stylistic better files
+      c) less errornous files (in case the editor allows generating
+                               buggy files)
+
+
+That's it for now
+
+/Arno
+

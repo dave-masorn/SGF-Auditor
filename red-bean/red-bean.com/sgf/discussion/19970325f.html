@@ -1,0 +1,87 @@
+Date: Tue, 25 Mar 1997 21:12:38 -0500
+From: Robert Jasiek <jasiek@berlin.snafu.de>
+Subject: Re: Why we need FF[4] [Was: SGF - some answers]
+
+> Suggestion for DG (diagram) property:
+> -Move numbers are not shown for moves before DG node. This
+>  is true for all nodes after DG node.
+> -Move number of next move is range 1-100, that is if next move
+>  would otherwise be 234, it is changed to 34 (almost modulo 100).
+> Lauri
+
+This might be helpful for some viewers. But it needs more careful 
+specification, because it is also reasonable to use other handlings
+(like no DG use, or show big numbers like 234). Consider absolute and
+relative numbers.
+
+>I expect that any FF[4] viewer will continue to read FF[3] files, so by
+>writing FF[3], I can still be compatible with new viewers.
+>[david]
+
+It would be very useful if all viewers would write FF[4]. If you care
+for compability, then you might write simple FF[4], i.e. not using
+complicated FF[4] features. Thereby FF[3] is simulated. Not too many
+problems remain. (I am a little confused which do remain, maybe someone
+could give a good list.) The pass move seems to be one of them. I think
+if FF[4] contains [] pass, we all should use it instead of creating
+different file styles forever. Could you accept these fundamental matters
+or do we need another agreement for maintaining compability? Viewers may
+(and should) detect old style, but write new style. The same applies
+for ST. We should agree on one style. (Of course, implementation of the
+new may take some time, say a year.)
+
+> I'll also try to encourage IGS/NNGS to start writing FF[4] files, once
+> the standard is released.
+
+Agree.
+
+>Third, the triples for describing the position are confusing.  For example
+>[...]
+>from FF[4].  Altogether, I count 9 different triples that I could see
+>in files (DM, UC, GB, GW, BM, CH, TE, DO, IT), and from my readings of
+>the various specs, only 2 of them (GB and GW) exist in all versions of
+>the spec.  Does anyone have any recommendation for which ones MFGO should
+>support?  I'm tempted to read them all, convert them to commentary text,
+>and not allow the user to edit them.  I would not generate them into an
+>output file.
+>
+>Do people find these generally useful?  I'd guess not since the definition
+>changes so often.  Is it legal to have several of these in the same node?
+>Martin's spec implies yes, but FF[4] says no.  Has anyone seen files
+>with multiple triples in the same node?
+
+Obviously, there are too many properties for the same purpose: Giving a
+short standard comment. If they have not been excessively used in the past,
+it is not too late to use a single property. It is a special case of
+meta language, so let's call it ML. Examples:
+ML[interesting]
+ML[very interesting]
+ML[doubtful]
+etc.
+Compositions are possible:
+ML[interesting:good for black]
+
+Any viewer can read any term and offer a restricted (or even empty) set for 
+user input. If ML is not just ignored, an output as C text is possible.
+Foreign language viewers can optionally offer foreign language terms at
+the user interface and store everything in English (ideally).
+Example:
+A Japanese user who does not know English selects "kikashi" (or even
+Japanese symbols with its meaning) and ML[forcing move] is stored.
+
+Advanced comments (with free optional translation by a user interface)
+are no problem: Example:
+ML[A:better than:B] where A, B are marks on the board and could denote
+variations.
+
+
+
+
+
+--
+Robert Jasiek
+jasiek@berlin.snafu.de
+http://www.inx.de/~jasiek/
+---
+
+

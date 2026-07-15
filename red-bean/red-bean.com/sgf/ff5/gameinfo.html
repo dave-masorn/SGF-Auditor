@@ -1,0 +1,150 @@
+<HTML lang="en">
+
+<!-- Mirrored from red-bean.com/sgf/ff5/gameinfo.htm by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 30 Jun 2026 15:27:57 GMT -->
+<HEAD><TITLE>SGF FF[5] - Game info</TITLE>
+	<link rel="stylesheet" href="../main.css">
+</HEAD>
+<BODY>
+<TABLE CELLPADDING=5><TR>
+<TD class="blue"><A HREF="ff5.html"><FONT COLOR=WHITE SIZE=-1><B>SGF file format FF[5]</B></FONT></A>
+<TD>last updated: 1999-03-01
+</TABLE>
+
+<H1>Root and Game Info Properties</H1>
+
+FF[5] will have some substantial changes to game info properties.
+<BR>Note: Updates to HA, EV, and others will follow.
+
+
+<PRE>
+<A NAME="CA"><B>Property:</B>	CA</A>
+<B>Propvalue:</B>	(<A HREF="../sgf4.html#simpletext">simpletext</A> | composed simpletext ":" simpletext)
+<B>Propertytype:</B>	root
+<B>Function:</B>	Provides the used charset and (optional) its encoding
+		for SimpleText and Text type. The first part is the name of
+		the charset. Default value is 'ISO-8859-1' aka 'Latin1'.
+		The second optional name is the type of encoding used.
+		Default value is none.
+		Only charset names (or their aliases) as specified in RFC 1345
+		(or updates thereof) are allowed.
+		Basically this field uses the same names as MIME messages in
+		their 'charset=' field (in Content-Type).
+		RFC's can be obtained via FTP from <A HREF="ftp://ds.internic.net/rfc/">DS.INTERNIC.NET</A>, <A HREF="ftp://nis.nsf.net/internet/documents/rfc">NIS.NSF.NET</A>,
+		<A HREF="ftp://wuarchive.wustl.edu/info/rfc">WUARCHIVE.WUSTL.EDU</A>, <A HREF="ftp://src.doc.ic.ac.uk/rfc">SRC.DOC.IC.AC.UK</A> or <A HREF="ftp://ftp.imag.fr/pub/archive/IETF/rfc">FTP.IMAG.FR</A>.
+
+
+<A NAME="BR"><B>Property:</B>	BR</A>  (same for WR)
+<B>Propvalue:</B>	<A HREF="../sgf4.html#simpletext">simpletext</A>
+<B>Propertytype:</B>	game-info
+<B>Function:</B>	Provides the rank of the black player.
+		For Go (GM[1]) the following format is recommended:
+		"..k" or "..kyu" for kyu ranks and
+		"..d" or "..dan" for dan ranks.
+		Go servers may want to add '?' for an uncertain rating and
+		'*' for an established rating. Furthermore, a string might
+		be added to describe the rating in more detail.
+		Examples:
+		BR[9 dan]	  BR[4d*, IGS]
+	        BR[3 kyu, AGA]    BR[9 dan, Judan, Gosei]
+
+<A NAME="DT"><B>Property:</B>	DT</A>
+<B>Propvalue:</B>	(<A HREF="../sgf4.html#simpletext">simpletext</A> | composed simpletext ":" simpletext)
+<B>Propertytype:</B>	game-info
+<B>Function:</B>	Provides the date when the game was played.
+		The first field gives the date in ISO format (Gregorian
+		calender), the second (optional) value can be used for
+		additional information, or to store dates which don't fit into
+		the Gregorian scheme, e.g. ancient dates given as era years.
+		It is MANDATORY to use the ISO-standard format for the first
+		value. ISO format implies usage of the Gregorian calender.
+		If the ISO date can't be specified it should be left empty.
+		Syntax:
+		"YYYY-MM-DD" year (4 digits), month (2 digits), day (2 digits)
+		Do not use other separators such as "/", " ", "," or ".".
+		Partial dates are allowed:
+		"YYYY" - game was played in YYYY
+		"YYYY-MM" - game was played in YYYY, month MM
+		For games that last more than one day: separate other dates
+		by a comma (no spaces!).
+		For games that were played over a period of time: specify
+		start date and end date separated by a "~"
+		Following shortcuts may be used:
+		"MM-DD" - if preceeded by YYYY-MM-DD, YYYY-MM, MM-DD, MM or DD
+		"MM" - if preceeded by YYYY-MM or MM
+		"DD" - if preceeded by YYYY-MM-DD, MM-DD or DD
+		Shortcuts aquire the last preceeding YYYY and MM (if necessary).
+		Note: interpretation is done from left to right.
+		Examples:
+			1996-05,06 = played in May,June 1996
+			1996-05-06,07,08 = played on 6th,7th,8th May 1996
+			1996,1997 = played in 1996 and 1997
+			1996-10-12~11-01 = played from 12th October
+			until 1st November
+			1996-12-27,28,1997-01-03~07 = played on 27th,28th
+			of December 1996 and from 3rd to 7th Januray 1997
+		Note: it's recommended to use shortcuts whenever possible,
+		e.g. 1997-05-05,06 instead of 1997-05-05,1997-05-06
+		Note: If a game lasted only two days, then the "~" should
+		not be used.
+
+		Examples for second value:
+		DT[1934:spring] ... played in Spring 1934
+		DT[1845-03-03,04:played nonstop through the night]
+		DT[1844-04-15:Tenpo 15-II-28]
+		DT[:early Qing era]
+
+<A NAME="PC"><B>Property:</B>	PC</A>
+<B>Propvalue:</B>	<A HREF="../sgf4.html#simpletext">simpletext</A>
+<B>Propertytype:</B>	game-info
+<B>Function:</B>	Provides the place where the games was played. It is
+			recommended to describe the place with increasing
+			detail from left to right. If the country is listed,
+			then using ISO-3166 abbreviations is recommended.
+			Examples:
+			PC[NL,Amsterdam]
+			PC[JP,Tokyo,Fujiyama Hot Spring Resort Hotel]
+
+<A NAME="RE"><B>Property:</B>	RE</A>
+<B>Propvalue:</B>	(<A HREF="../sgf4.html#simpletext">simpletext</A> | composed simpletext ":" simpletext)
+<B>Propertytype:</B>	game-info
+<B>Function:</B>	Provides the result of the game. The first value
+		gives the result in machine-readable form, the second value
+		is additional unformated information. It is MANDATORY to use
+		the following format for the first value:
+		<I>"0"</I> (zero) or <I>"Draw"</I> for a draw (jigo)
+		<I>Color "+" ["score"]</I> for a win by one player
+		    Score is optional (some games don't have a score,
+		    e.g. chess). If the score is given it has to be given
+		    as a real value, e.g. "B+0.5", "W+64", "B+12.5"
+		<I>Color "+Resign"</I> or <I>Color "+R"</I> for a win by
+		    resignation. Applications must not write "Black resigns".
+		<I>Color "+Time"</I> or <I>Color "+T"</I> for a win on time
+		<I>Color "+Forfeit"</I> or <I>Color "+F"</I> for a win by
+		forfeit
+		<I>"A+"</I> for a win for all players
+		<I>"A-"</I> for a loss for all players
+		<I>"M+"</I> for multi-player games, where more than one player
+		    wins. Details should be given in free text.
+		<I>"Void"</I> for no result
+		<I>"Unfinished"</I> for suspended and unfinished games
+		<I>"?"</I> for an unknown result
+
+<A NAME="RO"><B>Property:</B>	RO</A>
+<B>Propvalue:</B>	<A HREF="../sgf4.html#simpletext">simpletext</A>
+<B>Propertytype:</B>	game-info
+<B>Function:</B>	Provides round-number and type of round. Following
+		format is recommended: RO[number,type,misc]
+		number ... number of round
+		type   ... playoff, league, preliminary, etc.
+			   Type may be omitted in title matches, e.g. RO[2]
+		misc   ... optional additional info, e.g. on which board the
+			   game was played (in team matches)
+		Examples: RO[2,league]  ... 2nd round of the league
+			  RO[2,preliminary,board 3] ... 2nd round of
+			  preliminary stage, board 3 (team match)
+</PRE>
+
+</BODY>
+
+<!-- Mirrored from red-bean.com/sgf/ff5/gameinfo.htm by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 30 Jun 2026 15:27:57 GMT -->
+</HTML>

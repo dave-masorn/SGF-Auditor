@@ -1,0 +1,164 @@
+<!-- =============================================================
+	sgfml: Smart Game Format - XML DTD
+	V0.01 *draft*
+     =============================================================
+
+	Arno Hollosi, ahollosi@mail.com
+
+	Published as OpenContent
+	OpenContent Licence: http://www.opencontent.org/opl
+
+     ============================================================= -->
+
+
+<!-- Elementary entities ========================================= -->
+
+<!ENTITY lt     "&#38;#60;">
+<!ENTITY gt     "&#62;">
+<!ENTITY amp    "&#38;#38;">
+<!ENTITY apos   "&#39;">
+<!ENTITY quot   "&#34;">
+
+
+<!-- Node structure ============================================== -->
+
+<!ELEMENT sgfml ( (header)?, (game)+ )>
+<!ATTLIST sgfml
+	version CDATA #REQUIRED
+>
+<!ELEMENT game ( (header)?, sequence )>
+<!ATTLIST game
+	type (GO|CHESS|GOMUKU|LOA|HEX|AMAZONS) #REQUIRED
+>
+<!ELEMENT sequence ( (node)+, (sequence)* )>
+
+<!-- fixme: ANY is sloppy -->
+<!ELEMENT node ANY>
+<!ELEMENT header ANY>
+
+
+<!-- Header properties =========================================== -->
+
+<!ELEMENT board EMPTY>
+<!ATTLIST board
+	size CDATA #IMPLIED
+>
+<!ELEMENT application EMPTY>
+<!ATTLIST application
+	name CDATA #REQUIRED
+	version CDATA #REQUIRED
+>
+
+<!-- Properties ================================================== -->
+
+<!ELEMENT move EMPTY>
+<!ATTLIST move
+	side CDATA #REQUIRED
+	move CDATA #REQUIRED
+	number CDATA #IMPLIED
+	timeleft CDATA #IMPLIED
+	timeused CDATA #IMPLIED
+	annotate (VERYGOOD|GOOD|INTERESTING|DOUBTFUL|BAD|VERYBAD) #IMPLIED
+	who CDATA #IMPLIED
+>
+	<!-- who ... if more than one person per side -->
+
+<!ELEMENT point EMPTY>
+<!ATTLIST point
+	point CDATA #REQUIRED
+	label CDATA #IMPLIED
+>
+	<!-- label ... only in combination with markup -->
+
+<!ELEMENT stone EMPTY>
+<!ATTLIST stone
+	point CDATA #REQUIRED
+	side CDATA #REQUIRED
+	figure CDATA #IMPLIED
+>
+	<!-- figure ... for games with different figures -->
+
+<!ELEMENT setup ( (stone)+ )>
+<!ATTLIST setup
+	sidetoplay CDATA #IMPLIED
+>
+	
+<!ELEMENT comment (#PCDATA|br)* >
+<!ELEMENT title (#PCDATA)>
+<!ELEMENT br EMPTY>	<!-- linebreak -->
+
+<!ELEMENT annotate EMPTY>
+<!ATTLIST annotate
+	type (GOOD|BAD|EVENPOS|UNCLEARPOS|HOTSPOT) #REQUIRED
+	emphasis (NONE|YES) 'NONE'
+	side CDATA #IMPLIED
+>
+
+<!ELEMENT value (#PCDATA) >
+
+<!ELEMENT markup ( (point)+ )>
+<!ATTLIST markup
+	type (MARK|TRIANGLE|CIRCLE|RECTANGLE|VIEW|DIM|LABEL|TERRITORY) 'MARK'
+	side CDATA #IMPLIED
+>
+	<!-- side ... only for territory markup -->
+
+
+<!ELEMENT line ( (point, point)+ )>
+<!ATTLIST line
+	type (LINE|ARROW) 'LINE'
+>
+
+
+<!-- Game-Info properties ======================================== -->
+
+<!-- fixme: these are just dummy definitions -->
+
+<!ELEMENT event ( #PCDATA )>
+<!ELEMENT round ( #PCDATA )>
+<!ELEMENT place ( #PCDATA )>
+<!ELEMENT source ( #PCDATA )>
+<!ELEMENT copyright ( #PCDATA )>
+<!ELEMENT opening ( #PCDATA )>
+<!ELEMENT rules ( #PCDATA )>
+<!ELEMENT result ( #PCDATA )>
+<!ELEMENT time ( #PCDATA )>
+<!ELEMENT date ( #PCDATA )>
+<!ELEMENT komi ( #PCDATA )>
+<!ELEMENT handicap ( #PCDATA )>
+
+
+<!-- Properties for description of people ======================== -->
+
+<!ELEMENT people (name, (rating|contact)* )>
+<!ATTLIST people
+	role (PLAYER|ANNOTATOR|RECORDER) #REQUIRED
+	side CDATA #IMPLIED
+	team CDATA #IMPLIED
+>
+	<!-- team ... id of team -->
+
+<!ELEMENT name (#PCDATA) >
+<!ELEMENT rating (#PCDATA) >
+<!ATTLIST rating
+	body CDATA #IMPLIED
+>
+	<!-- body ... organization or place -->
+
+<!ELEMENT contact (#PCDATA) >
+<!ATTLIST contact
+	type (EMAIL|ADDRESS|PHONE) 'EMAIL'
+>
+
+<!ELEMENT team ( #PCDATA )>
+<!ATTLIST team
+	id CDATA #REQUIRED
+>
+
+
+<!-- Dummy property ============================================== -->
+
+<!ELEMENT property (#PCDATA) >
+<!ATTLIST property
+	name CDATA #REQUIRED
+>

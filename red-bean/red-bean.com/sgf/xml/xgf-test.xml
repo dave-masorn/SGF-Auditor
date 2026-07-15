@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XML Spy v4.3 U (http://www.xmlspy.com) by Arno Hollosi (CIO) -->
+
+<xgf:GameCollection xmlns:xgf="http://xmp.net/xgf/namespaces/xgf/20020407"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xmlns:xlink="http://www.w3.org/1999/xlink"
+                xsi:schemaLocation="http://xmp.net/xgf/namespaces/xgf/20020407 xgf.xsd
+                                    http://xmp.net/xgf/namespaces/igo/20020407 xgf-game-go.xsd">
+
+    <Game xmlns="http://xmp.net/xgf/namespaces/igo/20020407">
+        <GameInformation>
+            <BoardSize>19x19</BoardSize>
+			<GameName>this is a game</GameName>
+            <Komi>5.5</Komi>
+            <Result>unfinished</Result>
+        </GameInformation>
+
+        <GameTree>
+            <Black at="d17"/>
+            <White at="j20"/>
+            <Node>
+                <Black at="b19"><Annotation>very good</Annotation></Black>
+                <Comment>This is awesome.<br/>
+                Just like in <link xlink:href="http://game.com/awesome-game.xgf">this game</link>
+                </Comment>
+            </Node>
+            <Node>
+                <White at="p3"/>
+                <Comment>See variation instead.</Comment>
+                <Variation>
+                    <Node>
+                        <White at="p4"/>
+                        <Markup>
+                            <Mark with="square">
+                                <At>b10</At>
+                                <At>c11</At>
+                                <At>o8</At>
+                            </Mark>
+                        </Markup>
+                        <Comment>Now that looks much better than any of the other
+                        marked points.</Comment>
+                    </Node>
+                    <Black at="p5"/>
+                    <Node>
+                        <White at="pass"/>
+                        <Annotation>even</Annotation>
+                    </Node>
+                </Variation>
+            </Node>
+            <Node>
+                <Comment>The <b>game</b> continued here.</Comment>
+            </Node>
+        </GameTree>
+    </Game>
+
+</xgf:GameCollection>

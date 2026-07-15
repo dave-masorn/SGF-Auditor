@@ -1,0 +1,67 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML lang="en">
+
+<!-- Mirrored from red-bean.com/sgf/xml/ by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 30 Jun 2026 15:27:56 GMT -->
+<HEAD><TITLE>XGF - An XML Game Format</TITLE>
+    <link rel="stylesheet" href="../main.css">
+</HEAD>
+<BODY>
+<A HREF="../index-2.html"><IMG SRC="../images/head.png" ALT="[SGF FF[4] - Smart Game Format]" BORDER=0></A>
+
+<H1>XGF - An XML Game Format (obsolete)</H1>
+
+Here's a very early draft of XGF, an XML format for storing turn-based games.
+<p>
+<b>Please note:</b> this is a very early rough version. It is meant as a
+basis of discussion.
+<br><b>Do not use this in real applications!</b> The specification
+is not final and will change without notice!</p>
+
+<hr noshade>
+<p>XGF - version 0.1 - 2002-04-07</p>
+<dl>
+<dt><b>XGF spec</b>
+<dd><a href="xgf-spec-v0.1.zip">ZIP file</a> (ca. 100K)<BR>&nbsp;
+<dt><b>HTML doc</b>
+<dd><a href="html-doc/xgf.html">Outer frame</a>
+<dd><a href="html-doc/xgf-game-go.html">Game of Go + basic types</a> (>600K)
+<BR>&nbsp;
+<dt><b>Sample file</b>
+<dd><a href="xgf-test.xml">xgf-test.xml</a> (simplistic nonsense example,
+just to give you the basic idea)
+</dl>
+<hr noshade>
+
+<p>Some points worth mentioning:</p>
+<ul>
+<li>Many functionality is still missing, especially layout information
+similar to DG (Diagram) in SGF.
+<li>Link concept not final yet (links in comments and from markup there,
+but links inside game tree missing)
+<li>The structure tries to keep balance between human readability and
+machine readability. It therefore makes extensive use of substitution
+groups (a technique that's not too common otherwise). The current way of moving
+all core markup (e.g. tree structure) into the game specific namespace is also
+a result of this. I'm not 100% sure that this is a sensible choice.
+</ul>
+
+<p>As for the file format: I reckon it might be a good idea to
+compress XGF files into ZIP files. Not only does this take less
+disk space, but also could other related files be
+included (e.g. images for players).</p>
+
+<hr noshade>
+
+<P><B>Note:</B> Previously on this page there was another attempt of mine to
+create an XML file format. It was called <a href="sgfml/index.html">SGFML</a>. I keep
+it around for historic purposes. It is no longer maintained.
+</P>
+
+<hr noshade>
+
+<P>Comments, proposals, criticism welcome.
+<BR>
+Arno, <A HREF="mailto:ahollosi@xmp.net">&lt;ahollosi@xmp.net></A>
+</BODY>
+<!-- Mirrored from red-bean.com/sgf/xml/ by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 30 Jun 2026 15:27:56 GMT -->
+</HTML>

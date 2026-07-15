@@ -1,0 +1,112 @@
+Date: Tue, 10 Jun 1997 12:13:01 +0200 (MET DST)
+From: Arno Hollosi <hollosi@sbox.tu-graz.ac.at>
+Subject: Re: SGF complaints
+
+
+> Having just finished a major SGF viewer (Jago), I am now studying the FF[4]
+> standards to make get my program in line. After first sight, I have several
+> complains about these standards.
+
+Well, you're a little bit late.
+Why didn't you participate in the discussion before the standard was released?
+
+
+> Most of my complains are due to my design decision to use the SGF format as
+> an internal format to hold the game tree. But this is effectively prevented
+> by the structure of the format. So I will have either to rewrite the code
+> and filter on input and output, or to hack around with internal tags.
+
+I don't think that this is true. See below.
+
+> The M tag is supported and used by each and every viewer I know. Most won't
+> even recognize the MA replacement (which should rather be the SQ
+> replacement). Taking it out of the standard is an annoyance. There must be
+> very good excuses to create that much incompatibility.
+> The same applies to the L tag. I see that the LB tag is better in many ways.
+
+M has been replaced by MA/TR in FF[3] already! Same for L/LB.
+MA/TR/LB are not new to FF[4] - I don't know where you did get your 
+original SGF spec (supplied with mgt?).
+
+An application should be able to handle the old tags when reading in a file, 
+but it should save only the new ones - if you think you can't handle this 
+then write FF[1] files as L was illegal in FF[3] too.
+
+> AB, AW and AE are not revertable. Thus you cannot play a tree upwards with
+
+Pardon? What does not revertable mean?
+I coded a SGF editor myself - and well it's not as easy as stepping 
+forward through the tree, but stepping backwards isn't too difficult either.
+
+> known end position but must record the true meaning of AB, AW and especially
+> AE. I suggest to allow AB and AW only on empty positions, and replace AE by
+> CB (clear black) and CW (clear white) or something else available.
+
+No way.
+You may do this internally of course - but not when exporting the SGF file.
+
+> This suggestion would clearly cause incompatibilities too. But in this case,
+
+That's why.
+
+> The SGF checker SGFC complains about splitted AE commands. Though this
+
+Do you mean two AE properties within one node?
+That's illegal - list one good example why this should be done.
+
+> should be applied as they appear. Any viewer can warn the user about
+> redundand addings and removals or such. 
+
+Redundand addings and removals are just bad style - not errors.
+SGFC prints warnings not errors - a subtle difference.
+
+> Moreover, there is still no predefined order for AE and AB/AW.
+
+There's no need for it, as AE/AB/AW on the same positions are illegal!
+Why should that be done? Give me an example?
+
+> Comments are defined to come in lines, which can be wrapped around by the
+> viewer. Since most viewers have a tiny space for comments, this is an empty
+> definition, which no viewer can cope with satisfyingly.
+
+We had a long discussion about the text format. We finally came to this 
+conclusion.
+
+> Rather comments should come in paragraphs (consisting of words separated by
+> a single blank) separated by empty lines in the file. Paragraphs should be
+> reformatted by the viewer and optionally separated by empty lines in case,
+> the viewer cannot distinguish hard and soft line breaks (as Java). 
+
+A paragraph can be stored in ONE long line as well, or am I mistaken?
+
+If you fear that this line gets splitted due to mailing/posting, then 
+use soft linebreaks as defined in FF[4] and limit the line length in the
+file to say 76 chars (this is what SGFC does if you don't use the -t option).
+
+Why use paragraph style which is less flexible then?
+
+> One should fix the preferred way to denote variations. My idea is that any
+> variation should be one to the last move (i.e. another move elswhere) and
+> should be indicated on board (as GoScribe does it by highlighting the
+> alternitive plays). Variation count should start with 1. 
+
+Usually variations are denoted by letters instead of numbers - but you're 
+free to choose whatever you like.
+
+I don't think I understood your point.
+
+But concerning handling of variations there's the ST[] property which
+allows to distinguish between mgt style (variation of children) or xgban 
+style (variation of siblings) - the latter one is used by GoScribe 
+too - I guess.
+
+> Of course, there might be need for other types of variations (setting up
+> diagrams for reference e.g.), but the above procedure looks most natural and
+> can coexist, if the viewer raises proper flags to indicate there is an
+> unusual variation.
+
+See ST[] property definition and FF[4] example file.
+
+
+/Arno
+

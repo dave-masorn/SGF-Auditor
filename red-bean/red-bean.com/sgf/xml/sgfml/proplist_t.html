@@ -1,0 +1,114 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML lang="en">
+
+<!-- Mirrored from red-bean.com/sgf/xml/sgfml/proplist_t.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 30 Jun 2026 15:28:36 GMT -->
+<HEAD><TITLE>SGF properties and SGFML counterparts</TITLE>
+    <link rel="stylesheet" href="../../main.css">
+</HEAD>
+<BODY>
+<A HREF="../index-2.html"><IMG SRC="../../images/head.png" ALT="[SGF FF[4] - Smart Game Format]" BORDER=0></A>
+
+<H1>SGF and SGFML counterparts</H1>
+
+<H2>General properties</H2>
+
+<PRE><B>ID   Description     property type    SGFML V0.02 counterpart
+---- --------------- ---------------  --------------------------------------</B>
+B    Black           move             &lt;move move= side=>
+BL   Black time left move             &lt;move timeleft=>
+BM   Bad move        move             &lt;move annotate="BAD|VERYBAD">
+DO   Doubtful        move             &lt;move annotate="DOUBTFUL">
+IT   Interesting     move             &lt;move annotate="INTERESTING">
+KO   Ko              move             -
+MN   set MoveNumber  move             &lt;move number=>
+OB   OtStones Black  move             -
+OW   OtStones White  move             -
+TE   Tesuji          move             &lt;move annotate="GOOD|VERYGOOD">
+W    White           move             &lt;move move= side=>
+WL   White time left move             &lt;move timeleft=>
+
+AB   Add Black       setup            in &lt;addstone>: &lt;stone side=>
+AE   Add Empty       setup            in &lt;addstone>: &lt;stone side=>
+AW   Add White       setup            in &lt;addstone>: &lt;stone side=>
+PL   Player to play  setup            &lt;setup sidetoplay=>
+
+AR   Arrow           -                &lt;line type="ARROW">
+C    Comment         -                &lt;comment>
+CR   Circle          -                &lt;markup type="CIRCLE">
+DD   Dim points      - (inherit)      &lt;markup type="DIM">
+DM   Even position   -                &lt;annotate type="EVENPOS" emphasis= side=>
+FG   Figure          -                
+GB   Good for Black  -                &lt;annotate type="GOOD" emphasis= side=>
+GW   Good for White  -                &lt;annotate type="GOOD" emphasis= side=>
+HO   Hotspot         -                &lt;annotate type="HOTSPOT" emphasis= side=>
+LB   Label           -                &lt;markup type="LABEL">
+LN   Line            -                &lt;line type="LINE">
+MA   Mark            -                &lt;markup type="MARK">
+N    Nodename        -                &lt;title>
+PM   Print move mode - (inherit)      
+SL   Selected        -                
+SQ   Square          -                &lt;markup type="SQUARE">
+TR   Triangle        -                &lt;markup type="TRIANGLE">
+UC   Unclear pos     -                &lt;annotate type="UNCLEARPOS" emphasis= side=>
+V    Value           -                &lt;value>
+VW   View            - (inherit)      &lt;markup type="VIEW">
+
+AP   Application     root	      &lt;application name= version=>
+CA   Charset         root	      in &lt;?xml ?> definition
+FF   Fileformat      root	      &lt;sgfml version=>
+GM   Game            root	      &lt;game type=>
+ST   Style           root	      
+SZ   Size            root	      &lt;board size=>
+
+AN   Annotation      game-info        &lt;person role="ANNOTATOR">
+BR   Black rank      game-info        in &lt;person>: &lt;rating>
+BT   Black team      game-info        &lt;team id=> plus &lt;person team=>
+CP   Copyright       game-info        &lt;copyright>
+DT   Date            game-info        &lt;date> plus &lt;dateitem>
+EV   Event           game-info        &lt;event>
+GC   Game comment    game-info        in &lt;gameheader>: &lt;comment>
+GN   Game name       game-info        in &lt;gameheader>: &lt;title>
+ON   Opening         game-info        -
+OT   Overtime        game-info        <B>?</B>
+PB   Player Black    game-info        &lt;person role="PLAYER" side=> plus &lt;name>
+PC   Place           game-info        &lt;place;
+PW   Player White    game-info        &lt;person role="PLAYER" side=> plus &lt;name>
+RE   Result          game-info        <B>?</B>
+RO   Round           game-info        in &lt;event>: &lt;round>
+RU   Rules           game-info        &lt;rules>
+SO   Source          game-info        &lt;source type=>
+TM   Timelimit       game-info        <B>?</B>
+US   User            game-info        &lt;person role="RECORDER" side=>
+WR   White rank      game-info        in &lt;person>: &lt;rating>
+WT   White team      game-info        &lt;team id=> plus &lt;person team=>
+
+</PRE>
+
+<H2>Go (GM[1]) specific properties</H2>
+
+<PRE><B>ID   Description     property type    property value
+---- --------------- ---------------  --------------------------------------</B>
+TB   Territory Black -                &lt;markup type="TERRITORY" side=>
+TW   Territory White -                &lt;markup type="TERRITORY" side=>
+
+HA   Handicap        game-info        <B>?</B>
+KM   Komi            game-info        <B>?</B>
+
+</PRE>
+
+<H2>Lines of Action (GM[9]) specific properties</H2>
+
+<PRE><B>ID   Description     property type    property value
+---- --------------- ---------------  --------------------------------------</B>
+*AS  Who adds stones -                
+*IP  Initial pos.    game-info        
+*IY  Invert Y-axis   game-info        
+*SE  Markup          -                
+*SU  Setup type      game-info        
+
+</PRE>
+
+</BODY>
+
+<!-- Mirrored from red-bean.com/sgf/xml/sgfml/proplist_t.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 30 Jun 2026 15:28:36 GMT -->
+</HTML>

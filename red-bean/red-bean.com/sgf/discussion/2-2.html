@@ -1,0 +1,96 @@
+Date: Thu, 20 Jun 1996 01:16:58 +0200 (MET DST)
+From: Arno Hollosi <hollosi@sbox.tu-graz.ac.at>
+
+
+Calm down and take a deep breath. And another.
+I appreciate your enthusiasm, but take care not to get lost in
+details.
+
+
+Let's summarize the discussion of FF[4] V2 so far:
+
+* CA - Charset is considered useful
+  The spec should state: charset is us-ascii outside Text (&SimpleText),
+  Text uses ISO-latin-1 if CA not specified.
+
+* new move type - undecided
+  If I remember correctly, Anders himself made this suggestion.
+  Drawback: incompatible to FF[3]
+
+* verbose property-identifiers - undecided
+  If SGF is considered to be a computer-only format, I don't
+  see why we should keep them. (Just to point it out, readers
+  able to read FF[3] still must be able to skip lowercase letters.
+  But when writing FF[4], why should we allow lowercase letters in propID's again?)
+  (And if someone, reads SGF-files regularily, he'll get used to RE instead 
+   of REsult, don't you think so David? :)
+
+* big & rectangular boards - undecided
+  38x38 were played by pros :)
+  Spec should take care of not dropping compatibilty just for these 
+  extensions.
+
+* DT format - undecided
+  mandatory or not, that's the question
+  I like the suggestion by Bill (moving non ISO-dates into GC[])
+
+* quoted Text/SimpleText
+  Important improvement (I think)
+  Let me explain:
+  Why do we need FF[4]? Answer: because FF[3] has some drawbacks.
+  These drwabacks should be fixed. FF[4] should of course be as compatible
+  to FF[3] as possible. The current draft achieves this goal (except
+  move type, which is undecided yet). Of course old readers will
+  display these quotes and FF[3] doesn't have any quotes but:
+  a) old readers will get updates (all they need to do is to
+     add { if(FF[4]) then (skip quotes)} ).
+  b) new applications, which are only able to read FF[4] are *much*
+     easier to write, better maintainable, etc. -> will have higher
+     quality than the average SGF-reader now.
+  c) new SGF files (coming from Go servers, etc.) will write FF[4],
+     large databases will most likely be converted to FF[4], because
+     it's superior to FF[3]. (As Martin said one of the most important
+     parts of FF[4] is a public available syntax checker (THE reference
+     implementation) and a SGF-converter).
+  If the main achievement of FF[4] is just to add / drop some
+  properties, then FF[4] isn't necessary at all.
+
+* Don't include seldom used properties in FF[4] (BM, TE, etc.) - slightly favored
+  If a FF[3] is converted to FF[4] these properties (or better: the 
+  message that should be displayed) are moved to C[].
+
+* CS - should be dropped
+* PR - should be dropped
+
+
+That are the most important topics so far.
+For a better overview I'll compile a list of compatibility problems
+within the next days (AFAIK there are not that many, as some of you
+may think).
+
+
+Some administrativ stuff:
+-------------------------
+
+* A mailing list will be set up (hopefully before the weekend).
+  It'll be located at: sgf_std@ra.york.cuny.edu
+  I'll announce it, when it's up.
+
+* When the mailing list is running, I want to make an announcement on 
+  r.g.g about the standard work and ask other people (only people somehow
+  involved in SGF) to join the mailing list. I don't want to have any
+  'normal' users discussing it, because otherwise there's too much noise
+  to work effectivly.
+
+* I want to make a survey on r.g.g. about SGF & SGF-applications, i.e.
+  what the avarge user expects / wants to have / uses right now.
+  If you've got any suggestions which questions I should ask, please let
+  me know.
+
+* Please send emails about the above administrative points only to me
+  and don't Cc: it to everybody, as I guess it's only of limited interest
+  for others.
+
+
+/Arno
+

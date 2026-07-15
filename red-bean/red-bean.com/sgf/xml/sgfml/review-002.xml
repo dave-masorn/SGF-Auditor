@@ -1,0 +1,766 @@
+<?xml version="1.0" ?>
+<!DOCTYPE sgfml SYSTEM "http://www.red-bean.com/sgf/xml/sgfml-0.02.dtd">
+
+<sgfml version='0.02'>
+<header>
+	<application name='SGFC' version='1.14'/>
+</header>
+
+<game type='GO'>
+<gameheader>
+	<board size='19x19'/>
+</gameheader>
+
+<sequence>
+<node>
+	<gameinfo>
+	<event>7th Three Peaks Go Tournament</event>
+
+	<person role='PLAYER' side='B'>
+		<name>david philips, Isle of Man</name>
+		<rating>2 dan</rating>
+	</person>
+	<person role='PLAYER' side='W'>
+		<name>djna (dave artus), London</name>
+		<rating>1 dan</rating>
+	</person>
+
+	<date><dateitem date="1999-11-13"/></date>
+	<place>Thornton in Lonsdale</place>
+	<komi>5.5</komi>
+	<result>B+R</result>
+	</gameinfo>
+
+	<comment>I had W in this game, thought I had parity for
+much of it and ended up resigning in the yose on finding
+myself 20 points or more behind.
+<br/><br/>
+I'd like to understand where my perceptions went awry.
+<br/><br/>
+David (Philips) played what felt to me to be quietly effective
+moves and it appears was never really stretched.
+	</comment>
+</node>
+
+<node><move side='B' move='dp'/></node>
+<node><move side='W' move='pd'/></node>
+<node><move side='B' move='qp'/></node>
+
+  <sequence>
+  <node><move side='W' move='op'/>
+	<comment>My new policy of refusing to allow Chinese Fuseki.
+<br/><br/>
+JS: Another idea is to play this move one point to the left.
+See variation.</comment>
+  </node>
+  <node><move side='B' move='pn'/></node>
+  <node><move side='W' move='qq'/></node>
+  <node><move side='B' move='rq'/></node>
+  <node><move side='W' move='pq'/></node>
+  <node><move side='B' move='ro'/></node>
+  <node><move side='W' move='lq'/>
+	<comment>Seems pretty much a one-way street, unless I
+ignore 5 and take the empty corner.
+<br/><br/>
+JS: If you want to play tenuki after black 5 (the keima)
+then I would prefer to play the move I suggested in the variation.
+But tenuki surely is an option as well.</comment>
+  </node>
+  <node><move side='B' move='dc'/></node>
+
+    <sequence>
+    <node><move side='W' move='de'/>
+	  <markup type='MARK'><point point='cj'/></markup>
+	  <markup type='LABEL'><point point='qf' label='A'/></markup>
+	  <comment>I suspect I know what's coming, but is there really
+a better appraoch move? Or a move around the triangle?
+<br/><br/>
+JS: A move at c10 is a lesurely approach, it's ok to play like that.
+<br/><br/>
+JS: The theory is that making or preventing a shimari always
+is a big move in the opening. But the shape in the lower-right
+has quite some consequences for the dirrection of play.
+White's shape along the bottom is very solid, which means that
+any move played by black in that direction is less effective since
+it doesn't affect white. Black's shape along the right side is strong
+so black very much would like to approach the white hoshi stone
+in the upper-right at A (r14) to create a moyo.
+Considering the whole board: when white can establish a position
+along the left side (between the two black stones) it would be a success.
+So now combining all these features gives a picture as in the
+variation.</comment>
+    </node>
+    <node><move side='B' move='fd'/></node>
+    <node><move side='W' move='cc'/></node>
+    <node><move side='B' move='cb'/></node>
+    <node><move side='W' move='cd'/></node>
+    <node><move side='B' move='eb'/></node>
+    <node><move side='W' move='ch'/>
+	  <comment>On a policy of maintaining symmetry a 3-3 invasion
+in the top right might be amusing. W could easily
+end up with a wall whose thickness is erased by
+a nice extension from the appropriate B group?
+<br/><br/>
+JS: In general by playing (3,3) here in the upper-right
+black will harden white's shape while black would prefer
+to leave white soft to be able to approach from both the
+right side and the top. But anyway, I investigated some
+(3,3) variations.</comment>
+    </node>
+
+      <sequence>
+      <node><move side='B' move='qf'/></node>
+      <node><move side='W' move='nc'/></node>
+      <node><move side='B' move='rd'/></node>
+      <node><move side='W' move='qc'/></node>
+      <node><move side='B' move='qi'/>
+	    <comment>If black plays like this then playing
+r11 or q11 immediately seems better to leave the option to
+invade r17.</comment>
+      </node>
+
+	<sequence>
+	<node><move side='W' move='kc'/>
+	      <comment>This is a move I'm not sure about.
+My thinking was that if I go a more normal extra point
+to the left then a B splitting  invasion would be troublesome.
+If I play elsewhere then B gets a good extension to the
+the right of 24.
+<br/><br/>
+The way I played was intended to make it hard to develop
+anything from the top left and leave me solid enough to
+be more aggressive elsewhere.
+<br/><br/>
+JS: This move is big (preventing black m17) and correct shape.
+But there are bigger moves. Opening theory says that in sente situations
+(as you have in this position) the focus in the opening goes
+to the largest empty space (i.e. the lower-left). See variation
+for an example.</comment>
+	</node>
+	<node><move side='B' move='fq'/>
+<comment>Seems like a nice move. I felt that I needed to do
+something to keep the bottom left under control.</comment></node>
+
+	  <sequence>
+	  <node><move side='W' move='bo'/>
+		<markup type='LABEL'><point point='bp' label='A'/>
+		<point point='cn' label='A'/></markup>
+		<comment> I was expecting moves at A or B, and I
+reckoned that either would suit me.
+<br/><br/>
+JS: You don't need to play this emergency move. If black
+would have a stone around c10 then this would have been
+a possible way to invade. But since your left side is extremely
+strong just aproaching with the normal move at B seems best.
+See variation.</comment>
+	  </node>
+	  <node><move side='B' move='cq'/>
+		<markup type='LABEL'><point point='cm' label='A'/></markup>
+		<markup type='MARK'><point point='cm' label='A'/></markup>
+		<comment> Hmm, a move at the square seems to ask to be
+pincered, and all I want is to stop the B corner getting too big
+too fast. So, I'll treat 26/27 as kikashi.
+<br/><br/>
+Q: Is that reasoning OK?
+<br/><br/>
+JS: A kikashi move doesn't cost points, but I think you loose
+points here. b5 is very low and c3 prevents an invasion.</comment>
+	  </node>
+	  <node><move side='W' move='ck'/>
+		<markup type='LABEL'><point point='cm' label='A'/>
+		<point point='cn' label='B'/></markup>
+		<comment>So I play here. The idea is that B needs to spend
+2 moves to increase his territory by 5 points. He can't
+play A (I think) so he has to play B and that's too slow.
+<br/><br/>
+JS: c9 is a good move, but without the b5/c3 exchange.
+After immediately c9 you still have the c3 invasion or
+moves like c6 or c4. The extra black stone at c3 made black
+stronger which also makes the bottom different. White h3
+is gote in this shape so black might have more chance to
+get j3 or k3 here.</comment>
+	  </node>
+	  <node><move side='B' move='cn'/>
+		<markup type='LABEL'><point point='fn' label='A'/></markup>
+		<comment>Hmm, so one of us is wrong!
+<br/><br/>
+I assume that it's me, and the reason is that 29 is also building
+influence towards C.
+<br/><br/>
+Q: Was it too slow?
+<br/><br/>
+JS: Black's last move adds stones to a strong position so it's
+not a very good move. Please note that if white later defends
+with c7 then white played three moves on the left side while
+he could have played two moves (c6 and c9), so the left side
+is not urgent at all. Black k3 seems bigger for example or
+black q15 (to prevent being flattened by white with q12+q14).
+At the top j17 (preventing white h17) is big.</comment>
+	  </node>
+	  <node><move side='W' move='iq'/>
+		<comment>a B extension this way seems big after 29.
+<br/><br/>
+JS: Correct.</comment>
+	  </node>
+	  <node><move side='B' move='no'/>
+		<comment>This move is gote (see variation) so this is a
+chance for you to develop the top.</comment>
+	  </node>
+
+	    <sequence>
+	    <node><move side='W' move='np'/>
+		  <comment>Now black's move at o5 is a kikashi
+(black gains here).</comment>
+	    </node>
+	    <node><move side='B' move='md'/></node>
+	    <node><move side='W' move='mc'/></node>
+	    <node><move side='B' move='oe'/>
+		  <markup type='LABEL'><point point='pe' label='A'/>
+			<point point='pf' label='B'/>
+			<point point='of' label='C'/></markup>
+		  <comment>It's at this point that I estimated the
+scores in detail to decide how deep to go.
+<br/><br/>
+I've got half an eye on pushing and cutting D, E, F
+<br/><br/>
+JS: The black shape is a bit thin, maybe I would prefer Q15
+immediately instead of the last two black moves.
+<br/><br/>
+About the territorial balance here:
+<br/><br/>
+ White: LR: 17, UL: 17, UR: 17, komi: 5.5<br/>
+ Black: LL: 20, UL: 5
+<br/><br/>
+So for black to win the right side has to become at least 30 points.
+Please note that at the top the n16/n17 exchange makes black j17
+smaller so you have a good chance to get h17 in this position
+(although I didn't assume that during the counting).</comment>
+	    </node>
+	    <node><property name='FG'></property></node>
+	    <node><move side='W' move='nj'/>
+		  <comment>Based on the idea that B does not get enough when
+he seals off the side
+<br/><br/>
+JS: Nice move. Let's see if black would convert the right side
+how many points he would get there...</comment>
+	    </node>
+
+	      <sequence>
+	      <node><move side='B' move='pk'/>
+		    <comment>But again B seems entirely happy to take
+the money.
+<br/><br/>
+JS: This move is very similar to black q10.
+My feeling is that this move is too submissive.
+As black I would either play p11 (as discussed before)
+or attack with m10. Another move which black might
+consider is p9 by the way.</comment>
+	      </node>
+
+		<sequence>
+		<node><move side='W' move='mo'/>
+		      <comment>JS: A move interesting way to play might be as
+in the variation diagram.</comment>
+		</node>
+		<node><move side='B' move='nn'/></node>
+		<node><move side='W' move='mn'/></node>
+		<node><move side='B' move='nm'/></node>
+
+		  <sequence>
+		  <node><move side='W' move='gp'/>
+			<comment>Another suspect move
+<br/><br/>
+JS: Once you start to push with n6 you have to finish the
+shape there, see variation.</comment>
+		  </node>
+		  <node><move side='B' move='mm'/>
+			<comment>This seems huge
+<br/><br/>
+JS: It is huge, black is definitely better now. The white o10 stone
+is evaporating in this position.</comment>
+		  </node>
+		  <node><move side='W' move='kj'/>
+			<comment>JS: A wise choice.</comment>
+		  </node>
+		  <node><move side='B' move='km'/>
+			<comment>Makes W 38 an 40 seem somewhat wasted.
+<br/><br/>
+Did W miss something here?
+<br/><br/>
+JS: Good move by black: controling the bottom while
+weakening the white center group.</comment>
+		  </node>
+
+		    <sequence>
+		    <node><move side='W' move='oh'/></node>
+		    <node><move side='B' move='pg'/>
+			<comment>This seems like a neat answer.
+<br/><br/>
+I think this is a bad exchange for W, any alternatives?
+<br/><br/>
+JS: No, white's p12 is fine. You strengthen your center while q13 defends
+the territory which was already black.</comment>
+		    </node>
+		    <node><move side='W' move='ff'/>
+			<comment>Up to here I really thought I W was doing
+fine.
+<br/><br/>
+JS: A nice move: you strengthen your center indirectly
+and build up the left side.</comment>
+		    </node>
+
+		      <sequence>
+		      <node><move side='B' move='ek'/>
+			<comment>Nicely placed, surely B has to play
+somewhere here?
+<br/><br/>
+JS: This is a gote move basically. I would play as in
+the variation.</comment>
+		      </node>
+		      <node><move side='W' move='cm'/><comment>
+Perhaps a flawed plan, build a little strength and
+attack 49, get a bit more territory, win the game.
+<br/><br/>
+JS: An interesting move.</comment>
+		      </node>
+		      <node><move side='B' move='bn'/>
+			<comment>Thank you,</comment>
+		      </node>
+
+			<sequence>
+			<node><move side='W' move='dm'/>
+				<markup type='LABEL'>
+				<point point='dj' label='A'/></markup>
+			<comment>Slow, would A be better?
+<br/><br/>
+JS: A is very slow, but how about the variation?</comment>
+			</node>
+			<node><move side='B' move='dn'/></node>
+			<node><move side='W' move='fm'/>
+			<comment>Still 49 looks a bit lonely.</comment>
+			</node>
+			<node><move side='B' move='hj'/>
+				<markup type='LABEL'>
+				<point point='fj' label='A'/></markup>
+			<comment>Torn between 3 ideas:
+<br/><br/>
+ 1). cut now, B seems to work.<br/>
+ 2). but 44 &amp; co could get swallowed up in the meantime.<br/>
+ 3). try to attack 49 and 55, after all I don't need much
+      more territory so as long as B doesn't build any I'm OK.
+<br/><br/>
+JS: I think white k8 is a nice move here: cuts the two black stones,
+while virtually connecting the white group.</comment>
+			</node>
+			<node><move side='W' move='ih'/>
+				<markup type='LABEL'>
+				<point point='hd' label='A'/></markup>
+			<comment>Aiming for C as a nice follow up.</comment>
+			</node>
+			<node><move side='B' move='jj'/>
+			<comment>Illogical, black strengthens white's
+weak stones. Normal is h7 in my opinion, which would still
+aiming at the weakness at k11.</comment>
+			</node>
+			<node><move side='W' move='ji'/></node>
+			<node><move side='B' move='jk'/></node>
+			<node><move side='W' move='ld'/>
+				<markup type='LABEL'>
+				<point point='ki' label='A'/></markup>
+			<comment>The idea was that if B cuts at D
+I can sqeeze and get compensating centre territory
+<br/><br/>
+JS: Still, white o14 seems bigger.</comment>
+			</node>
+			<node><move side='B' move='cj'/>
+			<comment>Missed how big this was.<br/>
+Seems like a good B move.</comment>
+			</node>
+			<node><move side='W' move='bj'/>
+			<comment>This looks like a poor move, surely A
+is better?<br/>
+I may end up losing 50 and 52 but they are  not important any more.
+<br/><br/>
+Your answer is normal, nothing wrong with that move.</comment>
+			</node>
+			<node><move side='B' move='dj'/></node>
+			<node><move side='W' move='ci'/></node>
+			<node><move side='B' move='me'/>
+			<comment>JS: Bad move, no point to save n16.</comment>
+			</node>
+			<node><move side='W' move='hd'/></node>
+			<node><move side='B' move='hc'/></node>
+			<node><move side='W' move='ic'/></node>
+			<node><move side='B' move='gc'/></node>
+			<node><move side='W' move='kf'/>
+			<comment>JS: This move can be at m14
+(more points).</comment>
+			</node>
+			<node><move side='B' move='lg'/></node>
+			<node><move side='W' move='ki'/></node>
+			<node><move side='B' move='mi'/></node>
+			<node><move side='W' move='kk'/></node>
+			<node><move side='B' move='jl'/></node>
+			<node><move side='W' move='ll'/></node>
+			<node><move side='B' move='lm'/></node>
+			<node><move side='W' move='ni'/></node>
+			<node><move side='B' move='mh'/></node>
+			<node><property name='FG'></property>
+			</node>
+			<node><move side='W' move='mj'/>
+				<markup type='LABEL'>
+				<point point='rc' label='A'/>
+				<point point='bb' label='A'/>
+				<point point='rr' label='A'/>
+				<point point='gq' label='A'/>
+				<point point='fr' label='A'/>
+				<point point='is' label='A'/>
+				<point point='bm' label='A'/></markup>
+			<comment>At this point I stopped recording and it
+may be that the crucial moves are yet to be played.
+<br/><br/>
+However I think that I was under a severe misapprehension.
+My estimate of the score is
+that W is ahead by the komi, however in about
+30 moves time B is suddenly ahead by 20 points.
+<br/><br/>
+I think B next played A which is very big and ended
+up getting the big sente points of B and C as well as
+(after D for E) the monkey jump at F.
+<br/><br/>
+So did I just foul up the yose or was my position
+much weaker than I estimated? If so how far
+back did W go astray. My whole approach in the
+game was based on my estimates of the scores,
+looks like something's wrong with my estimating.
+<br/><br/>
+JS: When we compare this position with the position
+after o11 then black got b6 while the exchanges at the
+top around j17 are about even (although black j18 is huge
+endgame). White got some points in the center around j15.
+but black has sente here:
+<br/><br/>
+Black: LL: 23, right: 32, UL: 10<br/>
+White: LR: 17, UL: 17, UR: 18, center: 5, komi 5.5
+<br/><br/>
+So black seems a little ahead and has sente.
+You missed quite some points in the center by
+not playing either o14 or m14 earlier.</comment>
+			</node>
+			</sequence>
+
+			<sequence>
+			<node><move side='W' move='dn'/></node>
+			<node><move side='B' move='do'/></node>
+			<node><move side='W' move='en'/></node>
+			<node><move side='B' move='bm'/></node>
+			<node><move side='W' move='bl'/></node>
+			<node><move side='B' move='dm'/></node>
+			<node><move side='W' move='cl'/></node>
+			<node><move side='B' move='co'/></node>
+			<node><move side='W' move='gn'/>
+			<comment>White used b5 to the maximum and has a
+nice attack going.</comment>
+			</node>
+			</sequence>
+		      </sequence>
+
+		      <sequence>
+		      <node><move side='B' move='di'/></node>
+		      <node><move side='W' move='ci'/></node>
+		      <node><move side='B' move='dk'/></node>
+		      <node><move side='W' move='cl'/></node>
+		      <node><move side='B' move='ij'/></node>
+		      </sequence>
+		    </sequence>
+
+		    <sequence>
+		    <node><move side='W' move='pe'/></node>
+		    <node><move side='B' move='pf'/></node>
+		    <node><move side='W' move='of'/></node>
+		    <node><move side='B' move='og'/></node>
+		    <node><move side='W' move='nf'/></node>
+		    <node><move side='B' move='ng'/></node>
+		    <node><move side='W' move='ne'/></node>
+		    <node><move side='B' move='mg'/></node>
+		    <node><move side='W' move='kh'/>
+			<comment>Wonder if something like this would be better?
+<br/><br/>
+JS: Capturing the p15 stone is only points (although quite big).
+Black can cut off something in the center now (see continuation).</comment>
+		    </node>
+		    <node><move side='B' move='lj'/></node>
+		    <node><move side='W' move='li'/></node>
+		    <node><move side='B' move='mi'/></node>
+		    </sequence>
+		  </sequence>
+
+		  <sequence>
+		  <node><move side='W' move='mm'/></node>
+		  <node><move side='B' move='ml'/></node>
+		  <node><move side='W' move='nl'/></node>
+
+		    <sequence>
+		    <node><move side='B' move='nk'/></node>
+		    <node><move side='W' move='mk'/></node>
+		    <node><move side='B' move='ol'/></node>
+		    <node><move side='W' move='ll'/></node>
+		    <node><move side='B' move='mj'/></node>
+		    <node><move side='W' move='nl'/></node>
+		    <node><move side='B' move='ok'/></node>
+		    <node><move side='W' move='lj'/></node>
+		    <node><move side='B' move='mi'/></node>
+		    <node><move side='W' move='li'/></node>
+		    <node><move side='B' move='mh'/></node>
+		    <node><move side='W' move='gp'/></node>
+		    <node><move side='B' move='fp'/></node>
+		    <node><move side='W' move='go'/></node>
+		    <node><move side='B' move='gq'/></node>
+		    <node><move side='W' move='hq'/>
+			<comment>White bottom is nearly 50 points while
+black's right side grew to about 40-45 points. SO white is ok here (winning).
+This means that black will fight in the centre as illustrated
+in the next variation.</comment>
+		    </node>
+		    </sequence>
+
+		    <sequence>
+		    <node><move side='B' move='ll'/></node>
+		    <node><move side='W' move='ol'/></node>
+		    <node><move side='B' move='pm'/>
+			<markup type='LABEL'><point point='mk' label='A'/>
+			<point point='lj' label='B'/>
+			<point point='li' label='C'/>
+			<point point='pj' label='D'/></markup>
+			<comment>Now white has the luxury to choose any
+of: A, B, C or D.<br/>
+White is ok in this fight.</comment>
+		    </node>
+		    </sequence>
+		  </sequence>
+		</sequence>
+
+		<sequence>
+		<node><move side='W' move='ol'/></node>
+		<node><move side='B' move='pl'/></node>
+		<node><move side='W' move='nn'/>
+		      <comment>This virtually connects the white stones
+and the bottom consequently grows with some points.</comment>
+		</node>
+		</sequence>
+	      </sequence>
+
+	      <sequence>
+	      <node><move side='B' move='pj'/>
+		    <comment>Like this black gets about 30 points on the
+right side but you have sente so the position is playable.
+Maybe the next variation is more interesting for black.</comment>
+	      </node>
+	      </sequence>
+
+	      <sequence>
+	      <node><move side='B' move='oi'/>
+		    <markup type='LABEL'><point point='pe' label='A'/>
+		    <point point='pf' label='B'/>
+		    <point point='of' label='C'/></markup>
+		    <comment>This move takes off the pressure from
+the A,B,C cut (black p16 is sente). Like this black might build more
+than 30 points. This game will be decided on the right side
+in this variation.</comment>
+	      </node>
+	      </sequence>
+	    </sequence>
+
+	    <sequence>
+	    <node><move side='W' move='hc'/></node>
+	    <node><move side='B' move='gb'/>
+		  <markup type='LABEL'><point point='fc' label='A'/></markup>
+		  <comment>Preventing the annoying white follow-up move
+at A.</comment>
+	    </node>
+	    <node><move side='W' move='ph'/></node>
+	    <node><move side='B' move='qh'/></node>
+	    <node><move side='W' move='pf'/>
+		  <comment>White flattens black's right side while
+building up the top.<br/>
+Black has nothing at the bottom (see continuation...).</comment>
+	    </node>
+	    <node><move side='B' move='mq'/></node>
+	    <node><move side='W' move='mp'/></node>
+	    <node><move side='B' move='np'/></node>
+	    <node><move side='W' move='nq'/></node>
+	    <node><move side='B' move='mr'/></node>
+	    <node><move side='W' move='lr'/></node>
+	    </sequence>
+	  </sequence>
+
+	  <sequence>
+	  <node><move side='W' move='cn'/></node>
+	  <node><move side='B' move='bp'/>
+		<markup type='LABEL'><point point='cp' label='A'/>
+		<point point='en' label='B'/><point point='cq' label='C'/>
+		</markup>
+		<comment>Not much point for black to invade around d9
+since a black stone there would not affect the white group around c12 at all.
+So black would voluntarily create a weak group while white still
+can settle with A, attack with B or invade at C.</comment>
+	  </node>
+	  <node><move side='W' move='ck'/>
+		<comment>You can also play c9 immediately to leave the option
+to invade black's corner with c3 later.</comment>
+	  </node>
+	  </sequence>
+	</sequence>
+
+	<sequence>
+	<node><move side='W' move='fq'/></node>
+	<node><move side='B' move='cn'/></node>
+	<node><move side='W' move='dr'/></node>
+	<node><move side='B' move='cq'/></node>
+	<node><move side='W' move='hp'/></node>
+	<node><move side='B' move='lc'/></node>
+	<node><move side='W' move='rc'/></node>
+	<node><move side='B' move='ck'/>
+	      <markup type='LABEL'><point point='hc' label='A'/></markup>
+	      <comment>This would finish the opening and you can start an
+invasion at A (h17) for example. All your position have good shape and
+are quite strong so you will have no trouble taking care of
+the invasion group.</comment>
+	</node>
+	</sequence>
+      </sequence>
+
+      <sequence>
+      <node><move side='B' move='qc'/></node>
+      <node><move side='W' move='qd'/></node>
+      <node><move side='B' move='pc'/></node>
+      <node><move side='W' move='oc'/></node>
+      <node><move side='B' move='ob'/></node>
+
+	<sequence>
+	<node><move side='W' move='nb'/></node>
+
+	  <sequence>
+	  <node><move side='B' move='nc'/></node>
+	  <node><move side='W' move='od'/></node>
+	  <node><move side='B' move='mb'/></node>
+	  <node><move side='W' move='pb'/></node>
+	  <node><move side='B' move='na'/></node>
+	  <node><move side='W' move='qb'/>
+		<comment>White takes the corner. The black top is hard to
+convert to territory in one move in my opinion.</comment>
+	  </node>
+	  </sequence>
+
+	  <sequence>
+	  <node><move side='B' move='rd'/></node>
+	  <node><move side='W' move='re'/></node>
+	  <node><move side='B' move='qe'/></node>
+	  <node><move side='W' move='od'/></node>
+	  <node><move side='B' move='rf'/></node>
+	  <node><move side='W' move='rc'/></node>
+	  <node><move side='B' move='se'/></node>
+	  <node><move side='W' move='rb'/></node>
+	  <node><move side='B' move='ne'/>
+		<comment>An interesting way to play for black,
+trying to convert the right side into a deep moyo. The last black move
+uses the lack of liberties of white.<br/>
+In this position white took quite some territory though.<br/>
+To continue....</comment>
+	  </node>
+	  <node><move side='W' move='fq'/></node>
+	  <node><move side='B' move='cn'/></node>
+	  <node><move side='W' move='dr'/></node>
+	  <node><move side='B' move='cq'/></node>
+	  <node><move side='W' move='hp'/></node>
+	  <node><move side='B' move='nn'/>
+		<markup type='LABEL'><point point='ni' label='A'/>
+		<point point='cl' label='B'/><point point='ck' label='C'/>
+		<point point='hc' label='D'/><point point='ic' label='E'/>
+		</markup>
+		<comment>And next white will start to reduce black's
+moyo with a move around A.<br/>
+Since white doesn't have any weak groups he will have no trouble
+to handle this reduction move. On the left white B or black C is very
+big. At the top white would go all the way with D, black E would be
+an appropriate shape.</comment>
+	  </node>
+	  </sequence>
+	</sequence>
+
+	<sequence>
+	<node><move side='W' move='nc'/></node>
+	<node><move side='B' move='nb'/></node>
+	<node><move side='W' move='mc'/></node>
+	<node><move side='B' move='rd'/></node>
+	<node><move side='W' move='re'/></node>
+	<node><move side='B' move='rc'/></node>
+	<node><move side='W' move='qf'/></node>
+	<node><move side='B' move='qj'/>
+	      <comment>This way of playing is bad for white,
+the white thickness doesn't work at all.</comment>
+	</node>
+	</sequence>
+      </sequence>
+    </sequence>
+
+    <sequence>
+    <node><move side='W' move='cn'/>
+	  <comment>First white forces black to play towards the strong
+white group while entering inside black's sphere on the left.</comment>
+    </node>
+    <node><move side='B' move='fq'/></node>
+    <node><move side='W' move='df'/>
+	  <markup type='LABEL'><point point='cc' label='A'/></markup>
+	  <comment>Next white gently approaches black's upper-left (aiming
+at the follow-up move at A).</comment>
+    </node>
+    <node><move side='B' move='fd'/></node>
+    <node><move side='W' move='cj'/>
+	  <markup type='LABEL'><point point='ch' label='A'/>
+	  <point point='cl' label='B'/><point point='cc' label='C'/>
+	  <point point='cp' label='D'/><point point='cq' label='E'/></markup>
+	  <comment>And now white quietly establishes a balanced position
+on the left. The white position is not territory since it
+has two invasion points: A and B. But white can deal
+with both since white has moves at C and D at his disposal.
+When white's left side becomes stronger he can aim at the
+invasion at E to destroy territory.</comment>
+    </node>
+    <node><move side='B' move='nc'/>
+	  <comment>This seems the natural direction for black to develop.</comment>
+    </node>
+    <node><move side='W' move='qf'/>
+	  <comment>White patiently answers,
+reducing black's lower-right influence.</comment>
+    </node>
+    <node><move side='B' move='jc'/>
+	  <markup type='LABEL'><point point='hc' label='A'/>
+	  <point point='lc' label='B'/><point point='ff' label='C'/>
+	  <point point='ch' label='D'/></markup>
+	  <comment>Black finishes the shape at the top. But also this shape has
+various invasion points (A and B).<br/>
+Globally, C is a key point for center control. A white stone
+at C for example helps to invade at A and to defend D.<br/>
+This seems like a well-balanced opening to me.</comment>
+    </node>
+    </sequence>
+  </sequence>
+
+  <sequence>
+  <node><move side='W' move='np'/></node>
+  <node><move side='B' move='pn'/>
+	<markup type='LABEL'><point point='jq' label='A'/>
+	<point point='qq' label='B'/><point point='nn' label='C'/></markup>
+	<comment>In this shape the white stone is lighter and more
+difficult to attack. White's follow-up moves are
+A (to create a base), B to make sabaki or live in
+the corner) and C (to escape to the center).
+The white stone is very resilient.</comment>
+  </node>
+  </sequence>
+</sequence>
+
+</game>
+
+</sgfml>

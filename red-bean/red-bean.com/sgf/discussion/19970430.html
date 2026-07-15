@@ -1,0 +1,75 @@
+Date: Wed, 30 Apr 1997 11:32:47 +0200 (MET DST)
+From: Arno Hollosi <hollosi@sbox.tu-graz.ac.at>
+Subject: Summary of recent discussion
+
+
+Reading through the recent emails I came to the conclusion that
+the draft should be changed as follows:
+
+- faulty game-info properties may remain where they are
+  (i.e. moving to GC not mandatory)
+  They should be corrected if possible though.
+
+- Date format:
+  I like Robert's last proposal: DT[simpletext] with following format:
+  * partial dates possible (yyyy, yyyy-mm)
+  * if game was played on more than one day, the other dates
+    should be seperated by a comma.
+    > Interpretation: From left to right.
+    > Left-most must contain yyyy
+    > mm-dd or mm acquires the last preceding yyyy.
+    > dd acquires the last preceding mm and the last preceding yyyy.
+    > If xx follows yyyy-mm-dd or mm-dd or dd, then xx is dd.
+    > If xx follows yyyy-mm or mm, then xx is mm.
+    At first glance this may look complicated but it's actually rather 
+    easy and logical.
+
+- I've looked up the RFC number for the CA property.
+  It's RFC 1345. Default charset is: 'ISO-8859-1' aka 'Latin1'.
+  If you don't want to read through RFC 1345:
+  Basically CA uses the same names as MIME messages in
+  their 'charset=' field (in Content-Type).
+
+- proposal for FG & DS
+  * DS numbering should be changed to:
+    0 - don't number, 1 - use numbers, 2 - use modulo 100 numbers
+    (just like Robert suggested)
+  * Flags for FG:
+    o print coordinates
+    o ???? (any ideas for other flags)
+
+
+Martin Mueller writes:
+> The first point can be facilitated by offering rigorous test suites, or
+> even a reference implementation.
+
+SGFC (the syntax checker & convert tool I wrote) is VERY rigorous and can
+be regarded as a reference. I'll upload a new version within the next days.
+
+
+Yens Yllman writes:
+> This text says, "Root nodes are the first nodes of gametrees". Can
+> there be more then one root node in a gametree?
+No.
+> And is there always a root node?
+Yes - every tree contains at least one node -> there's a first node :)
+
+> As I see it FF[] is not optional when you want FF[4].
+> So that should always be in the root node.
+Correct.
+
+> But if I use default values for all root properties. And no gameinfo.
+> And the first thing I have to put in the file is a move. How should that 
+> be handled?
+> Should I put a EMPTY node first? Is empty nodes possible?
+
+Empty nodes are allowed. Storing moves in the root node is allowed too
+but it's bad style - one wants to start with the initial board setting,
+i.e. empty boards for even games and handicap stones for h-games ->
+AB[]'s for setting up the handicap position should be stored in root node.
+
+
+
+Comments welcome
+/Arno
+

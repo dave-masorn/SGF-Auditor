@@ -1,0 +1,24 @@
+Date: Wed, 23 Apr 1997 18:54:48 -0400
+From: David Fotland <fotland@hpihoah.cup.hp.com>
+Subject: Re: SGF - request for final comments 
+
+
+I only have one real question left I think...
+
+There are many fields that are more tightly spec'ed for format in FF[4]
+than before (ISO date, results, etc).  I've looked at what's out there
+in sgf files and I don't plan to write code to parse and convert it to
+the standard format.  It's a lot of work, and frankly, it makes the 
+data less readable for the users.  I also don't plan to move this text
+to the game comment field.  I think the users would like to see the result
+in the same place for all game records.
+
+So, my question is:  since I will be writing files that do not conform
+to the spec, can I still put FF[4] in them?  I also don't plan to check
+the format of the input and decide at that time if it should be FF[4] or
+not.  My plan is to always write FF[4] or FF[3] in the output file.
+
+What do you think?
+
+-David
+

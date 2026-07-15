@@ -1,0 +1,153 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML lang="en">
+
+<!-- Mirrored from red-bean.com/sgf/history.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 30 Jun 2026 15:27:56 GMT -->
+<HEAD><TITLE>SGF - Version History</TITLE>
+    <link rel="stylesheet" href="main.css">
+</HEAD>
+<BODY>
+<A HREF="index-2.html"><IMG src="images/head.png" ALT="[SGF FF[4] - Smart Game Format]" BORDER=0></A>
+<I>last updated: 2021-12-01</I>
+
+<H1>SGF FF[4] History</H1>
+
+<h3>2021-12-01</h3>
+<ul>
+    <li>Twixt
+        <ul>
+            <li>added specification for long moves</li>
+            <li>adapted move syntax a bit</li>
+            <li>other minor corrections</li>
+        </ul>
+    </li>
+    <li>Hex
+        <ul>
+            <li>add <em>pass</em> move</li>
+            <li>reduce minimum board size to 1x1; allow arbitrarily large boards</li>
+            <li>define point syntax for more than 26 columns</li>
+        </ul>
+    </li>
+</ul>
+
+<h3>2007 - 2016</h3>
+History between 2007-2016 is missing here; changes were mostly related to
+<ul>
+<li>reserving new game numbers,
+<li>new releases of SGFC, and
+<li>adding a draft specification for the <a href="drafts/sgf-uti-draft-2013-05-05.html">Uniform Type Identifier</A>
+    (UTI) on 2013-05-05.
+</ul>
+
+<h3>2006-08-06</h3>
+<ul>
+<li>Added link to CA[] property in sections about Text/SimpleText property
+value types.
+<li>New SGFC release: V1.16
+</ul>
+
+<h3>2006-06-25</h3>
+<ul>
+<li>Added new game number by request of Dave Dyer: hive = 27
+</ul>
+
+<h3>2006-05-13</h3>
+<ul>
+<li>Added new game number by request of Dave Dyer: Yinsh = 24
+<li>Added new game number by request of Dave Dyer: Punct = 25
+<li>Added new game number by request of Dave Dyer: Gobblet = 26
+</ul>
+
+<h3>2002-2005</h3>
+History between 2002-2005 is missing here; changes were mostly related to reserving new game numbers,
+and adding specifications for
+<ul>
+<li><a href="backgammon.html">Backgammon</a> (GM[6]),
+<li><a href="loa.html">Lines of Action</a> (GM[9]),
+<li><a href="hex.html">Hex</a> (GM[11]),
+<li><a href="amazons.html">Amazons</a> (GM[18]),
+<li><a href="octi.html">Octi</a> (GM[19]),
+<li><a href="gess.html">Gess</a> (GM[20]),
+<li><a href="twixt.html">Twixt</a> (GM[21]).
+</ul>
+
+<h3>2001-08-12</h3>
+<ul><li>Some corrections by Anders Kierulf:
+<li>File <A HREF="converting.html">converting.html</A>: L[] should be converted to uppercase letters instead of lowercase letters.
+<li>File <A HREF="properties.html">properties.html</A>: Update for  SmartGo AP[] entry, changed type of ON[] from Text to SimpleText, corrected typos in "related properties" section for OB[] and VW[].
+<li>File <A HREF="backgammon.html">backgammon.html</A>: renamed CP[] property to CO[] (cube owner), added new property DI[] (set dice) - by request of Gary Wong.
+</ul>
+
+<h3>2001-01-21</h3>
+<ul><li>Added two new games: Octi (GM[19]) and Gess (Gm[20]) by request
+from Tim Prime.
+<li>New file: <A HREF="gess.html">gess.html</A>
+<li>New file: <A HREF="octi.html">octi.html</A>
+<LI>File: <A HREF="properties.html">properties.html</A>: added new game numbers 19, 20 to GM property
+<LI>File: <A HREF="sgf4.html">sgf4.html</A>: added references to both games
+</ul>
+
+<h3>2000-10-18</h3>
+<ul><li>Added new game: Backgammon (GM[6]) by request from Gary Wong
+<li>New file: <A HREF="backgammon.html">backgammon.html</A>
+<LI>File: <A HREF="properties.html">properties.html</A>: added new game number 6 to GM property
+<LI>File: <A HREF="sgf4.html">sgf4.html</A>: added references to Backgammon
+</ul>
+
+<h3>2000-01-15</h3>
+<UL><LI>Added "Defaults" and "Properties" sections to Amazons.
+</UL>
+
+<H3>2000-01-04</h3>
+<UL><LI>Added web interface to SGFC
+<LI>Made web pages HTML 4.0 compliant
+</UL>
+
+<H3>1999-12-17</h3>
+<UL><LI>Added new game: Amazons (GM[18]) by request from Martin M&uuml;ller.
+<LI>New file: <A HREF="amazons.html">amazons.html</A>
+<LI>File: <A HREF="index-2.html">index.html</A>: added references to Amazons
+<LI>File: <A HREF="properties.html">properties.html</A>: added new game number i18 to GM property
+<LI>File: <A HREF="sgf4.html">sgf4.html</A>: added references to Amazons
+</UL>
+
+<H3>1999-01-07</H3>
+
+<UL>
+<LI>Created version history file :o)
+<LI>New file <A HREF="var.html">var.html</A>: examples for variations
+
+<LI>File <A HREF="sgf4.html">sgf4.html</A> (SGF Basics)
+<UL>
+<LI>Added "Contents" and modified layout
+<LI>Updated link for EBNF dictionary entry
+<LI>Added ... <I> applications should <B>not</B> rely on the order of property
+values.</I>
+<LI>Added section "Private Properties"
+<LI>Updated formatting of SimpleText: ... <I>linebreaks preceded by a
+<TT>"\"</TT> are converted to <TT>""</TT>, i.e. they are removed
+(same as Text type).</I>
+<LI>Added information for tree structure of SGF file
+<LI>Corrected some syntax errors
+</UL>
+
+<LI>File <A HREF="properties.html">properties.html</A>
+<UL>
+<LI>Added "Contents" and modified layout
+<LI>Corrected CS links to "CA"
+<LI>Added new game number by request of Dave Dyer: Tantrix = 17
+<LI>Added flag for FG:
+<I>Ignore flags on/off (value: 32768)
+If on, then all other flags should be ignored and
+the application should use its own defaults.</I>
+<LI>Moved "<I>TW and TB points must be unique, i.e. it's illegal to list the
+same point in TB and TW within the same node.</I>" to go.html, as TB and TW
+are described there.
+</UL>
+
+
+</UL>
+
+</BODY>
+
+<!-- Mirrored from red-bean.com/sgf/history.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 30 Jun 2026 15:27:56 GMT -->
+</HTML>

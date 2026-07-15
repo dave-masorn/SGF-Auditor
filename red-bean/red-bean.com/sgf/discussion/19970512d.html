@@ -1,0 +1,28 @@
+Date: Mon, 12 May 1997 18:22:02 +0200 (MET DST)
+From: Arno Hollosi <hollosi@sbox.tu-graz.ac.at>
+Subject: Re: linebreaks...
+
+
+I think you misunderstood me.
+
+- SGF is a text format (there's no doubt about that - SGF files
+  may be sent via email or be posted to newsgroups without further
+  encoding)
+
+- BUT: SGF is not intended to be human-readable.
+  (Dave: LOA files may be easy to edit by hand, but think
+  about variations - they aren't really intuitive, are they?)
+
+- I SUGGEST reading SGF files in binary mode as many weird
+  characters may appear which may cause strange behaviour if
+  the file is read/written in text mode.
+
+- applications should be able to deal with following linebreaks:
+  LF, CR, LFCR, CRLF
+
+- Why should apps not write files in a coherent style, i.e.
+  linebreaks as LF?
+  Should I remove this from the spec?
+
+/Arno
+

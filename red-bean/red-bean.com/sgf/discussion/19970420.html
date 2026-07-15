@@ -1,0 +1,41 @@
+Date: Sun, 20 Apr 1997 19:29:05 -0400
+From: Joan Pons i Semelis <joan@webarna.com>
+Subject: Re: URL of SGF draft
+
+Arno Hollosi wrote:
+> 
+> In my last email (announcement of version 9) I included the wrong URL.
+> Sorry.
+> 
+> The draft can still be found at:
+> http://www.cis.tu-graz.ac.at/home/hollosi/sgf4_draft/
+> 
+> Sorry for omitting the /sgf4_draft/ part in my last email.
+> My homepage (one step up the hierarchy) is actually an anti-homepage.
+> 
+> /Arno
+
+Does red waste more bandwith than blue ?
+
+Anyway there's a link to the draft there, and a link to a fuseki db
+(first 50 moves of about 1500 games) in a tree, if someone is
+interested I've writen a small program (in ansi Forth) that chops
+the unbranched branches of the tree, this reduces by no small amount
+the number of nodes, but transposition still remains:
+
+Does make sense to have a node property to mark if the position has
+been reached before ? This way transpositions unawared sgf readers
+could display the information ... if stored.
+
+Better yet would be to indicate to which node transposes, but then we
+have no longer a tree but a graph with directions, will this make
+things too complicated for readers ? My 10 years old go program/editor 
+handled this without problem; it saves both space and computing time,
+so I supose current go programs already do this.
+
+-- 
+
+Joan Pons i Semelis / joan@webarna.com, semelis@*GS 
+http://webarna.com/albatros
+
+

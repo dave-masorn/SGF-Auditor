@@ -1,0 +1,50 @@
+Date: Mon, 12 May 1997 00:20:13 +0200 (MET DST)
+From: Arno Hollosi <hollosi@sbox.tu-graz.ac.at>
+Subject: Re: linebreaks...
+
+
+>  I read in the description of the diffrent propertyvalues that in 'Text'
+> type linebreaks should be LF only. Does this apply to the whole SGF file? I
+
+Yes.
+
+> think that we should not specify this. I think the programs should be able
+> to handle LF or LFCR or CR. That way users can still read the SGF file in
+
+The spec states:
+> Attention: a single linebreak is represented differently on different 
+> systems, e.g. 'LFCR' for DOS, 'LF' on Unix. But when writing a SGF file, 
+> a linebreak has to be written as a single 'LF' (ASCII code: 10 
+> (C-Syntax: '\n')) in all cases. 
+
+conclusion:
+- applications must be able to deal with different linebreaks
+- when writing use a single char (LF)
+
+> their favorite text editor. One more thing. In the 'Text' type text it says
+
+SGF is NOT intended to be human readable!
+
+No fiddling with text editors should be necessary - if you do use a text 
+editor then use one able to understand single LF linebreaks.
+
+> that LF equals \n in C. That is NOT true. On UNIX systems yes. But on
+
+Ok. So what?
+I think the spec is clear at that point.
+
+Note: the spec doesn't say use >>fputc('n', file)<< it says:
+> written as a single 'LF' (ASCII code: 10 (C-Syntax: '\n'))
+LF is '\n' in C syntax. (char c = '\n')
+
+> MS-DOS/MS-Windows \n equals LFCR. So you can not realy use \n in cases like
+
+Wrong - this transformation is only done when you write text files.
+Solution: write binary files.
+
+SGFC reads/writes binary files (I suggest you all use binary instead of 
+text files - think of other charsets - or multibyte characters)
+
+
+/Arno
+

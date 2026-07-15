@@ -1,0 +1,26 @@
+Date: Wed, 26 Mar 1997 18:55:57 -0500
+From: David Fotland <fotland@hpihoah.cup.hp.com>
+Subject: Re: Why we need FF[4] [Was: SGF - some answers] 
+
+> > The pass move is the biggest issue for me forcing me to write FF[3], but
+> > there are others like: enforcing the format of game info properties,
+> > arrows and lines, and the fact that we don't have a final spec and I
+> > am finishing my sgf code this week.
+> 
+> The last point is important, but finally (after a year or so) you will
+> probably update your program and then use the new specification. AR and LN
+> are no problem, you just ignore and do not use them. Do you intend to 
+> continue [tt] even after your next program revision? Else Anders' compromise
+> could be used. What exactly are the differences concerning the format of
+> game info properties, why can you not use FF[4] for them? (I am not familiar 
+> with Ishi-press conversion trouble.)
+
+I like Anders' compromise.
+
+FF[4] specifies the format of game info properties.  Ishi and FF[123] are
+free format.  That means I have to write parsing code to convert from free
+format to fixed format, or move the free format info into the comment.  This
+is not a huge problem, though.
+
+-David
+

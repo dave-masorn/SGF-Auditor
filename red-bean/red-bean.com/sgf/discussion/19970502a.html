@@ -1,0 +1,32 @@
+Date: Fri, 2 May 1997 13:31:49 +0200 (MET DST)
+From: Arno Hollosi <hollosi@sbox.tu-graz.ac.at>
+Subject: Date format - statistics
+
+
+I had a look at my SGF game archive which consists of about 2000 games.
+About 400 games are IGS/NNGS games the rest are pro games.
+The pro games were downloaded from the FTP Go archive and partially
+from Jan van der Steen's pages.
+
+Of those 2000 games about two thirds had a correct date field.
+(if you look at the pro games only: still more than half).
+
+One third (about 600 games) had incorrect date fields.
+Of these 600 games SGFC (the syntax checker) was able to correct
+about 500 games i.e. ~85%.
+In 7 cases SGFC converted the date wrong, i.e. information was lost.
+
+So of 2000 games only 5% couldn't be made ISO compliant.
+That's quite the opposite of David's figures :)
+
+If someone has enough time left, he could extract the DT,RE and maybe
+TM,HA and KM values out of his game-archive and send them to me.
+(A simple grep output would do - I'll extract the field values myself).
+
+As the Correct_Date function of SGFC is quite smart already I'm going to
+improve the parsing of RE (and maybe TM) now.
+
+/Arno
+
+P.S: I used SGFC V0.6 which will be uploaded to my web site soon.
+

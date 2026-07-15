@@ -1,0 +1,49 @@
+body {
+    max-width: 60em;
+    margin: 2em auto;
+    font-family: sans-serif;
+
+    color: #000000;
+    background: #ffffff;
+}
+
+a[name], a:hover[name] {
+    color: #000000;
+}
+
+a {
+    color: #313DC4;
+}
+
+a:hover {
+    color: #BB4D00;
+}
+
+a:visited {
+    color: #820933;
+}
+
+.blue {
+    color: white;
+    background: #313DC4;
+}
+
+.red {
+    color: white;
+    background: #820933;
+}
+
+.lightblue, .lightblue-box {
+    background: #EBF6FE;
+}
+
+.lightblue2 {
+    background: #D8EEFD;
+}
+
+.lightblue-box {
+    padding: 0.5em 0.75em;
+    border: 2px solid #04538B;
+    margin: 1em 0;
+    width: fit-content;
+}

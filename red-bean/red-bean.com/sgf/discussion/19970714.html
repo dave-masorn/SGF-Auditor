@@ -1,0 +1,82 @@
+Date: Mon, 14 Jul 1997 11:01:11 +0200 (MET DST)
+From: Arno Hollosi <hollosi@sbox.tu-graz.ac.at>
+Subject: Re: Many Faces of Go and FF[4] support
+
+
+
+> MF silently discards and ignores, with no warning message:
+> VW, WS, BS, CI, DG, AP, LT, NW, NB.
+Ok.
+
+> MF converts all the following to english comments on input:
+> CH, GB, GW, TE, BM, DM, IT, DO, UC, HO, SI
+Ok.
+
+> The only double MF writes is TE[2], to indicate the correct move in a problem.
+> BTW, shouldn't IT and DO have property value Double, rather than none?
+
+No. A 'very doubtful' move is likely to be a bad move.
+And a 'very interesting move' is likely to be a good or very good move.
+
+> MF preserves, ignores, and prints a warning (unrecognized property) for:
+> AR*, BL*, CA*, DD*, EL, EX, FG*, ID, IP*, IY*, KO*, LN*, OB*, OM, OP, OV, OW*,
+> PM*, SE*, SU*, TC, WL*
+> * are FF[4] properties not supported by MF.
+
+SU, SE, IY and IP are game-specific properties of 'Lines of Action'.
+A Go program doesn't have to understand these.
+Why don't you support WL & BL?
+Some of users of Primiview (my application for Amiga) said they like to 
+see how much time was left -- adds some exitement to the game :-)
+And supporting BL & WL is easy.
+
+> MF converts the following marks to triangles:
+> RG, SC, TB, TW
+
+Do you really mean 'convert' or just 'display as triangles'?
+I hope you mean the latter as TB & TW shouldn't be mixed.
+
+> MF converts L to LB
+> MF converts M to MA
+Fine :)
+
+> MF handles AB and AW at any node, even mixed with moves.  It shows a
+> warning if moves and setup are mixed in nodes.  It can only handle AE
+> at leaf nodes.
+
+What's a leaf node? The last node of a tree?
+Is MFGO able to read the following:
+
+>> (;FF[1];B[dd](;W[cc])(;AE[dd]B[de];W[cc])) <<
+
+Because many old files do exactly that. People tried to show
+variations as siblings with viewers that displayed them as children.
+Mixing has been said to be bad style but it occured frequently.
+E.g. until 2 months ago, the Go Teaching Ladder had lots of files which 
+mixed setup and move properties in a node.
+
+> If an input file has a move in the root node, MF adds a new node after the
+> root and moves the root move there.
+Ok.
+
+> MF can skip junk in front of the inital (; (like e-mail headers), and can handle
+> files starting with ( instead of (;.
+
+What kind of check do you use? (I guess this is interesting for us all :-)
+Are you able to read a file with missing ';' and e-mail header in front?
+In SGFC I look if there are three or more '[', ']' before the next '(' or 
+')' occurs.
+
+> MF expands compressed point lists on input, and will never write a compressed
+> point list.
+Ok.
+
+> On output, MF always uses [tt] for pass, and writes
+> GM[1]FF[4]VW[]AP[Many Faces of Go:10.0] at the start of the file.  It always includes
+> HA, SZ, and ST properties in the root node.  MF writes 2 upper case properties only, 
+> but can read old style mixed upper and lower case properties.
+Good :) 
+
+
+/Arno
+

@@ -1,0 +1,52 @@
+Date: Tue, 25 Mar 1997 12:35:07 -0500
+From: David Fotland <fotland@hpihoah.cup.hp.com>
+Subject: SGF compatibility questions
+
+
+I'm putting the finishing touches on my SGF support in Many Faces, and
+I have some questions...
+
+First, I'd like to be able to read sgf files that contain mail headers.
+This is easy in Ishi Format since everything before the 'EVENT' is
+specified to be ignored.
+
+For SGF I tried skipping to the initial "(;", but I found that there
+are some sgf files that don't have a ';' before the root node.  Is this
+allowed?  I have quite a few of them from Van Der Steen's web site.
+
+What does smart game board do with these files?  Now, I detect and correct
+them, but it prevents me from reading sgf files with mail headers.
+
+
+Second, when was the FF keyword introduced?  Was it part of FF[2] or FF[3]?
+
+Third, the triples for describing the position are confusing.  For example
+DM (even position) is mentioned in FF[4], but is not in Martin's spec
+for FF[3].  Is this really new in FF[4]?  BM (bad move) seems to be dropped
+from FF[4].  Altogether, I count 9 different triples that I could see
+in files (DM, UC, GB, GW, BM, CH, TE, DO, IT), and from my readings of
+the various specs, only 2 of them (GB and GW) exist in all versions of
+the spec.  Does anyone have any recommendation for which ones MFGO should
+support?  I'm tempted to read them all, convert them to commentary text,
+and not allow the user to edit them.  I would not generate them into an
+output file.
+
+Do people find these generally useful?  I'd guess not since the definition
+changes so often.  Is it legal to have several of these in the same node?
+Martin's spec implies yes, but FF[4] says no.  Has anyone seen files
+with multiple triples in the same node?
+
+Fourth, I have some files with a move in the root node.  I think of a move
+as the move that leads to this node.  So the root node shouldn't have
+a move in it.  Currently I correct this by adding a new node.  What do
+other programs do?  
+
+Does anyone else know of popular, odd behavior, or strange files?  It seems
+that as I test, every few files I look at, I find some other strange,
+unexpected thing.
+
+Thanks,
+
+David Fotland
+
+

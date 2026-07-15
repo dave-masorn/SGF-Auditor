@@ -1,0 +1,159 @@
+Date: Wed, 16 Oct 1996 15:50:37 +0100 (MET)
+From: Arno Hollosi <hollosi@sbox.tu-graz.ac.at>
+Subject: SGF STD - recent activity
+
+
+Here's a list of recent changes to the draft:
+
+* added 'How to execute a move' item
+* added a line on 'how to add a stone' (AB/AW/AE)
+  (no suicide capture takes place)
+* deleted OV property
+* MA marks point with an X (not cross)
+* forbid SZ[19:19] (square boards)
+
+
+Some comments/suggestions:
+
+* Labels that are too long
+  Every label consisting of more than one char might get truncated.
+  David/Martin suggested to cut it down so that it fits onto one stone.
+  I don't think that's a good solution.
+  I try to describe what Primiview (the app I coded on the Amiga) does:
+  - calculate the length of the label in stones (width of a stone)
+  - mark all necessary points as dirty (may be more than one board point)
+  - print label centered on the position given or offset it, if it would 
+    go over the board, or even truncate it (cutting away the last chars)
+  - on the next display update (e.g. moving to next node) all dirty 
+    points get redrawn.
+  I don't consider this too much work and the result is worth it.
+  BTW you have to do something similar, if you want to implement arrows, 
+  which destroy the GFX of many points.
+
+* illegal positions created by AB and AW:
+  Martin wrote: "I think a program should have the right to reject such a 
+                 file, since it might mess up its data structures."
+  A program has the right to reject every file it can't handle.
+  But the standard behaviour should allow setting up any position AND
+  keeping it (even groups with no liberties)
+
+* DM property:
+  Adrian writes: " Maybe DM is useful.  I notice that it is a "setup" 
+     property and hence cannot be used to annotate positions arrived at by 
+     moves.  What is the intended use for this property? "
+  Martin writes: " I don't know what happened to DM recently :), but in 
+     the old days it was a normal annotation property that could be used everywhere 
+     to indivcate an even position. I vote for keeping DM, as it 
+     complements GB and GW.
+  When I wrote the draft I added a property type 
+  (root/move/setup/gameinfo/-) to every property. Seeing DM annotating a 
+  position I thought it's a setup  property. If we want DM (& UC) to be 
+  general type properties (like GB & GW) it's ok. I just had to assign types 
+  when I wrote the draft. If you think the types are not set right, just 
+  tell me :)
+
+* Whitespace in property values:
+  Martin writes: "SGB does not allow whitespace inside properties, and it 
+     seems the standard has the same idea."
+  It has.
+  Martin writes: "I think it is illegal, but it happens. For example, many 
+     of the game records from FOST cup on 'Big Bear's' site are like this. 
+     Maybe the SGF[4] converter could handle such things."
+  The FF[4] converter/syntax checker is still not finsihed. I hope to be 
+  able to release a beta version soon.
+  It's able to deal with whitespaces and other nasty things already.
+
+* Rule property
+  Should we use numbers for the rules?
+  Are there any other important differences between the rules which affect
+  the displaying of game-records? (AGA affects prisoner count)
+  (Ko rules, counting rules etc. are NOT part of displaying, these are 
+   only of intereset for computer players)
+
+* RG, SC, SL, V
+  Adrian wrote: "I'm not sure that V is really useful.  Obviously there's 
+     some question about RG (region), SC and SL since they aren't even given 
+     a meaning by the spec."
+  SL is just a markup type like MA, TR, SQ (but with no clear definition of 
+  how to display the markup).
+  I don't know about RG, SC and V. Maybe Martin can bbring some light 
+  into this.
+
+* Unqiue Positions:
+  Adrian writes: "Is it ever legal to have a list of positions when the
+     positions are not unique?  I noticed this uniqueness being specified 
+     over and over."
+  I can't think of a case where positions are allowed to be not unique.
+  Maybe future properties or private properties will allow this.
+  I just pasted the line into every description of properties using list 
+  of positions. That's why it appears again & again.
+
+* Hard & soft line breaks
+
+  I think the standard should define the text formatting in a way that:
+  1) the text looks good on any size of display
+  2) there's a formatting of some kind
+  3) it allows to save SGF files with line length smaller than e.g. 76 chars
+  4) it's easy to implement
+  5) what about different char sets (e.g. japanese, chinese, ..) with
+     multi-byte characters? I don't know their spec, but are there any
+     nasty cases to consider?
+  6) easy to edit with a text editor (not necessary but it would be nice)
+
+  ad 1) this can be achieved by (word-)wrapping long lines, so that they 
+        fit the display
+  ad 2) there must be (hard-)linebreaks of some kind, which allow to
+        begin a new line, make paragraphs, etc...
+  ad 3) this can only be guranteed if we introduce soft linebreaks
+
+  Using a special (7-Bit) char for hard line breaks (as suggested by Tim)
+  is the easiest solution. The only chars I can think of are those with an
+  ASCII code < 32. However those chars might cause troubles when mailing
+  the file, or don't they?
+
+  Another solution is to add another char to identify linebreaks.
+  EMail uses 'quoted printable' where a soft linebreak is indicated by
+  a preceeding '='. In that case one has to escape '=' itself too, so
+  I guess it's too complicated for our case.
+
+  Another solution (which I like) was the idea, that a hard line break
+  should be followed by another whitespace, a softline break by a 
+  non-whitespace. The whitespace indicating the hard linebreak itself
+  should not be displayed because otherwise every displayed linebreak
+  would be followed by a space. This solutions fullfills all points (except 5?)
+
+  Examples (or questions that arose):
+  (Note: A '@' means: display should do a linebreak here. C syntax used 
+   for input string.)
+
+  "text\n  text" would be displayed as 'text@ text'
+  "text\ntext"   would be displayed as 'text text'
+  "text\n\rtext" would be displayed as 'text text'  (DOS linebreak consists of two chars!)
+  "text\n\n\ntext"      - " -       as 'text@ text'
+  "text\n\n\n\ntext"    - " -       as 'text@@text'
+
+  One easy way to implement this is to do a conversion when reading/writing 
+  the SGF file:
+  * reading: first convert ALL linebreaks to '\n' (e.g. DOS linebreaks '\n\r')
+             then all soft linebreaks are converted to space
+             hard linebreaks are converted to a single '\n'
+  * writing: insert soft linebreaks instead of a space (which preceeds a 
+             non whitespace) everywhere you want (to limit the line length),
+             write hard linebreaks as e.g. '\n\n'
+
+  Displaying is now done by wrapping long lines and doing linebreaks for
+  every '\n' encountered.
+  Editing: the user can write long lines (paragraphs) add newlines, make
+           intentions after newlines just as usual.
+
+  I don't see any drawbacks here. Are there any?
+  One might want to change the definition of hard linebreaks from
+  'linebreaks followed by a whitespace' to 'two linebreaks in a row' 
+  (i.e. from '\n\s' to '\n\n' (using perl syntax)).
+
+
+
+That's it for now
+
+/Arno
+

@@ -1,0 +1,128 @@
+<HTML lang="en">
+
+<!-- Mirrored from red-bean.com/sgf/ff1_3/xgobancode.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 30 Jun 2026 15:28:36 GMT -->
+<HEAD>
+<TITLE>sgf reader for 2.0 version of xgoban</TITLE>
+  <link rel="stylesheet" href="../main.css">
+</HEAD>
+
+<BODY>
+
+<H1>sgf reader for 2.0 version of xgoban</H1>
+
+From: Antoine de Maricourt &lt;dumesnil@etca.fr>
+<p>
+My strategy is to implement the most common properties that are found
+in file available on the net. I recently added LB and TR, because a
+user asked me to do it.
+<p>
+Here is part of the sgf reader for 2.0 version of xgoban. This is a
+map between the property name, the internal property number and the
+read/write routines for the property. But not every property in this
+map is displayed by xgoban (currently). This was also a first attempt
+to support multiple sets (the second field is a mask for several sets)
+but it will fail when different sets have the same property name with
+a different meaning. I should have multiple tables.
+
+<pre>
+
+#define EveryGame       (~0)
+#define Go              (1 &lt;&lt; SG_Go)
+
+#define Common          (1 &lt;&lt; 0)
+#define XGoban          (1 &lt;&lt; 7)
+
+SG_KWData sgf_keyword[] = {
+
+  { EveryGame   , Common        , "B"   , SG_Black              , SGF_ReadGoMove        , SGF_WriteGoMove       , },
+  { EveryGame   , Common        , "W"   , SG_White              , SGF_ReadGoMove        , SGF_WriteGoMove       , },
+  { EveryGame   , Common        , "C"   , SG_Comment            , SGF_ReadExtendedText  , SGF_WriteText         , },
+  { EveryGame   , Common        , "N"   , SG_NodeName           , SGF_ReadSimpleText    , SGF_WriteText         , },
+  { EveryGame   , Common        , "V"   , SG_NodeValue          , SGF_ReadNumber        , SGF_WriteNumber       , },
+  { EveryGame   , Common        , "CH"  , SG_Check              , SGF_ReadTriple        , SGF_WriteTriple       , },
+  { EveryGame   , Common        , "GB"  , SG_GoodBlack          , SGF_ReadTriple        , SGF_WriteTriple       , },
+  { EveryGame   , Common        , "GW"  , SG_GoodWhite          , SGF_ReadTriple        , SGF_WriteTriple       , },
+  { EveryGame   , Common        , "TE"  , SG_Tesuji             , SGF_ReadTriple        , SGF_WriteTriple       , },
+  { EveryGame   , Common        , "BM"  , SG_BadMove            , SGF_ReadTriple        , SGF_WriteTriple       , },
+  { EveryGame   , Common        , "TU"  , SG_TimeUsed           , SGF_ReadReal          , SGF_WriteReal         , },
+  { EveryGame   , Common        , "BL"  , SG_BlackLeft          , SGF_ReadReal          , SGF_WriteReal         , },
+  { EveryGame   , Common        , "WL"  , SG_WhiteLeft          , SGF_ReadReal          , SGF_WriteReal         , },
+  { EveryGame   , Common        , "FG"  , SG_Figure             , SGF_ReadNone          , SGF_WriteNone         , },
+  { EveryGame   , Common        , "AB"  , SG_AddBlack           , SGF_ReadStones        , SGF_WritePoints       , },
+  { EveryGame   , Common        , "AW"  , SG_AddWhite           , SGF_ReadStones        , SGF_WritePoints       , },
+  { EveryGame   , Common        , "AE"  , SG_AddEmpty           , SGF_ReadStones        , SGF_WritePoints       , },
+  { EveryGame   , Common        , "PL"  , SG_Player             , SGF_ReadPlayer        , NULL  , },
+  { EveryGame   , Common        , "GN"  , SG_GameName           , SGF_ReadSimpleText    , SGF_WriteText         , },
+  { EveryGame   , Common        , "GC"  , SG_GameComment        , SGF_ReadExtendedText  , SGF_WriteText         , },
+  { EveryGame   , Common        , "EV"  , SG_Event              , SGF_ReadSimpleText    , SGF_WriteText         , },
+  { EveryGame   , Common        , "RO"  , SG_Round              , SGF_ReadSimpleText    , SGF_WriteText         , },
+  { EveryGame   , Common        , "DT"  , SG_Date               , SGF_ReadSimpleText    , SGF_WriteText         , },
+  { EveryGame   , Common        , "PC"  , SG_Place              , SGF_ReadSimpleText    , SGF_WriteText         , },
+  { EveryGame   , Common        , "PB"  , SG_BlackPlayer        , SGF_ReadSimpleText    , SGF_WriteText         , },
+  { EveryGame   , Common        , "PW"  , SG_WhitePlayer        , SGF_ReadSimpleText    , SGF_WriteText         , },
+  { EveryGame   , Common        , "RE"  , SG_Result             , SGF_ReadSimpleText    , SGF_WriteText         , },
+  { EveryGame   , Common        , "US"  , SG_User               , SGF_ReadSimpleText    , SGF_WriteText         , },
+  { EveryGame   , Common        , "TM"  , SG_Time               , SGF_ReadSimpleText    , SGF_WriteText         , },
+  { EveryGame   , Common        , "SO"  , SG_Source             , SGF_ReadSimpleText    , SGF_WriteText         , },
+  { EveryGame   , Common        , "GM"  , SG_Game               , SGF_ReadNumber        , SGF_WriteNumber       , },
+  { EveryGame   , Common        , "SZ"  , SG_Size               , SGF_ReadNumber        , SGF_WriteNumber       , },
+  { EveryGame   , Common        , "VW"  , SG_View               , SGF_ReadPoints        , SGF_WritePoints       , },
+  { EveryGame   , Common        , "BS"  , SG_BlackSpec          , SGF_ReadNumber        , SGF_WriteNumber       , },
+  { EveryGame   , Common        , "WS"  , SG_WhiteSpec          , SGF_ReadNumber        , SGF_WriteNumber       , },
+  { EveryGame   , Common        , "EL"  , SG_Evaluation         , SGF_ReadNumber        , SGF_WriteNumber       , },
+  { EveryGame   , Common        , "EX"  , SG_Expected           , SGF_ReadPoints        , SGF_WritePoints       , },
+  { EveryGame   , Common        , "SL"  , SG_Selected           , SGF_ReadPoints        , SGF_WritePoints       , },
+  { EveryGame   , Common        , "M"   , SG_Marked             , SGF_ReadPoints        , SGF_WritePoints       , },
+  { EveryGame   , Common        , "L"   , SG_Letters            , SGF_ReadPoints        , SGF_WritePoints       , },
+
+  { EveryGame   , XGoban        , "NU"  , SG_NodeNumber         , SGF_ReadNumber        , SGF_WriteNumber       , },
+
+  /*
+   *    Go specific
+   */
+
+  { Go          , Common        , "BR"  , SG_BlackRank          , SGF_ReadSimpleText    , SGF_WriteText         , },
+  { Go          , Common        , "WR"  , SG_WhiteRank          , SGF_ReadSimpleText    , SGF_WriteText         , },
+  { Go          , Common        , "HA"  , SG_Handicap           , SGF_ReadNumber        , SGF_WriteNumber       , },
+  { Go          , Common        , "KM"  , SG_Komi               , SGF_ReadReal          , SGF_WriteReal         , },
+  { Go          , Common        , "TB"  , SG_BlackTerritory     , SGF_ReadPoints        , SGF_WritePoints       , },
+  { Go          , Common        , "TW"  , SG_WhiteTerritory     , SGF_ReadPoints        , SGF_WritePoints       , },
+  { Go          , Common        , "SC"  , SG_Secure             , SGF_ReadPoints        , SGF_WritePoints       , },
+  { Go          , Common        , "RG"  , SG_Region             , SGF_ReadPoints        , SGF_WritePoints       , },
+  { Go          , Common        , "KO"  , SG_Ko                 , SGF_ReadPoints        , SGF_WritePoints       , },
+
+  { Go          , Common        , "SK"  , SG_Seki               , SGF_ReadPoints        , SGF_WritePoints       , },
+  { Go          , Common        , "TN"  , SG_NeutralTerritory   , SGF_ReadPoints        , SGF_WritePoints       , },
+  { Go          , XGoban        , "PR"  , SG_Prisoners          , SGF_ReadPoints        , SGF_WritePoints       , },
+
+  /*
+   *    Extensions
+   */
+
+  { EveryGame   , Common        , "FF"  , SG_FileFormat         , SGF_ReadFileFormat    , SGF_WriteNumber       , },
+
+  { Go          , Common        , "LB"  , SG_Labeled            , SGF_ReadLabeledPoints , SGF_WriteLabeledPoints, },
+  { Go          , Common        , "TR"  , SG_Triangle           , SGF_ReadPoints        , SGF_WriteNumber       , },
+  { Go          , XGoban        , "SQ"  , SG_Square             , SGF_ReadPoints        , SGF_WriteNumber       , },
+  { Go          , Common        , "DM"  , SG_Diamond            , SGF_ReadPoints        , SGF_WriteNumber       , },
+
+  /*
+   *    Other game specific
+   */
+
+  /*
+   *    Last entry
+   */
+
+  { EveryGame   , NULL  , NULL                  , 0                     , NULL  , NULL  , },
+
+};
+</pre>
+
+<HR>
+Last modified: Mar 9, 1995<P>
+<ADDRESS>Martin M&uuml;ller, mueller@inf.ethz.ch</ADDRESS>
+</BODY>
+
+<!-- Mirrored from red-bean.com/sgf/ff1_3/xgobancode.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 30 Jun 2026 15:28:36 GMT -->
+</HTML>

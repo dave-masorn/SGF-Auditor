@@ -1,0 +1,81 @@
+Date: Fri, 13 Dec 1996 16:09:03 +0100 (MET)
+From: Arno Hollosi <hollosi@sbox.tu-graz.ac.at>
+Subject: SGF FF[4] draft, version 6
+
+
+Hello SGFers,
+
+I updated the draft again.
+Of course the changes are not final - they are subject to discussion.
+
+Here's the list:
+
+* divided the draft into general and game specific section.
+  Throughout the draft many Go related terms are still used though.
+
+* changed the term 'position' into 'point'
+  (this was requested several times)
+
+* I added 'compressed point lists' as suggested by Martin Mueller.
+  Any porperty that has 'list of point' may be stored in compressed
+  format (e.g. TB, MA, AB, VW, DD, ...)
+
+* Deleted BS, WS, RG, SC properties. The first two are computer type 
+  properties, the latter pair wasn't supported by many applications
+  and their purpose was unknown.
+  (Again: Anyone interested in compiling a computer property type list?)
+
+* Introduced a new property value type: Stone
+  Right now Stone is used only by AW & AB.
+  The change from 'list of point' to 'list of stone' is a cosmetical one.
+  I did it because e.g. in chess 'list of point' is not sufficient to add
+  a new piece to the board, because there are different kind of pieces!
+
+* Other cosmetical changes:
+  - RE[B+] & RE[W+] are allowed now (score is optional).
+    Some games don't have a score (e.g. chess).
+  - Definiton of Real now: Real = Number ["." Digit { Digit }]
+    (a digit after the decimal point is required, e.g. "3." is illegal)
+  - Collection is now:  Collection = GameTree { GameTree }
+    I.e. a collection must at least contain ONE GameTree
+  - explicitly state:
+    'The order of properties in a node is not fixed. It may change every time
+     the file gets saved and may vary from application to application.'
+
+* I took the liberty of adding applications to the AP property list:
+	Application		     System	  Name
+	---------------------------  -----------  --------------------
+	[CGoban:1.6.2]		     Unix	  CGoban
+	[MGT:?]			     DOS/Unix	  MGT
+	[NNGS:?]		     Unix	  No Name Go Server
+	[SGB:?]			     Macintosh	  Smart Game Board
+
+  If this is not ok, please let me know.
+  If your application doiesn't appear on the AP list let me know.
+
+* Defined mandatory RU(les) names:
+	Because there are many different rules, SGF requires
+	mandatory names only for a small set of well known rule sets.
+	Note: it's beyond the scope of this specification to give an
+	exact specification of these rule sets.
+	Mandatory names for Go (GM[1]):
+		"AGA" (rules of the American Go Association)
+		"GOE" (the Ing rules of Goe)
+		"Japanese" (the Nihon-Kiin rule set)
+		"NZ" (New Zealand rules)
+  If you dislike the names I've chosen or think there there's an important
+  rule set missing, please let me know.
+
+
+
+That's it.
+Could everyone please take a close look at the draft and tell me (or sgf_std)
+likes, dislikes, suggestions, etc. There are still several open questions.
+
+I hope that it's possible to 'release' the new standard before March/April 1997.
+So if you strongly disagree with a defintion or anything else please let 
+me know. It'll be too late when we agree on a final version.
+
+
+/Arno
+

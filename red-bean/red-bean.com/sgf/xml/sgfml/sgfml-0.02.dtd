@@ -1,0 +1,193 @@
+<!-- =============================================================
+	sgfml: Smart Game Format - XML DTD
+	V0.02 *draft*
+     =============================================================
+
+	Arno Hollosi, ahollosi@mail.com
+
+	Published as OpenContent
+	OpenContent Licence: http://www.opencontent.org/opl
+
+     ============================================================= -->
+
+
+<!-- Elementary entities ========================================= -->
+
+<!ENTITY lt     "&#38;#60;">
+<!ENTITY gt     "&#62;">
+<!ENTITY amp    "&#38;#38;">
+<!ENTITY apos   "&#39;">
+<!ENTITY quot   "&#34;">
+
+
+<!-- General definitions ========================================= -->
+
+<!NOTATION sgf PUBLIC "Smart Game Format - http://www.red-bean.com/sgf/">
+
+
+<!-- Node structure ============================================== -->
+
+<!ELEMENT sgfml ( (header)?, (game)+ )>
+<!ATTLIST sgfml
+	version NMTOKEN #REQUIRED
+>
+<!ELEMENT game ( (gameheader)?, sequence )>
+<!ATTLIST game
+	type (GO|CHESS|GOMUKU|LOA|HEX|AMAZONS) #REQUIRED
+>
+
+<!ELEMENT sequence ( (node|setup)+, (sequence)* )>
+<!-- two node types: nodes and setup nodes -->
+<!ELEMENT node  (move|gameinfo|markup|line|comment|title|annotate|value|property)* >
+<!ELEMENT setup (addstone|gameinfo|markup|line|comment|title|annotate|value|property)* >
+<!ATTLIST setup
+	sidetoplay NMTOKEN #IMPLIED
+>
+
+<!ELEMENT gameinfo (person|team|copyright|date|event|time|result|comment|title|place|rules|source|komi|handicap)* >
+
+<!-- [game]header holds SGF properties with type "root" -->
+<!ELEMENT header (application) >
+<!ELEMENT gameheader (board|comment|title)* >
+
+
+<!-- Header properties =========================================== -->
+
+<!ELEMENT board EMPTY>
+<!ATTLIST board
+	size NMTOKEN #IMPLIED
+>
+
+<!ELEMENT application EMPTY>
+<!ATTLIST application
+	name CDATA #REQUIRED
+	version NMTOKEN #REQUIRED
+>
+
+<!-- Properties ================================================== -->
+
+<!ELEMENT move EMPTY>
+<!ATTLIST move
+	side NMTOKEN #REQUIRED
+	move CDATA #REQUIRED
+	number NMTOKEN #IMPLIED
+	timeleft NMTOKEN #IMPLIED
+	timeused NMTOKEN #IMPLIED
+	annotate (VERYGOOD|GOOD|INTERESTING|DOUBTFUL|BAD|VERYBAD) #IMPLIED
+	who IDREF #IMPLIED
+>
+	<!-- who ... if more than one person per side -->
+
+<!ELEMENT point EMPTY>
+<!ATTLIST point
+	point CDATA #REQUIRED
+	label CDATA #IMPLIED
+>
+	<!-- label ... only needed in combination with markup -->
+
+<!ELEMENT stone EMPTY>
+<!ATTLIST stone
+	point CDATA #REQUIRED
+	side NMTOKEN #REQUIRED
+	figure CDATA #IMPLIED
+>
+	<!-- figure ... for games with different figures -->
+
+<!ELEMENT addstone (stone)+ >
+	
+<!ELEMENT comment (#PCDATA|br)* >
+<!ELEMENT title (#PCDATA)>
+<!ELEMENT br EMPTY>	<!-- linebreak -->
+
+<!ELEMENT annotate EMPTY>
+<!ATTLIST annotate
+	type (GOOD|BAD|EVENPOS|UNCLEARPOS|HOTSPOT) #REQUIRED
+	emphasis (NONE|YES) 'NONE'
+	side NMTOKEN #IMPLIED
+>
+
+<!ELEMENT value (#PCDATA) >
+
+<!ELEMENT markup (point)+ >
+<!ATTLIST markup
+	type (MARK|TRIANGLE|CIRCLE|RECTANGLE|VIEW|DIM|LABEL|TERRITORY) 'MARK'
+	side NMTOKEN #IMPLIED
+>
+	<!-- side ... only for territory markup -->
+
+
+<!ELEMENT line (point, point)+ >
+<!ATTLIST line
+	type (LINE|ARROW) 'LINE'
+>
+
+
+<!-- Game-Info properties ======================================== -->
+
+
+<!ELEMENT event (#PCDATA|round)* >
+<!ELEMENT round ( #PCDATA )>
+<!ELEMENT place ( #PCDATA )>
+<!ELEMENT copyright ( #PCDATA )>
+<!ELEMENT rules ( #PCDATA )>
+<!ELEMENT source ( #PCDATA )>
+<!ATTLIST source
+	type (RECORD|COMMENTS|FILE) #IMPLIED
+>
+<!-- RECORD ... actual moves, COMMENTS ... comments and annotations of moves,
+     FILE ... electronic version of game record or comments -->
+
+<!ELEMENT date (dateitem)+ >
+<!ELEMENT dateitem EMPTY>
+<!ATTLIST dateitem
+	date NMTOKEN #REQUIRED
+	lasted NMTOKEN #IMPLIED
+>
+<!-- date and lasted have to be given in ISO 8601 format unless this is impossible
+     for date this is: yyyy[-mm[-dd[Thh[:mm[:ss]]]]]
+     lasted is either a date as given above, or a period in the form
+     P[nY][nM][nD][T[nH][nM][nS]]
+-->
+
+<!-- fixme: these are just dummy definitions -->
+<!ELEMENT result ( #PCDATA )>
+<!ELEMENT time ( #PCDATA )>
+<!ELEMENT komi ( #PCDATA )>
+<!ELEMENT handicap ( #PCDATA )>
+
+
+<!-- Properties for description of people ======================== -->
+
+<!ELEMENT person (name, (rating|contact)* )>
+<!ATTLIST person
+	role (PLAYER|ANNOTATOR|RECORDER) #REQUIRED
+	side NMTOKEN #IMPLIED
+	team IDREFS #IMPLIED
+	id ID #IMPLIED
+>
+	<!-- team ... id of team -->
+
+<!ELEMENT name ( #PCDATA )>
+<!ELEMENT rating ( #PCDATA )>
+<!ATTLIST rating
+	body CDATA #IMPLIED
+>
+	<!-- body ... organization or place where rating is issued -->
+
+<!ELEMENT contact ( #PCDATA )>
+<!ATTLIST contact
+	type (EMAIL|ADDRESS|PHONE) 'EMAIL'
+>
+
+<!ELEMENT team ( #PCDATA )>
+<!ATTLIST team
+	id ID #REQUIRED
+>
+
+
+<!-- Dummy property ============================================== -->
+
+<!ELEMENT property ( #PCDATA )>
+<!ATTLIST property
+	name CDATA #REQUIRED
+>

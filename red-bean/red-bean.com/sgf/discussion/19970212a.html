@@ -1,0 +1,169 @@
+Date: Wed, 12 Feb 1997 01:10:56 +0100 (MET)
+From: Arno Hollosi <hollosi@sbox.tu-graz.ac.at>
+Subject: SGF FF[4] - version 7 / Syntax Checker
+
+
+Hi folks,
+
+A rather long email again.
+
+4 sections:
+- update of SGF Syntac Checker
+- update of draft
+- open questions
+- some answers to your questions
+
+-----------------------------------------------------------------------------
+SGF Syntax Checker & Converter
+-----------------------------------------------------------------------------
+
+I uploaded a new version of the SGF Syntax Checker & Converter (V0.4).
+
+List of changes since V0.3:
+
+- improved ParseText: removes trailing spaces and unnecessary escapings '\';
+  applies given linebreak style
+- added better date and result parsing (DT, RE)
+- added handling of boards bigger than 19x19 (upto 52x52 now)
+- added compressed point lists
+- reformatted message output; added status line
+- some messages give more informaion now (e.g. which property caused 
+error)
+- rewritten argument parsing
+- many minor bug fixes, new error cases (messages) added
+
+
+------------------------------------------------------------------------------
+New version of draft
+------------------------------------------------------------------------------
+
+I've also updated the draft again, according to the suggestions you made.
+The FF[4] example file was updated too.
+
+Here's a list of the changes:
+
+- removed restriction "If PL is omitted in a setup-node viewers must not display
+  whose turn it is to play."
+
+- removed suggested use and color of TR, SQ, MA, TR, CR
+
+- added 7 new games on request of Matthew M. Burke:
+  Ataxx, Hex, Jungle, Neutron, Philosopher's Football, Quadrature, Trax
+
+- default value for ST defined: 0 (zero)
+
+- made purpose of DD[], VW[] more clearly as there were some misunderstandings:
+  > DD[] clears any setting, i.e. it undims everything.
+  > VW[] clears any setting, i.e. the whole board is visible again.
+
+- removed suggestion of using "..p" for pro ranks
+
+- moved BR, WR to general section again
+
+- renamed 'triple' type to 'double' as it has only two states
+
+- removed expected range of handicap
+
+- corrected various inconsistencies and spelling mistakes
+
+- new way of handling game-info properties (incremental game-info no 
+  longer possible):
+  > A node containing game-info properties is called a game-info node.
+  > There may only be one game-info node on any path within the tree,
+  > i.e. if some game-info properties occur in one node there may not be
+  > any further game-info properties in following nodes:
+  > a) on the path from the root of the merged game to this node.
+  > b) in the subtree below this node.
+
+- added some lines to usage of UM:
+  > UM is used for hyper-links in the comment text and may be
+  > used for navigation within the game-tree too, e.g. goto
+  > next/previous marked node.
+
+
+---------------------------------------------------------------------------
+Open questions and suggestions
+---------------------------------------------------------------------------
+
+What's your opinion on the points below?
+
+- Pass move as '[tt]' for boards <= 19x19
+  I don't like this solution as we would've two different ways to express
+  the same information. I think that old FF[3] applications will just
+  ignore a '[]' move - I don't think that this is a big compatibility
+  problem. And hopefully the go servers will start writing FF[4] soon,
+  so application coders will soon make updates to their programs.
+
+- Soft Linebreak '\<cr>' should be converted to <nothing> instead of space
+  Actually I like this one.
+
+- Add new property: LN (draw line)
+  If we've got arrows already, why not add simple lines too?
+
+- Drop V (value) property
+  It looks like a computer-type property. Any objections?
+  (btw, TC doesn't give the score! Just the difference in territory!)
+
+- Drop SL (selected points) property?
+
+- David: "RE - why specify the french spelling (Forfait) of Forfeit?"
+  Hm. I didn't notice this. However it's already defined this way since FF[1].
+  Should we change this?
+
+
+---------------------------------------------------------------------------------
+Some answers
+---------------------------------------------------------------------------------
+
+Martin Mueller:
+  > newlines: the new '\n' newlines appear as little boxes (the symbol for
+  > unprintable characters) on the Mac. '\r' works as a newline.
+  Your application should swallow the '\n' chars then.
+  But the standard way for saving is: <cr> == '\n'
+
+  > replace BM, TE, IT, DO by one single property as they are mutual exclusive
+  This just generates compatibility problems. I don't hink it's worth it.
+
+William Shubert:
+  > ST: To provide a standrad way of being nonstandard just means that we'll
+  > have lots of sgf files that don't look quite right.  Is anybody actually
+  > planning on modifying their SGF viewer to be able to show variations in all
+  > four of these different ways?
+  ST is here to make the files look right.
+  And yes: there are viewers out there that ALREADY show all 4 types.
+
+  > ^A..^Z: I still see absolutely no use for this.  Yuck.  If you want to
+  > label your variations, why not use "LB[ef:A][sc:B]" and put an "A" 
+  > and a "B" in the text?
+  '^A' doesn't have to do anything with the markup on the board.
+  '^A' is used for hyper-links in the text. And yes, a sophisticated 
+  reviewer may extend '^A' to 'A (p13)' where possible.
+
+
+Various:
+  > GM - a go program should not have to be able to deal with different games
+  > within a collection.
+  I think it should! The go program should at least be able to REJECT 
+  those game-trees that are not Go. Or do you think it's ok, if the 
+  applications just crashes?
+  That's what I mean with: 'be able to deal with'
+
+  > LB - long labels
+  As you all cry out: "no - no - no" I'll change this in the next version.
+  But can anyone please tell me a GOOD reason for labels <= 3 chars?
+  The way I see it:
+  If a application allows sizeable windows and selectable fonts (e.g. like
+  my editor Primiview) then any label >1 char can't be dispalyed on one
+  stone alone anyway. So what does Primiview do? It just calculates the width of 
+  the string and marks as many neighbouring points as 'dirty' as necessary.
+  What's so EXTREMLY difficult about that?
+  Have a look at FF4_05.gif & FF4_06.gif from the FF[4] example file.
+  Just to remind you: there's already another markup which doesn't fit
+  onto one stone alone, actually it can cover the whole board: arrows!
+  Can someone come up with a good reason, instead of just saying 'no'?
+
+
+
+Thanks for your attention
+/Arno
+

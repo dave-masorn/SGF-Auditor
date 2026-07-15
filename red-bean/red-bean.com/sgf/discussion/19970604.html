@@ -1,0 +1,63 @@
+Date: Wed, 4 Jun 1997 16:50:13 +0200 (MET DST)
+From: Arno Hollosi <hollosi@sbox.tu-graz.ac.at>
+Subject: New version of SGFC
+
+
+Hi all,
+
+I've uploaded a new version of SGFC - current version is V1.03
+The last three updates were bug-fixes only.
+Have a look at the README file to see what has changed.
+
+Currently I'm converting the GTL archive to FF[4] - well mainly this
+means converting with SGFC to get rid of errors.
+
+Maybe your interested in the following statistics, as the GTL archive
+(with over 400 games) is the biggest archive of annotated games on
+the net (AFAIK).
+
+
+405 files from GTL archive
+==========================
+Error codes are from SGFC.
+
+     77 Error 8           illegal outside chars (mostly: signatures)
+      1 Error 9
+      1 Error 10
+     12 Error 12          empty variation
+      1 Error 13
+     64 Error 14          illegal values deleted (e.g. PL)
+    378 Error 15          illegal values corrected (moves with newlines)
+      2 Error 17
+     40 Error 20          property without values
+     22 Error 28          property already exists - merged
+     82 Error 29          property already exists - deleted
+      1 Error 37
+     12 Error 38          Addstone/Markup position not unique
+    ---
+    693
+
+     59 Warning 15        illegal value corrected (KM, RE, DT)
+    169 Warning 24        empty values deleted (C[])
+    132 Warning 30        setup&move properties mixed within a node
+     17 Warning 33        illegal game-info
+    135 Warning 35        unknown property (NB,NW,KI)
+    101 Warning 39        AddStone has no effect
+    437 Warning 40        property not part of FF (missing FF)
+    ---
+   1040
+
+Conclusion: if you want to write a robust SGF application:
+
+- remove whitespaces from values (moves, numbers, ...)
+- be able to deal with illegal chars outside values
+  (mainly email signatures)
+- be able to handle two properties of same type within one node,
+  e.g. >>;B[dd]C[good] C[move];<<
+- setup and move properties mixed within a node
+- property not part of fileformat (most likely: FF property missing, but
+  file is actually FF[3])
+
+
+/Arno
+

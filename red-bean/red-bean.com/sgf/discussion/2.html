@@ -1,0 +1,65 @@
+Date: Tue, 18 Jun 1996 18:17:26 +0200 (MET DST)
+From: Arno Hollosi <hollosi@sbox.tu-graz.ac.at>
+
+Hi all,
+
+thanks to all who took the time to have a look at the draft.
+
+I updated the draft as requested:
+
+* dropped line limit
+* changed specifiaction for formatted text
+* '\' in SimpleText/Text escapes any char following it
+* no restriction of mixing verbose / short mode
+* changed verbose move-type (uses uppercase letters now and
+  may be extended to hold positions up to 625x625
+* SZ[]-value is defined as (number | number ':' number) now
+* format for DT, RE is mandatory
+* ISO-latin-1 isn't used in SimpleText/Text (but everywhere else)
+* ST[] updated -- (lowercase markup added)
+
+Just have a look at
+
+http://www.cis.tu-graz.ac.at/home/hollosi/sgf4_draft/
+
+(I included a short index of properties now)
+
+
+Open questions:
+---------------
+
+* Should we extent the Text format?
+  (I'm thinking about choice of 3 fonts (or faces of the same font:
+   no, light and heavy emphasis (e.g. standard, italics, bold face))
+
+* What do you think about the new properties?
+  escpecially AP, XS, ST?
+
+* Is the new move-type ok?
+  (if boards are < 26) it's humanreadble. Ok for >= 26x26?
+
+* the draft tries to fix the time-properties (especially byo-yomi).
+  Does the draft succeed in fixing the problems?
+
+* should we include other new properties, e.g. LA (LAnguage),
+  CA (ChArset in Text/SimpleText)
+
+* Should we move the seldom used markup (BM, TE, UC, DM, ...)
+  out of the standard and move it into an extended set
+  (XS with positive number, i.e. general accepted extension to FF[4])
+
+* Should we include directed graphs in the standard, or should we keep
+  this an extended set?
+
+* What about computer go properties?
+  I don't know anything about them myself. They should be an accapted
+  XS[], but does anyone have a complete list with description?
+
+* Printing: SGF is not very useful, if someone wants to print a record.
+  FG[] alone isn't enough. SGB uses DG[] (some kind of Diagram-spec),
+  but the format is not public.
+
+
+
+/Arno
+

@@ -1,0 +1,43 @@
+Date: Mon, 28 Apr 1997 10:46:36 -0400
+From: mueller@inf.ethz.ch (Martin =?iso-8859-1?Q?M=FCller?= )
+Subject: Re: RE and Date formats
+
+>
+>I'm still not sure what to do about illegal date/result fields.
+>Anders & David suggest to leave them where they are.
+>(maybe the application should at least notify the user that these
+>values are incorrect [only if he/she edits those fields - otherwise
+>such a message would be too annoying]).
+>Other opnions?
+>
+>
+
+We have had the problem of illegal entries in the past, and it will not
+simply go away with the new standard I'm afraid. The best we can do is to
+persuade authors to write clean files in the future, and to offer help with
+the conversion of old unclean files.
+
+The first point can be facilitated by offering rigorous test suites, or
+even a reference implementation.
+
+Concerning conversion, I think Arno's tool is a big step in the right
+direction. Still the question is what to do with illegal properties?
+I think we might leave them as they are and just ignore them if they are
+illegal format and cannot be parsed. So they could be read in and written
+out without being changed.
+
+A conversion tool could be called separately from the SGF editor. It would
+attempt to recognize and modify such entries. Maybe it would be an
+interactive tool that asks the user what to do in hard cases.
+
+Compiled versions of such a tool for PC and Mac should be available on the
+net once. As an experiment, I have compiled Arno's text-based version on
+the Mac a couple of weeks ago. It was easy to get it running. Any
+volunteers for building a nice interface around it?
+
+Maybe other programs could even call such a tool on the fly to convert files?
+
+        Martin
+
+
+

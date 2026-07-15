@@ -1,0 +1,109 @@
+Date: Thu, 17 Apr 1997 13:34:11 -0400
+From: David Fotland <fotland@hpihoah.cup.hp.com>
+Subject: Re: SGF FF[4] - version 9 
+
+
+Sounds great!  I've switched back to FF[4].  I'll be distributing some
+pro game records (uncommented) with the new Many Faces of Go, and I'll
+convert them to FF[4].  I won't put any restrictions on redistributing
+these records, so there will be some FF[4] files floating around soon.
+
+-David
+
+> 
+> Hello again,
+> 
+> I've uploaded a new version of the draft to 
+> http://www.cis.tu-graz.ac.at/home/hollosi
+
+I just get a red page that says "waste bandwidth at every opportunity"?
+
+> 
+> Two remarks before I start listing the changes:
+> 
+> - the FF4 example has been updated according to the draft
+> 
+> - SGFC V0.5 (the syntax checker/converter/reference implementation)
+>   is available. Some missing properties have been added, new options and
+>   bug fixes. Have a look.
+> 
+> 
+> Changes from version 8 to version 9:
+> ------------------------------------
+> 
+> - Pass [tt] may be used for boards <= 19x19
+>   (for compatibility)
+
+Good
+
+> 
+> - TC property removed (private to SGB)
+>   use V instead
+
+Good
+
+> 
+> - corrected value type of IT & DO
+>   value type is none (not double) -- sorry for this mistake
+> 
+> - TB & TW definition extended:
+>   may mark area too (if rule set uses area counting)
+
+Currently I don't support these.
+
+> 
+> - Long labels again (requested by Anders)
+>   Have a look at the FF4 example file for four different ways of 
+>   displaying long labels (you may come up with an own idea too).
+>   Note: no discussion about this point please!
+>   Long labels are a feature just like rectangular boards or VW&DD.
+>   No applications HAS TO implement them - but it's nonsense to have
+>   a limitation in the file format itself.
+
+Agreed
+
+> 
+> - NEW: how to convert old FF[123] files to FF[4]
+>   Listing of old properties and how to convert them and description
+>   of errors that frequently occur.
+
+Great!
+
+> 
+> - Corrected spelling mistakes and other errors
+> 
+> 
+> Open questions:
+> 
+> - should we remove BO & WO properties?
+>   I don't think that they'll be used much
+
+Please do.  There are so many different overtime rules that the text field
+in OT is best to describe what is going on.  These should be computer-go
+extensions to give the computer player an idea of the overtime.
+
+> 
+> - should we allow text after a collection and in between game-trees?
+>   Actually EVERY reader has to skip text there anyway (if it can handle
+>   collections) - due to the fact that many SGF files have a trailing mail 
+>   signature which would be (otherwise) treated like an error.
+
+Shouldn't readers be required to ignore all text outside of game trees? MF
+will only support one tree per file.
+
+> 
+> - Anders suggested using the identifier SC for SQ.
+>   Note: SC was defined as 'secure stones' in FF[123].
+>         SGB marked SC's as square.
+>   Should we use SC with new meaning 'mark with square' instead of 'secure sto
+nes'?
+
+I don't like changing the meaning of old identifiers.  I'd prefer using
+a new unused one.
+
+-David
+> 
+> 
+> 
+> /Arno
+

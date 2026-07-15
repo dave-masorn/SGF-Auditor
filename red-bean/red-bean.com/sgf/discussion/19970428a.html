@@ -1,0 +1,48 @@
+Date: Mon, 28 Apr 1997 01:02:44 -0400
+From: fotland@ix.netcom.com
+Subject: Re: tight spec for game-info properties
+
+
+I can tell that you haven't looked at many existing SGF files :)
+
+One big issue with the current format is what to do with partial dates.
+Often a file has just the year, or year and month.
+
+I see entries like:
+
+1994-??-??
+1994
+1994-05
+Late 19th century  (well OK, I made this one up)
+18-12-1990
+1995-04-1
+July, 1991
+17th of December 1992
+94.6.22
+Sep 20 1991
+July 29 1989
+8 sept 1990
+3rd Korean World Title.\\\\
+1820-04-10,30,05-14,15
+5-6 Juli 1963
+3rd & 25th October, 1853
+etc.
+
+Maybe 5 or 10 percent of my sgf files have the date in ISO format.
+
+It's hopeless to try to parse this much variety and convert to ISO.
+
+And many of these dates cannot be represented at all with the current FF[4]
+ISO date format.
+
+This is the information I put in the text date field.  If I can 
+parse the date, I put it in separate month/day/year fields.  If
+I can't, I put it in the text field.  When there is no date, the
+user can enter either mm/dd/yyyy or arbitrary text.
+
+Since Many Faces of GO is aimed at the US market, I don't plan to
+make the date diplay configurable for different countries.  If
+someone does a conversion for Europe later, they can add it
+then if needed.
+
+-David

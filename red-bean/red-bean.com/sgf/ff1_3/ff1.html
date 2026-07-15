@@ -1,0 +1,250 @@
+<html lang="en">
+
+<!-- Mirrored from red-bean.com/sgf/ff1_3/ff1.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 30 Jun 2026 15:27:56 GMT -->
+<head>
+    <title>SGF File Format FF[1]</title>
+    <link rel="stylesheet" href="../main.css">
+<!-- This document was created from RTF source by rtftohtml version 2.7.5 -->
+</head>
+
+<BODY>
+<A HREF="../index-2.html"><IMG SRC="../images/head.png" ALT="[SGF FF[4] - Smart Game Format]"
+BORDER=0></A>
+
+<h1>File Format FF[1]</h1>
+
+The Appendix A of Anders Kierulf's Ph.D. Thesis, converted to HTML by
+Martin M&uuml;ller
+<ol>
+<li><a href="#RTFToC2">Game-independent Properties</a>
+<li><a href="#RTFToC3">Go-specific Properties</a>
+<li><a href="#RTFToC4">Othello-specific Properties</a>
+<li><a href="#RTFToC5">Properties Specific to Other Games</a>
+</ol>
+<p>
+<STRONG>Copyright Anders Kierulf, 1990</STRONG>
+<P>
+A standard file format to exchange machine-readable games, problems, and
+opening libraries would save time and work. That goal may not be too far away.
+A standard for exchanging collections of Othello games is being worked out by
+Erik Jensen, Emmanuel Lazard, and Brian Rose in collaboration with the author.
+For Go, a new standard has recently been proposed [Connelley 89, High 89]; it
+seems to suffer from a wealth of features, but any standard for exchanging Go
+games is welcome, and will be supported by the Smart Game Board. <p>
+The current file format is specialized for the needs of the Smart Game Board.
+It is based on an earlier proposal for a standard for Go games [Kierulf 87b]
+which was not widely adopted. The following description is not a new proposal;
+it is intended for those who want to read or write files that are compatible
+with the Smart Game Board.<p>
+The game collections (documents) of the Smart Game Board are stored as text
+files. This has the advantage that files can be manipulated with standard text
+utilities, and that it's easier to exchange games by electronic mail. The
+disadvantage is that text files are less compact than binary files.<p>
+<a name="Tree">
+The Smart Game Board</a> stores the game trees of each document, with all their
+nodes and properties, and nothing more. Thus the file format reflects the
+regular internal structure of a tree of property lists. There are no
+exceptions; if a game needs to store some information on file with the
+document, a (game-specific) property must be defined for that purpose.<p>
+I will first define the syntax of the game collections, then discuss syntax and
+semantic of various properties.
+
+<br><IMG SRC="TA1.gif"> 
+<br>Example for structure of file format.
+This tree is written in preorder as:
+(root(ab(c)(de))(f(ghi)(j)))
+
+<h4>Game Collections </h4>
+
+A collection of games is simply the concatenation of      
+the game trees. The structure of each tree is indicated by
+parentheses. A tree is written as "(" followed by a sequence of nodes
+(as long as the tree is unbranched) and a tree for each son, and
+terminated by ")". Each node is preceded by a separator, and
+contains a list of zero or more properties.
+<p>
+Thus the main branch of the game is stored first in the file, and programs can
+easily read that part (until the first closing parenthesis) and ignore the
+rest.<p>
+The conventions of EBNF are discussed in [Wirth 85]. A quick summary:<p>
+<tt>"..." : </tt>terminal symbols<p>
+<tt>[...] : </tt>option: occurs at most once<p>
+<tt>{...} : </tt>repetition: any number of times, including zero<p>
+<tt>(...) : </tt>grouping<p>
+<tt> |  : </tt>exclusive or<p>
+<p>
+The overall definition of the file format is as follows:<p>
+<tt></tt><p>
+<tt>        Collection = {GameTree}.</tt><p>
+<tt>        GameTree   = "(" Sequence {GameTree} ")".</tt><p>
+<tt>        Sequence   = Node {Node}.</tt><p>
+<tt>        Node       = ";" {Property}.</tt><p>
+<tt></tt><p>
+<tt></tt>Any text before the first opening parenthesis is reserved for future
+extensions and is ignored when reading a file. Spaces, tabs, line breaks and so
+on can be inserted anywhere between properties and are also ignored.
+<h3>
+<a name="RTFToC2">Game-independent
+Properties
+</a></h3>
+Each property is identified by one or two capital letters. The property value
+is enclosed in brackets; lists of points or integers are written as a sequence
+of property values. Within text, a closing bracket is prefixed by a backslash,
+and a backslash is doubled. Moves and points are game-specific and are defined
+later.<p>
+<tt></tt><p>
+<tt>        Property   = PropIdent PropValue {PropValue}.</tt><p>
+<tt>        PropIdent  = UpperCase [UpperCase | Digit].</tt><p>
+<tt>        PropValue  = "[" [Number | Text | Real |</tt><p>
+<tt>                                Triple | Color | Move | Point | ...]
+"]".</tt><p>
+<tt>        Number     = ["+"|"-"] Digit {Digit}.</tt><p>
+<tt>        Text       = { any character; "\]" = "]", "\\" = "\"}.</tt><p>
+<tt>        Real       = Number ["." {Digit}].</tt><p>
+<tt>        Triple     = ("1" | "2").</tt><p>
+<tt>        Color      = ("B" | "W").</tt><p>
+<tt></tt><p>
+<tt></tt>Move and Point are game-specific and are described later. The
+following properties are understood by all games. The property type is given in
+brackets.<p>
+<tt>        "B" : Black move [move, game-specific]</tt><p>
+<tt>        "W" : White move [move, game-specific]</tt><p>
+<tt>        "C" : comment    [text]</tt><p>
+<tt>        "N" : node name  [text]</tt><p>
+<tt></tt>The purpose of providing both a node name and a comment is to have a
+short identifier like "doesn't work" or "Dia. 15" that can be displayed
+directly with the properties of the node, even if the comment is turned off or
+shown in a separate window. There is no limit to the length of texts; programs
+must be able to ignore the rest of texts that are too long for them to handle.
+Reasonable limits are 32 characters for node names and at least 2000 characters
+for comments.<p>
+<tt>        "V" : Node value [number]</tt><p>
+<tt></tt>Positive values are good for Black, negative values are good for
+White. The interpretation of particular values is game-specific. <p>
+<tt>        "CH": check mark          [triple]</tt><p>
+<tt>        "GB": good for Black      [triple]</tt><p>
+<tt>        "GW": good for White      [triple]</tt><p>
+<tt>        "TE": good move (tesuji)  [triple]</tt><p>
+<tt>        "BM": bad move            [triple]</tt><p>
+<tt></tt>The normal value for such properties is one, properties that are
+doubled for emphasis have the value two.<p>
+<tt>        "BL": time left for Black [real]</tt><p>
+<tt>        "WL": time left for White [real]</tt><p>
+<tt></tt>All times are given in seconds, or fractions thereof.<p>
+<tt>        "FG": figure [none]</tt><p>
+<tt></tt>The figure property is used to divide a game into different figures
+for printing: a new figure starts at the node with a figure property.<p>
+<tt>        "AB": add black stones          [point list, game-specific]</tt><p>
+<tt>        "AW": add white stones          [point list, game-specific]</tt><p>
+<tt>        "AE": add empty = remove stones [point list, game-specific]</tt><p>
+<tt>        "PL": player to play first      [color]</tt><p>
+<tt></tt>The above properties are used to set up positions in games with only
+black and white stones. The following properties are all part of the game
+info:<p>
+<tt>        "GN": game name                   [text]</tt><p>
+<tt>        "GC": game comment                [text]</tt><p>
+<tt>        "EV": event (tournament)          [text]</tt><p>
+<tt>        "RO": round                       [text]</tt><p>
+<tt>        "DT": date                        [text]</tt><p>
+<tt>        "PC": place                       [text]</tt><p>
+<tt>        "PB": Black player name           [text]</tt><p>
+<tt>        "PW": White player name           [text]</tt><p>
+<tt>        "RE": result, outcome             [text]</tt><p>
+<tt>        "US": user (who entered the game) [text]</tt><p>
+<tt>        "TM": time limit per player       [text]</tt><p>
+<tt>        "SO": source (book, journal, ...)   [text]</tt><p>
+<tt></tt>The format in these game-info strings is free, but to be able to
+search for specific games in game collections, it is recommended to adhere to
+the following conventions:
+<ul>
+<li>	Date in ISO-standard: "YYYY-MM-DD".
+<li>	Result as "0" (zero) for a draw, "B+score" for a black win, and "W+score"
+for a white win, e.g. "B+2.5", "W+64".
+<li>	Time limit as a number, in minutes.</ul>In addition, names, events, and
+places should be spelled the same in all games.<p>
+The following properties may only be present at the root node:<p>
+<tt>        "GM": game [number] (Go=1, Othello=2, chess=3, Nine Men's
+M.=5)</tt><p>
+<tt>        "SZ": board size    [number]</tt><p>
+<tt>        "VW": partial view  [point list, game-specific]</tt><p>
+<tt>        "BS": black species [number] (human=0, modem=-1,
+computer&gt;0)</tt><p>
+<tt>        "WS": white species [number]</tt><p>
+<tt></tt>The game number helps the program reject games it cannot handle (this
+property was mandatory as long as an application could play different games).
+The view gives two corner points of a rectangular subsection; an empty list
+denotes the whole board. The species denotes the kind of player (the source of
+the move input), with different versions of computer algorithms denoted by
+positive numbers (default algorithm = 1).<p>
+Computer algorithms may add the following properties:<p>
+<tt>        "EL": evaluation of computer move [number]</tt><p>
+<tt>        "EX": expected next move          [move, game-specific]</tt><p>
+<tt></tt>Some games support markings on the board: selected points,
+triangles/crosses, or letters (a sequence of letters is shown on the points
+given in the list, starting with "A"):<p>
+<tt>        "SL": selected points   [point list, game-specific]</tt><p>
+<tt>        "M" : marked points     [point list, game-specific]</tt><p>
+<tt>        "L" : letters on points [point list, game-specific]</tt>
+<br><tt><em>        Remark by Martin M&uuml;ller: this has been superseded by the new "LB" label
+property</em></tt>
+<h3>
+<a name="RTFToC3">Go-specific
+Properties
+</a></h3>
+In my proposal for a standard [Kierulf 87b], I intentionally broke with the
+tradition of labeling moves (and points) with letters "A"-"T" (excluding "i")
+and numbers 1-19. Two lowercase letters in the range "a"-"s" were used instead,
+for reasons of simplicity and compactness. This was criticized mainly because
+it was not human-readable, but as that is not an important feature of this file
+format, I continue to use that notation.
+
+<p>
+<IMG SRC="TA2.gif"> 
+<br>
+Coordinate system used to write Go games to disk
+<p>
+The first letter designates the column (left to            
+right), the second the row (top to bottom). The           
+upper left part of the board is used for smaller
+boards, e.g. letters "a"-"m" for 13*13. (Column before row follows
+the principle "horizontal before vertical" used in x-y coordinate systems.
+The upper left corner as origin of the board corresponds to
+the way we read, and most modern computers use it
+as origin of the screen coordinates to simplify
+integration of text and graphics.) A pass move is
+written as "tt". The board must be quadratic, no
+smaller than 2*2, and no larger than 19*19.
+Additional game info properties are defined for Go:
+<tt>        "BR": Black's rank [text]</tt><p>
+<tt>        "WR": White's rank [text]</tt><p>
+<tt>        "HA": handicap     [number]</tt><p>
+<tt>        "KM": komi         [real]</tt><p>
+Sets of board points can be marked as territory, as secure stones, or
+just as a region of the board (e.g. to designate eye space):<p>
+<tt>        "TB": Black territory     [point list]</tt><p>
+<tt>        "TW": White territory     [point list]</tt><p>
+<tt>        "SC": secure stones       [point list]</tt><p>
+<tt>        "RG": region of the board [point list]</tt>
+<h3>
+
+<a name="RTFToC4">Othello-specific Properties </a></h3>
+The standard notation for Othello boards ("a1"-"h8") is used to denote points
+and moves. New properties are added to record the result of endgame searches:
+the perfect score property is added to each node from which the program
+searched to the end of the game; the optimal score for the deepest search is
+added as a game info property, together with the search depth.<p>
+<tt>        "PE": perfect score                     [number]</tt><p>
+<tt>        "OS": optimal score                     [number]</tt><p>
+<tt>        "OE": number of empty for optimal score [number]</tt>
+
+<h3> <a name="RTFToC5">Properties Specific to Other Games </a></h3>
+For the current definition, please contact the author, or get in touch with
+Ralph Gasser (Nine Men's Morris) or Christoph Wirth (chess) directly
+(Informatik, ETH, CH-8092 Z&uuml;rich).<p>
+<HR>
+Last modified: Jan 30, 1995<P>
+<ADDRESS>Martin M&uuml;ller, mueller@inf.ethz.ch</ADDRESS>
+</BODY>
+
+<!-- Mirrored from red-bean.com/sgf/ff1_3/ff1.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 30 Jun 2026 15:27:56 GMT -->
+</HTML>

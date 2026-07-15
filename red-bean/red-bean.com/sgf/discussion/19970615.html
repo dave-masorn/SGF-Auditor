@@ -1,0 +1,32 @@
+Date: Sun, 15 Jun 1997 14:32:59 -0400
+From: "William M. Shubert" <wms@hevanet.com>
+Subject: Re: SGF complaints
+
+Rene, I don't see your problem about AB/AW/AE.  I think they're fine,
+they are one thing that I would *not* change.  So what if they're not
+reversible? How long, on a modern machine, does it really take to start
+over from scratch and replay up to the previous move?  Or if CPU time is
+really that critcal, why not have a board copy at each position so far?
+
+And as for comment, what you ask for is already there.  Simply adding
+"\" before a newline makes it "soft" as you want, and a non-escaped
+newline is automatically "hard".
+
+About M/L/etc., if you want to be backwards compatible, there's nothing
+to prevent your viewer from understanding these "obsolete" tags.  The
+standard simply states that you shouldn't *emit* these tags and call the
+file FF[4].
+
+As for variations, I don't like having multiple options either, but I
+don't like your proposed scheme because it makes it impossible to have
+variations without showing the user where they will be.  This might be
+undesirable in some situations, such as when presenting a problem -
+seeing where the variations are would be a huge hint!  IMHO we should
+specify that nothing is shown for variations, and users can add tags if
+they want to show more, but I seem to be in a minority here so I'm
+willing to shut up in the interests of keeping the spec moving towards
+completion.
+-- 
+				-Bill (wms@hevanet.com)
+				 http://www.hevanet.com/wms/
+

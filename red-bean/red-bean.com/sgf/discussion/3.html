@@ -1,0 +1,75 @@
+Date: Fri, 21 Jun 1996 01:45:29 +0200 (MET DST)
+From: Arno Hollosi <hollosi@sbox.tu-graz.ac.at>
+
+
+Changes since FF[4] version 2:
+------------------------------
+
+* PR, CS omitted
+
+* CA (charset) inserted
+
+* property identifiers no longer have verbose identifiers
+
+* DM, UC prop values changed back to their old value type: none
+  (don't remeber why I changed this in the first place)
+
+* suggestion for handling of wrong DT[] format added
+  (moving to GC[])
+
+* UM (unique marks) have only to be unique within a gametree now
+
+* Added first two entries for AP: MFGO, Primiview :)
+
+
+------------------------------------------------------------------
+
+I've compiled a list with compatibility problems of FF[4].
+As I predicted there are only two or three points that are
+really critical:
+
+* new (verbose) move specifier
+* new board sizes (old apps simply can't handle them)
+* strings enclosed in quotes (some consider this a major problem,
+  others don't)
+
+For a complete list check out the web pages:
+
+http://www.cis.tu-graz.ac.at/home/hollosi/sgf4_draft/
+
+-------------------------------------------------------------------
+
+Btw, I thought it would be great, if the final spec of FF[4] would
+also include a beginners guide to SGF. It should be aimed at the ordinary 
+user, who annotates games, compiles problems etc.
+
+The guide should start at the basics (what is a node?), move on
+to important concepts (setup vs. move), give some hints on how
+to display or annotate variations, problems, ...
+
+Any application may then include this guide in their distribution.
+(This is more than the various SGF style-guides on the web)
+
+I guess most SGF-files are so lousy, because users didn't grasp
+the basic ideas and concepts behind SGF. And they don't use some
+features (e.g. annotation properties) simply because they don't know
+they exist.
+
+Similarily, we could write a design-guide for SGF-apps.
+And the syntax-checker / converter for FF[4] should be written in
+a way, to easily use all the parsing functions for own applications.
+
+
+
+
+Ciao
+Arno
+
+P.S: I hope you don't mind the simplicity of the web pages
+     (e.g. no back, forward, home buttons). But I didn't have time
+     to improve the pages yet. It's hard enough to keep pace
+     with the discussion :)
+     But I guess they serve their purpose (documentation of spec & 
+     discussion).
+
+

@@ -1,0 +1,71 @@
+Date: Sun, 27 Apr 1997 22:14:12 -0400
+From: Robert Jasiek <jasiek@berlin.snafu.de>
+Subject: [Fwd: Re: tight spec for game-info properties]
+
+fotland@ix.netcom.com wrote:
+> 
+> Sounds like a resonable file format, but do you have a proposal
+> how to show this in the user interface?  Assume that you are not
+> allowed to educate the user on ISO format or SGF format :)  Mapping
+> the SGF format to the user interface, and 
+
+You have already recognized most necessieties here:
+
+> [radio buttons]
+> For date I will do something similar, giving a set of MM/DD/YYYY
+> data entry fields, and a text box for entering more information.
+
+With more information you mean time of day or "a sunny drake
+celebration three-day-period" or birthday etc.? :( (This could be
+done in ;C[] , but maybe you mean st different.)
+
+I think a user is pleased with one date format only shown at a 
+proper game info place. What is needed is an option for a setup
+setting the kind of format. This is like in operating systems like
+Windows: Once and for all you choose a date format in a 
+system-settings dialog. (Just look there to see more formats than
+you want to know about...) Setting is possible by forms or radio
+buttons or the like.
+
+How to show the user? Assume a program uses a window with various
+fields each containing an editable game info. Assume your program
+is user-friendly and thus your user has selected ShortBritish 
+format. Then e.g. 
+;DT[1996-11-20][1996-12-31:1997-01-03][1997-01-05] 
+is shown in the field as
+-----------
+20th Nov 96
+31st Dec 96
+ 1st Jan 97
+ 2nd Jan 97
+ 3rd Jan 97
+ 5th Jan 97
+-----------
+
+LongGerman would be
+----------
+20.11.1996
+31.12.1996
+01.01.1997
+02.01.1997
+03.01.1997
+05.01.1997
+----------
+
+or whatever unreasonable format would be possible...
+Probably only one date need to be shown at a time. The rest
+can be scrolled. You might also summarize using "from .. to  .."
+
+> supporting old files at
+> the same is what I can't figure out.
+
+It seems to me, the old spec. allows different separators.
+This is about the most confusing thing. You just need to
+read ;FF[n] and detect whether n<4. If yes, file-input with
+the old tools and output as if format would use new style.
+If the user insists on saving as FF[3], just let him do it
+using your old code. The only change then appears in your
+program's *.ini where the country format is denoted. And
+the user is happy:(
+
+--robert jasiek

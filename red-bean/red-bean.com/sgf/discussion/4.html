@@ -1,0 +1,71 @@
+Date: Fri, 11 Oct 1996 20:30:40 +0100 (MET)
+From: Arno Hollosi <hollosi@sbox.tu-graz.ac.at>
+
+I updated the draft for SGF FF[4] again.
+I looked again through the recent discussion and adjusted
+the draft accordingly.
+I added some new restrictions which I think are useful.
+They were discovered during writing the SGF syntax parser.
+
+
+Here's the list of the changes:
+
+* deleted XS (extended sets) property
+  It seems to create mroe questions than solving problems
+
+* SimpleText and Text values are no longer quoted (compatible with FF[3])
+  Thus the idea of making SGF context free was abondoned.
+  (The only ones liking this idea were Pem and me)
+
+* All white spaces in Text other than space and linebreak have to 
+  converted to space (i.e. no TAB, etc.)
+  Linebreak may vary on different systems, but should be written as a
+  single LF (Ascii code 10 (C: '\n')) in ALL cases.
+
+* Game-info properties may only appear once in any path within the tree,
+  i.e. if a game-info propererty gets set in one node it must not appear
+  in any subtrees of this node.
+
+* New handling of illegal properties:
+  Illegal formatted properties should be corrected if possible, otherwise deleted.
+  An application has to display a warning message, if it deletes illegal
+  formatted properties.
+  Illegal formatted game-info properties should be corrected if possible,
+  otherwise moved to game-comment ('GC[]').
+
+* Move/Position type for boards larger than 26x26:
+  uppercase letters are used to represent positions from 27-52,
+  i.e. 'a'=1 ... 'z'=26 , 'A'=27 ... 'Z'=52
+  Thus boards upto 52x52 are possible. This should be enough.
+  The spec is compatible to FF[3] for boards upto 19x19 (except pass 
+  moves)
+
+* If move & setup properties are mixed within a node:
+  In that case an application should split that node into two nodes: all 
+  setup properties and the node name ('N[]') into the first node, all 
+  other properties into the second.
+  (I added the N[] property, because it may be the name of a variation)
+
+* A KO property without a black or white move within the same node is 
+  illegal. Same goes for move annotation properties.
+
+* Positions in 'list of positions' must be unique (e.g. AB[aa][aa] is an error)
+
+* Following properties may not point to the same position (within a node):
+  - AB, AW, AE
+  - TB, TW
+  - CR, MA, SL, SQ, TR
+
+* AB, AW and AE values which don't change the board, e.g. placing a black
+  stone with AB[] over a black stone that's already there, is bad style.
+  Applications may want to delete these values.
+
+
+I would appreciate if someone would proof read the draft.
+My English is far from being perfect and I guess there are a lot of 
+mistakes in the spec.
+
+
+Comments, suggestions, criticism welcome
+/Arno
+

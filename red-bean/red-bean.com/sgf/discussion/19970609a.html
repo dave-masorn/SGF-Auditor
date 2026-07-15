@@ -1,0 +1,86 @@
+Date: Mon, 9 Jun 1997 10:55:36 -0400
+From: Rene Grothmann <grothm@ku-eichstaett.de>
+Subject: SGF complaints
+
+Having just finished a major SGF viewer (Jago), I am now studying the FF[4]
+standards to make get my program in line. After first sight, I have several
+complains about these standards.
+
+Most of my complains are due to my design decision to use the SGF format as
+an internal format to hold the game tree. But this is effectively prevented
+by the structure of the format. So I will have either to rewrite the code
+and filter on input and output, or to hack around with internal tags.
+
+I welcome comments on this.
+
+Here are my complaints in detail:
+
+- 
+
+The M tag is supported and used by each and every viewer I know. Most won't
+even recognize the MA replacement (which should rather be the SQ
+replacement). Taking it out of the standard is an annoyance. There must be
+very good excuses to create that much incompatibility.
+
+- 
+
+The same applies to the L tag. I see that the LB tag is better in many ways.
+However, they could both coexist, using different colors in the viewer if
+necessary. Again not supporting it is an annoyance.
+
+- 
+
+AB, AW and AE are not revertable. Thus you cannot play a tree upwards with
+known end position but must record the true meaning of AB, AW and especially
+AE. I suggest to allow AB and AW only on empty positions, and replace AE by
+CB (clear black) and CW (clear white) or something else available.
+
+This suggestion would clearly cause incompatibilities too. But in this case,
+it is well worth it.
+
+- 
+
+The SGF checker SGFC complains about splitted AE commands. Though this
+attempt to stay logical is to be appreciated, it is an annoyance. Tags
+should be applied as they appear. Any viewer can warn the user about
+redundand addings and removals or such. 
+
+Moreover, there is still no predefined order for AE and AB/AW.
+
+- 
+
+Comments are defined to come in lines, which can be wrapped around by the
+viewer. Since most viewers have a tiny space for comments, this is an empty
+definition, which no viewer can cope with satisfyingly.
+
+Rather comments should come in paragraphs (consisting of words separated by
+a single blank) separated by empty lines in the file. Paragraphs should be
+reformatted by the viewer and optionally separated by empty lines in case,
+the viewer cannot distinguish hard and soft line breaks (as Java). 
+
+There might be some need for hard (preformatted) paragraphs, admittedly. One
+could add a special character at paragraph start to distinguish this (E.g. a
+space or a vertical line |).
+
+-
+
+The following does not concern the SGF directly.
+
+One should fix the preferred way to denote variations. My idea is that any
+variation should be one to the last move (i.e. another move elswhere) and
+should be indicated on board (as GoScribe does it by highlighting the
+alternitive plays). Variation count should start with 1. 
+
+Of course, there might be need for other types of variations (setting up
+diagrams for reference e.g.), but the above procedure looks most natural and
+can coexist, if the viewer raises proper flags to indicate there is an
+unusual variation.
+
+-----------------------
+Dr. R. Grothmann
+grothm@ku-eichstaett.de
+
+PGP key available from my hompage
+http://www.ku-eichstaett.de/MGF/homes/grothmann/grothmann.hml
+
+

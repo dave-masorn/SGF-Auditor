@@ -1,0 +1,47 @@
+Date: Tue, 11 Feb 1997 15:32:43 -0500
+From: "William M. Shubert" <wms@hevanet.com>
+Subject: Re: SGF FF[4] - PLEASE READ
+
+Sorry it took me so long, I've been really busy this past month.  I finally
+got a few hours to look at the spec today.
+
+My comments:
+
+Why should "\<cr>" become a space?  Why not remove it completely?  This is
+more like C (which the \ seems to be modelled on), plus that way if you
+have a 200-character sequence with no spaces, you can *still* wrap your
+text at the 78-column point.
+
+^A..^Z: I still see absolutely no use for this.  Yuck.  If you want to
+label your variations, why not use "LB[ef:A][sc:B]" and put an "A" and a
+"B" in the text?
+
+Multiple game types: I think that talking about non-Go games just clutters
+up the spec.  If we want to support Othello too, why not have a "SGF" spec
+and a "SOF" spec as spearate entities?
+
+PL: Why say that if it is omitted, the viewer must not display whose turn
+it is?
+
+DD: Dave Fotland complained that this is hard to do with 3-d graphics.  I
+don't see why, Dave?  Cgoban has had this all along...I just dither the
+"board-with-stone" picture with the "board-without-stone" picture.
+
+LB: Agree with Dave, LB should be limited to a very small number of
+characters.
+
+SL: It seems like we already have billions of ways to mark points.  To add
+another one and say "do whatever you want" seems silly.  Either come up
+with exactly how it looks or get rid of it.
+
+ST: To provide a standrad way of being nonstandard just means that we'll
+have lots of sgf files that don't look quite right.  Is anybody actually
+planning on modifying their SGF viewer to be able to show variations in all
+four of these different ways?
+
+In general, besides these comment, I think that the spec is pretty good.
+And the web page is well put together...thanks Arno!
+-- 
+				-Bill (wms@hevanet.com)
+				 http://www.hevanet.com/wms/
+

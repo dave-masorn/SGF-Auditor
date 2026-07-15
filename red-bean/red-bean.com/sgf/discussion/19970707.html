@@ -1,0 +1,100 @@
+Date: Mon, 7 Jul 1997 09:07:24 +0200 (MET DST)
+From: Arno Hollosi <hollosi@sbox.tu-graz.ac.at>
+Subject: Recent activities
+
+
+Hi all,
+
+I was on vacation for a week so I couldn't answer earlier.
+This email covers emails from Mikael Thulin, Jens Yllman and Frank Lindahl.
+
+
+Mikael Thulin writes:
+
+> I have a question though, The standard says that, "all white
+> spaces shall be converted to spaces". Is that true? Shall
+> "\r\n" be converted to "  " (two spaces) and not " " (one)?
+
+"\r\n" is a linebreak, i.e. it should be treated as it would be
+only one char.
+
+In SimpleText "\r\n" is converted to ONE space.
+In Text "\r\n" is converted to a hard linebreak or it's
+removed (i.e. soft linebreak).
+
+> Could someone please explain the use of "soft line breaks"?
+
+E.g. paragraphs. To create a paragraph you've to write the
+whole paragraph into ONE line and let the application wrap
+the line into multiple lines on the display.
+Long lines in the SGF file however are usually truncated or splitted
+during emailing/posting. In that case you can insert soft linebreaks
+so that the line length in the SGF file doesn't exceed e.g. 76 chars.
+
+> Errata:
+> In the "Property index of FF[1] - FF[4]" the ID property
+> is listed to have "text" values. It should be "simpletext",
+
+Yes, should be SimpleText. Thanks, I'll correct it.
+
+> Let say that my application handles many of the FF[4]
+> properties but not all of them. Can I include FF[4]?
+
+Yes.
+
+> preserved property is an old FF[3] property. Can I
+> include FF[4] even when some of the properties may be FF[3]?
+
+Yes - but don't expect other applications to interpret FF[3] properties
+within the FF[4] file.
+
+> Should a viewer that can read both FF[3] and FF[4] try
+> to use removed FF[3] properties in an FF[4] file?
+
+It's up to you. I think it doesn't hurt :-)
+
+> What is the restrictions on FF[] do we need some kind
+> of a specification?
+
+FF[] doesn't place any kind of restrictions.
+It just tells the application which versiion of SGF was used in this
+file so that the applications knows how to deal with various properties
+or values.
+
+> Do you intend to prepare a style guide for FF[4] as for FF[3]?
+
+Yes. I'm trying to compile one in the next weeks.
+
+
+Jens Yllman <jens.yllman@mailbox.swipnet.se> writes
+
+> What's the diffrence between AP[] and US[]?
+
+As already explained: US[] is the user/program who recorded the game.
+AP[] is the application used to write this SGF file.
+
+
+Frank Lindahl <flindahl@pa.mother.com> writes:
+
+> I have a question about compressed points.  If someone sets up a 
+> rectangle of squares, SQ[bb:dd] and someone with an editor changes one 
+> of them to a triangle, TR[CC] what should the result be?
+
+As already explained by Robert: SQ[bb:bd][cb][cd][db:dd]TR[cc]
+
+How to handle compressed point lists (an easy method):
+
+- during loading expand all compressed lists (i.e. generate a list of
+  simple values)
+
+- manipulate/edit/display as usual
+
+- when saving apply a simple greedy algorithm
+  Robert explained one or  have a look at the SGF syntax checker -
+  file parse2.c, function CompressPointList() for an implementation
+  of a simple algorithm.
+
+
+
+/Arno
+

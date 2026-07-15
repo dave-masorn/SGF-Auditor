@@ -1,0 +1,105 @@
+Date: Fri, 7 Feb 1997 13:45:57 -0500
+From: David Fotland <fotland@hpihoah.cup.hp.com>
+Subject: Re: SGF FF[4] - PLEASE READ 
+
+> 
+> Therefore I'm asking YOU to read the WHOLE draft through and send me
+> a list of errata (syntactical/semantical), suggestions, criticism etc.
+> 
+> /Arno
+> 
+
+OK, here are my comments and questions.  First, I haven't reaad the draft
+for a while, and I see there has been a lot of great progress.  I think
+you are very close to a reasonable standard.  Thanks for all of your hard
+work!
+
+My biggest general issue is a philosophical one of backwards compatibility.
+I would like to be able to write FF[4] files that can be read accurately
+by older FF[3] readers.  Imagine for example, that someone wants to use
+Many Faces to enter a game and comments, and then mail it off to a pro
+for additional analysis.  If the pro has an older reader (smart go board...),
+it would be nice if the pro could read the file.  I don't want the users
+to have to talk to each other first about which file format they support.
+I don't want to get all of the support calls from angry users who say, "
+I saved the game in sgf format, but Smart Go Board won't read it".
+
+The pass move is biggest issue here I think.  I'd like FF[4] to also recognize
+[tt] as a pass for board sizes of 19x19 or smaller.
+
+For the markup properties, you need to much more clear as to what the FF[3]
+restrictions are, so I can generate markups that work with both FF[4] and
+FF[3].
+
+Of course FF[4] needs to have new features (better marks, etc), and this
+is fine.  I can set these off in different section of the menu or toolbar,
+with a warning that these advanced features might not be compatible with
+older SGF readers.  But where the old and new formats have the same function,
+I want a way to write the SGF file so old readers can still read it correctly.
+
+I'd like to you be more careful with the description of the differences
+between FF[3] and FF[4]. This is very important to people who want to
+write aprogram compatible with the thousands of existing files and dozens
+of existing viewers.
+
+DD is not marked as new in the index.  I don't like it since it is hard to
+implement on a board with good 3-d graphics.  Also DD[] restoring previous
+dimmed status is difficult.  Why not DD[] just undims everything?  If a
+sequence of DD's is seen:  undimmed, DD[X]; DD[Y]; DD[]; DD[];  after the
+first DD[], the dimmed state reverts to X.  After the second DD[], does the
+dimmed state revert to undimmed, or back to Y?  This is not clear.
+
+ST - the default should be 0 for compatibility with FF[3].
+
+SQ not marked new in the index
+
+VW not marked new in the index
+
+PL says if a setup node has no PL, the viewer must not display whose turn
+it is to play.  This is unacceptable.  Imagine the start of a handicap game.
+The go program would look pretty silly if it doesn't know that white plays
+next.  When I find a setup node with no PL in it, I look at the children.
+If the first child node has a move, I use that color as the color to move
+for the setup node.  if all of the setup stones are the same color, and there
+are no children, I use the opposite color as the color to move.  if I get
+the color to move wrong, the user can always change it.
+
+LB - I don't like putting labels on stones that extend across more than
+one point on the board.  Different systems will use different fonts, you
+have to worry about truncation at the edge of the board, etc.  The author
+can't predict if his label will be readable on another viewer.  So I would
+like it made clear that the text in the LB must stay within one point on
+the board.  You should specify that at least 3 characters are guaranteed
+to be displayed, and that viewers have the option of shrinking the text to fit
+or truncating at 3 characters.  I've found that 3 characters is all that
+is really readable on a single point.  Most books restrict themselves to 2
+characters on a point.
+
+TR, CA, SQ - Why only allowed on stones?  Books often have triangles on
+empty points, and Ishi format allows this also.  Seems and unnecessary
+restriction.  I don't understand the comment that TR, CA, and SQ should
+have the same color.  I want to put white marks on black stones and black
+marks on white stones, so I might have a white square and a black triangle
+on the board at the same time.  Why is this not allowed?
+
+MA - why only on empty points?  I might want an X on a stone.
+
+CA - is this new?  It's not on the new list.
+
+GM - a go program should not have to be able to deal with different games
+within a collection.
+
+RE - why specify the french spelling (Forfait) of Forfeit?  Othe words
+(time, etc) use english spelling.
+
+VW - don't like it.  WIll it be used much?  Hard to implement.  Same
+issue with VW[] as with DD[].  How to interpret VW[];VW[];
+
+HA - don't limit the maximum value to 9.
+
+Why do we need both V and TC to give the score?  WHat's the difference?
+
+David Fotland
+
+
+

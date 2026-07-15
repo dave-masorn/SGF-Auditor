@@ -1,0 +1,89 @@
+Date: Sun, 30 Mar 1997 16:37:12 -0500
+From: Dave Dyer <ddyer@netcom.com>
+Subject: Re: SGF FF[4] version 8
+
+
+Here is a preliminary spec for Lines of Action use of SGF 4.
+
+
+The applet which uses this format, and archives of example games, can be found
+at http://www.andromeda.com/people/ddyer/loa/loa.html
+
+
+	// public property names, common to all SGF, used by the current LOA viewer.
+
+"FF";	//format of the file
+"GM";				//integer indicating the game type
+"GN";		//the name of this particular game
+"GC";		//a comment describing the game as a whole
+"SZ";				//the size of the board
+"PL";			//the player to play next
+"AB";		//"Add black"
+"AW";		//"Add white"
+"AE";		//"Add empty"
+	
+"B";				//a black move
+"W";				//a white move
+"C";			//a comment
+"N";			//node name
+"PB";		//the name of the black player
+"PW";		//the name of the white player
+  
+  	/* sgf property names specific to Lines of Action, sgf game ID 9 */
+
+"SU";		//setup type, designates the intial placement of pieces, and also the
+			  //implicitly the variation on the basic rules to be employed.  The
+			  //currently valid values include the following strings (case is unimportant)
+			  //for details on the setups and rule variations, consult the LOA home pages
+			  //at www.andromeda.com/people/ddyer/loa/loa.html
+			  Standard
+			  Scrambled-eggs
+			  Parachute
+			  Gemma
+				Custom		//the initial board is empty, AB and AW properties will be used to establish
+									//the starting position.
+
+ "AS";		//adding stones, the color of the player who is adding stones to the board. The
+ 					//valid strings are Black White or None.  The puropse of this property is to define
+ 					//a board position where the human is expected to continue placing stones on the board.
+ 					//through some user interface.
+	"IP";		//designates the initial position in the game to be displayed by the viewer.  The only
+					//value currently supported is <i>end</i>, which causes the viewer to initially display
+					//the final position of the game.  The default is to display the position after setup
+					//but before any moves.
+	"SE";		//note the selected position, presumably the position of the stone about to be moved.	
+	"IY";		//invert Y axis.  values are true or false, if true, the board should be displayed 
+				  //with numbers increasing in value from bottom to top of the screen.
+				  
+				  
+Notation for B and W moves
+
+  A board position is specified by one letter and one number, letters are always displayed
+  left-to-right across the screen.  Numbers are normally displayed 1-n from bottom to top
+  of the screen.
+
+	For normal moves, specify the source and destination squares, as specified by one letter and 
+	one number.  For example,	A1-B2, optionally, a : may be used to identify a capturing move,
+	for example A1:B2.  The use of the colon is purely for human readability.
+
+  The following unusual moves specifiers are also used when appropriate
+  
+  Pass
+  Resign
+  Forfeit
+  ^^					//"escape" move, used only in Gemma variation
+  
+	
+	Other defaults
+	
+	the default setup is Standard
+	the default board size is 8
+	the default first player is black
+	
+
+---
+My home page:  http://www.andromeda.com/people/ddyer/home.html
+
+
+
+

@@ -1,0 +1,150 @@
+Date: Wed, 12 Feb 1997 16:39:35 -0500
+From: David Fotland <fotland@hpihoah.cup.hp.com>
+Subject: Re: SGF FF[4] - version 7 / Syntax Checker 
+
+
+Comments from David:
+
+I like all the changes except this one:
+
+> 
+> - new way of handling game-info properties (incremental game-info no 
+>   longer possible):
+>   > A node containing game-info properties is called a game-info node.
+>   > There may only be one game-info node on any path within the tree,
+>   > i.e. if some game-info properties occur in one node there may not be
+>   > any further game-info properties in following nodes:
+>   > a) on the path from the root of the merged game to this node.
+>   > b) in the subtree below this node.
+
+Game info is much easier to deal with in the root node.  I think you want to
+do this for game collections.  But:
+
+1) for small game collections, it is much easier to keep each game as a
+separate sgf file in a directory.  The application can use the game name
+or game comment in a dialog to let the user select a game.  If GC or GN are
+in the root node this works pretty well.
+
+2) for large collections (say 5000 pro games, or 40,000 IGS games), sgf
+is not a good format, since it is too large.  I distribute such collections
+with MF as single trees, but I use a proprietary format with just over
+1 byte per move.  The files are still huge.  Other programs that do the
+same use proprietary database formats that allow searching for positions, etc.
+
+Since everyone has to do something non-sgf anyway for big collections, let's
+not try to solve this problem with sgf.
+
+> 
+> - added some lines to usage of UM:
+>   > UM is used for hyper-links in the comment text and may be
+>   > used for navigation within the game-tree too, e.g. goto
+>   > next/previous marked node.
+
+I don't like the hypertext links ^A, etc and UM.
+
+> What's your opinion on the points below?
+> 
+> - Pass move as '[tt]' for boards <= 19x19
+>   I don't like this solution as we would've two different ways to express
+>   the same information. I think that old FF[3] applications will just
+>   ignore a '[]' move - I don't think that this is a big compatibility
+>   problem. And hopefully the go servers will start writing FF[4] soon,
+>   so application coders will soon make updates to their programs.
+
+I feel pretty strongly about this.  Having an old viewer ignore a pass is
+no acceptable.  The pass is part of the game, and needs to be displayed.
+Even if app writers change their own code soon, it will be years before
+this new code is in everyone's hands.  I don't expect the pros to go out
+and buy new copies of SGB next year when their current one works fine.
+
+I know it looks ugly, but it is important to me that MF interoperate
+smoothly with what is currently out there.  And I would prefer to
+make the change to FF[4] invisible to the user, so he doesn't have to
+remember which format he saved in , or ask his pro which version he supports.
+
+
+> 
+> - Soft Linebreak '\<cr>' should be converted to <nothing> instead of space
+>   Actually I like this one.
+Me too.
+> 
+> - Add new property: LN (draw line)
+>   If we've got arrows already, why not add simple lines too?
+
+How about dropping arrows :-)  Why would someone want to draw a line from
+one stone to another?  I won't support any change that involves coordinates
+with finer resolution than a board point...
+
+> 
+> - Drop V (value) property
+>   It looks like a computer-type property. Any objections?
+>   (btw, TC doesn't give the score! Just the difference in territory!)
+
+Make this clearer in the TC description.
+
+>   > ^A..^Z: I still see absolutely no use for this.  Yuck.  If you want to
+>   > label your variations, why not use "LB[ef:A][sc:B]" and put an "A" 
+>   > and a "B" in the text?
+>   '^A' doesn't have to do anything with the markup on the board.
+>   '^A' is used for hyper-links in the text. And yes, a sophisticated 
+>   reviewer may extend '^A' to 'A (p13)' where possible.
+
+If you want the author of a commented game to use a feature it should not
+be optional.  You want the user to see what the author wrote.  If the author
+depends on hyperlinks to make his point, all programs should implement them.
+I don't want to implement them - its a lot of new code for a feature that I
+don't expect will get used much.
+
+> 
+> 
+> Various:
+>   > GM - a go program should not have to be able to deal with different games
+>   > within a collection.
+>   I think it should! The go program should at least be able to REJECT 
+>   those game-trees that are not Go. Or do you think it's ok, if the 
+>   applications just crashes?
+>   That's what I mean with: 'be able to deal with'
+
+MF won't crash, and I can't imagine that any program would crash.  What if
+the user tells the program to open a word file.  It still won't crash, just 
+give a message that the file is the wrong format.  If you mean that a program
+should reject non-go files, then say that.
+
+There is no need for the spec to say that applications that use it shouldn't
+crash.  Application writers already know this :-)
+> 
+>   > LB - long labels
+>   As you all cry out: "no - no - no" I'll change this in the next version.
+>   But can anyone please tell me a GOOD reason for labels <= 3 chars?
+>   The way I see it:
+>   If a application allows sizeable windows and selectable fonts (e.g. like
+>   my editor Primiview) then any label >1 char can't be dispalyed on one
+>   stone alone anyway. So what does Primiview do? It just calculates the width
+ of 
+>   the string and marks as many neighbouring points as 'dirty' as necessary.
+>   What's so EXTREMLY difficult about that?
+>   Have a look at FF4_05.gif & FF4_06.gif from the FF[4] example file.
+>   Just to remind you: there's already another markup which doesn't fit
+>   onto one stone alone, actually it can cover the whole board: arrows!
+>   Can someone come up with a good reason, instead of just saying 'no'?
+
+Yes.  The purpose of a standard format is to allow a game record written
+by one person to be read by another, even if they have different software or
+applications.  Please don't lose sight of this.  I try to measure all features
+against this standard.  If labels extend beyond a single stone, the author
+can't predict what they will look like on some other viewer.  This is bad.
+A long history of printed diagrams indicates that two characters on a stone
+is most readable.  Allowing 3 chars per stone is pretty small, but can be
+legible.
+
+So tell me what a primview screen looks like if you ask it to put the full
+move number on each stone - all the numbers overlap.  None are readable,
+and the author of the comment, who refers to points by number can't get his
+point across.
+
+I think we can display an arrow as the author intended, even though it crosses
+multiple points.  And multiple overlapping arrows are still legible, unlike
+text.
+
+-David
+

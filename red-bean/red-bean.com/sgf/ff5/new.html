@@ -1,0 +1,115 @@
+<HTML lang="en">
+
+<!-- Mirrored from red-bean.com/sgf/ff5/new.htm by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 30 Jun 2026 15:27:57 GMT -->
+<HEAD><TITLE>SGF properties (FF[5] draft)</TITLE>
+	<link rel="stylesheet" href="../main.css">
+</HEAD>
+<BODY>
+<TABLE CELLPADDING=5><TR>
+<TD class="blue"><A HREF="ff5.html"><FONT COLOR=WHITE SIZE=-1><B>SGF file format FF[5]</B></FONT></A>
+<TD>last updated: 1999-03-17
+</TABLE>
+
+<h1>New and deleted properties</h1>
+
+Please note that values given for keys (PI, OT, etc.) are just for
+illustration and can/should be discussed. Should they be verbose
+(e.g. "referee" instead of "RF")?
+
+<h2>Properties no longer part of FF5</h2>
+These are just suggestions!
+
+<UL>
+<LI>ON (opening) ... seldom used, info could be stored in GC
+<LI>US (user) ... info could be stored in new FF5 property IP
+<LI>AN (annotations) ... info could be stored in new FF5 property IP
+<LI>KO
+</UL>
+
+<h2>New properties</h2>
+
+Note: OT is not really new, but completely redefined.
+
+<PRE>
+<A NAME="UN"><B>Property:</B>	UN</A>
+<B>Propvalue:</B>	<A HREF="../sgf4.html#types">number</A> (range: number >= 1)
+<B>Propertytype:</B>	move
+<B>Function:</B>	Undo a number of nodes. The number is given in the
+		property value. Undoing has the same effect as if the
+		undone nodes would have never been executed. It is similar
+		to the user stepping back in the SGF tree.
+		See examples for further explanation.
+		B, W, and UN properties must not be mixed within a node.
+
+
+<A NAME="IP"><B>Property:</B>	PI</A>
+<B>Propvalue:</B>	list of ( composition of <A HREF="../sgf4.html#simpletext">simpletext</A> ":" simpletext )
+<B>Propertytype:</B>	game-info
+<B>Function:</B>	Provides information about other persons (or
+		organizations) involved in the game. The first value is
+		used as key. Following keys are recommended:
+		"<I>Color</I>"  ... player of color (e.g. black, white). This
+			     information is usually stored into PB, PW.
+			     In team games IP should be used to record
+			     names of each player in the team.
+			     Multi-player games can list the players here.
+		"<I>Color</I>a" ... assistant to player color, e.g. person who
+			     enters the move into a client program during an
+			     internet game.
+		"RF"     ... chief referee
+		"RFa"    ... assistant referee
+		"US"     ... person who records the game moves (also: US[])
+		"TK"     ... person who keeps track of the players' time
+		"AN"     ... person who analyzes the game (also: AN[])
+		"CO"     ... person who wrote the comments (e.g. a journalist)
+		"SP"     ... sponsor
+		Examples:
+		IP[B:Aoki Kikuyo, 6 dan][B:Kato Masao, 9 dan]
+		  [W:Yashiro Kumiko, 1 dan][W:Komatsu Hideki, 9 dan]
+		  [AN:Rin Kaiho, 9 dan][CO:Taniguchi Makio (Kido)]
+		  [RF:Ma Xiaochun, Mingren][RFa:Nie Weiping][SP:Samsung]
+
+
+<A NAME="OT"><B>Property:</B>	OT</A>
+<B>Propvalue:</B>	list of ( composition of <A HREF="../sgf4.html#simpletext">simpletext</A> ":" <A HREF="../sgf4.html#types">ext_color</A> ":" <A HREF="../sgf4.html#types">real</A> )
+<B>Propertytype:</B>	game-info
+<B>Function:</B>	Describes the method used for overtime (byo-yomi) in
+			a machine readable way. The simpletext value is used
+			as key, the ext_color value contains for which player
+			(color) this setting is valid, and the real value
+			contains the setting itself.
+			Following keys are allowed:
+			"TM" ... basic thinking time - value is in seconds.
+				 No default value.
+			"OP" ... overtime period (aka byo-yomi) - value is
+				 in seconds. No default value.
+			"OM" ... moves per overtime - value is number
+				 of moves. Default value: 1
+			"NO" ... number of overtime periods (i.e. how many
+				 periods are added before a time-out).
+				 Value is number of periods, with following
+				 special values: 0 ... no overtime period
+						-1 ... unlimited periods
+				 Default value: -1
+			"OG" ... granularity of extended time - value is
+				 in seconds. This means that the time
+				 recorded is calculated as follows:
+				 time_rec = INT(time_used / ogran) * ogran
+				 INT means that only the integer part of the
+				 division is taken.  Default value: 1.0
+			"TG" ... granularity for basic time
+				 Default value: 1.0
+			Examples:
+			OT[TM:A:10800][OP:A:60][OM:A:1][NO:A:1][OG:A:60]
+			  ... standard international pro game
+			OT[TM:A:300][OP:A:600][OM:A:25]
+			  ... go server 5/10 game
+			OT[TM:A:28800][OP:A:600][OM:A:1][NO:A:1]
+			  [OG:A:60][TG:A:60] ... Kisei match
+			OT[TM:A:2700][NO:A:0] ... Amsterdam Obayashi Cup
+</PRE>
+
+</BODY>
+
+<!-- Mirrored from red-bean.com/sgf/ff5/new.htm by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 30 Jun 2026 15:27:57 GMT -->
+</HTML>

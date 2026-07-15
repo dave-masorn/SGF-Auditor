@@ -1,0 +1,140 @@
+Date: Wed, 29 Jan 1997 01:14:23 -0800
+From: mmueller@math.berkeley.edu (Martin =?iso-8859-1?Q?M=FCller?= )
+Subject: Re: SGF FF[4] - PLEASE READ
+
+Well done!
+
+I tried reading your FF[4] file with Smart Go Board which implements FF[3].
+Overall, it worked quite well. I could read the file without error
+messages. A few things looked odd, and of course the new properties such as
+arrows were not visible.
+
+Here are my notes:
+
+newlines: the new '\n' newlines appear as little boxes (the symbol for
+unprintable characters) on the Mac. '\r' works as a newline.
+
+renumbering, move number in variations:
+some moves get labeled '-2' and '-1'. That cannot be the intention.
+What's happening here?
+
+long labels: Based on my experience, I think that even 4 is too long, and 3
+can be difficult to display. Maybe you have a bigger screen than me? :)
+
+One radical new thought: (probably too radical)
+Since annotations goodmove, badmove, interesting, doubtful, and even are
+mutually exclusive, they could be merged into one single property with
+values from say 0 (worst) to 9 (best). These would be mapped to match the
+old properties.
+0 = very bad, 1 = bad, 2 = very doubtful, 3 = doubtful, etc.
+
+File SGF file format FF[4]:
+
+Game info in merged trees:
+
+This is different from the old version. You allow splitting of the game
+info of a game into single info properties along the path to the root. In
+SGB there may only be one node for each game that contains all game info
+properties for this path. While your new rule has a certain logic to it,
+keeping all info for a game in one node seems simpler to use for me. Just
+imagine adding and deleting games in a collection. Your way, you have to
+move info properties around in the tree. It might get quite complex if you
+have 732 games where Takemiya is black, then you add a few games by other
+players. The old way this needs no special treatment. You write:
+
+        Game-info properties may only appear once in any path within the tree,
+        i.e. if a game-info propererty gets set in one node it must not appear
+                                ^^^^^
+        in any subtrees of this node.
+
+I suggest changing it to:
+        A node containing Game-info properties is called a game-info node.
+        There may only be one game-info node on any path within the tree,
+        i.e. if some game-info properties occur in one node there may not be
+        any further game-info properties in following nodes:
+        a) on the path from the root of the merged game to this node.
+        b) in the subtree below this node.
+Instead of 'there may be only one' there could be the stronger 'there must
+be exactly one'.
+
+
+'Triple' type. This is a slight misnomer. After all, a triple is something like
+(a,b,c). I have heard the term 'tristate' used, but don't know whether that
+is good
+English.
+
+Compressed point lists
+
+The propvalue type: "list of point" or "elist of point" may be compressed.
+Compressing is done by specifying rectangles instead of listing every single
+point in the rectangle. Rectangles are specified by using the upper left and
+lower left corner of the rectangle.
+^^^^^^^^^^^
+This should be 'lower right'
+
+File SGF Go properties:
+
+Rank: I don't like giving professional ranks as 'p'. This is a IGS only
+convention, not used anywhere else AFAIK. 'Dan' is much more usual.
+
+
+Property:       TC
+Function:       Gives the difference of black minus white territory. SGF
+                viewers should display a message.
+
+I think TC includes Komi, no? This would imply changing its type to real.
+The difference between TC and V is unclear.
+
+File SGF properties (FF[4]):
+
+Property:       KO
+Propvalue:      none
+Propertytype:   move
+Function:       Execute a given move (B or W) even it's illegal. This is
+                an optional property, SGF viewers themselfs should execute
+                                                       ^^^^
+It is spelled 'themselves'.
+Shouldn't KO be a Go property?
+
+Property:       PL
+Propvalue:      color
+Propertytype:   setup
+Function:       PL tells whose turn it is to play. This can be used, when
+                                                                 ^^^^^
+                setting up positions or problems.
+
+No comma here.
+
+CR,SQ,MA, TR.
+
+Why only on stones, or only on empty? I use them everywhere.
+Why same color for CR and others? In SGB this is a small grey circle,
+while other stuff is drawn using thin black lines.
+I would suggest removing these restrictions.
+
+Property:       CA
+Propvalue:      simpletext
+Propertytype:   root
+Function:       Provides the used charset for SimpleText and Text type.
+                Default value is ISO-latin-1.
+                Only charset-names as specified in RFCxxxx are allowed.
+
+what is RFCxxxx????
+
+
+Property:       ST
+...
+                and/or as a list (in a seperate window).
+                                        ^^^^^^
+separate
+
+Property:       GC
+
+ summerize is summarize
+
+Other files: no complaints :)
+
+     Martin
+
+
+

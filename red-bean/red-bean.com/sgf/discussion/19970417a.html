@@ -1,0 +1,68 @@
+Date: Thu, 17 Apr 1997 12:32:47 +0200 (MET DST)
+From: Arno Hollosi <hollosi@sbox.tu-graz.ac.at>
+Subject: SGF FF[4] - version 9
+
+
+Hello again,
+
+I've uploaded a new version of the draft to 
+http://www.cis.tu-graz.ac.at/home/hollosi
+
+Two remarks before I start listing the changes:
+
+- the FF4 example has been updated according to the draft
+
+- SGFC V0.5 (the syntax checker/converter/reference implementation)
+  is available. Some missing properties have been added, new options and
+  bug fixes. Have a look.
+
+
+Changes from version 8 to version 9:
+------------------------------------
+
+- Pass [tt] may be used for boards <= 19x19
+  (for compatibility)
+
+- TC property removed (private to SGB)
+  use V instead
+
+- corrected value type of IT & DO
+  value type is none (not double) -- sorry for this mistake
+
+- TB & TW definition extended:
+  may mark area too (if rule set uses area counting)
+
+- Long labels again (requested by Anders)
+  Have a look at the FF4 example file for four different ways of 
+  displaying long labels (you may come up with an own idea too).
+  Note: no discussion about this point please!
+  Long labels are a feature just like rectangular boards or VW&DD.
+  No applications HAS TO implement them - but it's nonsense to have
+  a limitation in the file format itself.
+
+- NEW: how to convert old FF[123] files to FF[4]
+  Listing of old properties and how to convert them and description
+  of errors that frequently occur.
+
+- Corrected spelling mistakes and other errors
+
+
+Open questions:
+
+- should we remove BO & WO properties?
+  I don't think that they'll be used much
+
+- should we allow text after a collection and in between game-trees?
+  Actually EVERY reader has to skip text there anyway (if it can handle
+  collections) - due to the fact that many SGF files have a trailing mail 
+  signature which would be (otherwise) treated like an error.
+
+- Anders suggested using the identifier SC for SQ.
+  Note: SC was defined as 'secure stones' in FF[123].
+        SGB marked SC's as square.
+  Should we use SC with new meaning 'mark with square' instead of 'secure stones'?
+
+
+
+/Arno
+

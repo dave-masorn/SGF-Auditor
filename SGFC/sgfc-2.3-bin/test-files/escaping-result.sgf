@@ -1,0 +1,12 @@
+(;FF[4]CA[UTF-8]GM[19]AP[SGFC:2.3];C[Text : value 中: with 中 unneccessary : escape : characters中]
+;C[中Text : value with [neces\\sary\] escape : characters中]
+;N[SimpleText : value 中 with : unneccessary : escape : characters中]
+;N[SimpleText value : with [neces\\sary\] : escape characters]
+;B[Move : value 中 with : unneccessary : escape : characters]
+;W[Move value : with [neces\\sary\] : escape characters中]
+;CR[Point : value : with : unneccessary : escape 中 characters]
+;CR[Point value : with [neces\\sary\] : escape 中 characters中]
+;AB[Stone : value : with : unneccessary : escape 中 characters]
+;AW[Stone value : with [neces\\sary\] : escape characters中]
+;AR[First \: Point \: value \: in \: composed \: value 中 with \: [neces\\sary\] \: escape \: characters中:中Second \: Point \: value [ in \: composed \: value \] with \: unneccessary \: escape \: characters中]
+)

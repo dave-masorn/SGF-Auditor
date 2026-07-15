@@ -1,0 +1,95 @@
+<HTML lang="en">
+
+<!-- Mirrored from red-bean.com/sgf/ff5/rephrase.htm by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 30 Jun 2026 15:27:57 GMT -->
+<HEAD><TITLE>SGF properties (FF[5] draft)</TITLE>
+	<link rel="stylesheet" href="../main.css">
+</HEAD>
+<BODY>
+<TABLE CELLPADDING=5><TR>
+<TD class="blue"><A HREF="ff5.html"><FONT COLOR=WHITE SIZE=-1><B>SGF file format FF[5]</B></FONT></A>
+<TD>last updated: 1999-03-19
+</TABLE>
+
+<h1>Rephrased specifications</h1>
+
+These are changes to the FF4 spec, which don't change the functionality.
+The main aim is to make the spec less game-specific and to get rid of
+ambiguities.
+<P>
+There's an <A HREF="m_vs_ax.html">extensive example</A> on how to execute
+moves (B, W) and additions (AB, AW, AE).
+<P>
+<PRE>
+<A NAME="B"><B>Property:</B>	B</A>
+<B>Propvalue:</B>	<A HREF="../sgf4.html#move/pos">move</A>
+<B>Propertytype:</B>	move
+<B>Function:</B>	Execute a black move. This is one of the most used properties
+		in actual <A HREF="../sgf4.html#ebnf-def">collections</A>. As long as
+		the given move is syntactically correct it should be executed.
+		It doesn't matter if the move itself is illegal
+		(e.g. recapturing a ko in a Go game).
+		Have a look at <A HREF="../go.html#execute move">how to execute a Go-move</A>.
+		B, W, and UN properties must not be mixed within a node.
+
+<A NAME="W"><B>Property:</B>	W</A>
+<B>Propvalue:</B>	<A HREF="../sgf4.html#move/pos">move</A>
+<B>Propertytype:</B>	move
+<B>Function:</B>	Execute a white move. This is one of the most used properties
+		in actual <A HREF="../sgf4.html#ebnf-def">collections</A>. As long as
+		the given move is syntactically correct it should be executed.
+		It doesn't matter if the move itself is illegal
+		(e.g. recapturing a ko in a Go game).
+		Have a look at <A HREF="../go.html#execute move">how to execute a Go-move</A>.
+		B, W, and UN properties must not be mixed within a node.
+
+
+<A NAME="AB"><B>Property:</B>	AB</A>
+<B>Propvalue:</B>	list of <A HREF="../sgf4.html#stone">stone</A>
+<B>Propertytype:</B>	setup
+<B>Function:</B>	Add black stones to the board. This can be used to set up
+		positions or problems. Adding is done by 'overwriting' the
+		given point with black stones. It doesn't matter what
+		was there before. Adding a stone must not trigger any rule
+		specific actions, e.g. in Go GM[1]: no prisoners nor
+		any other captures (e.g. suicide). Thus it's possible
+		to create illegal board positions.
+		Points used in stone type must be unique.
+
+<A NAME="AE"><B>Property:</B>	AE</A>
+<B>Propvalue:</B>	list of <A HREF="../sgf4.html#move/pos">point</A>
+<B>Propertytype:</B>	setup
+<B>Function:</B>	Clear the given points on the board. This can be used
+		to set up positions or problems. Clearing is done by
+		'overwriting' the given points, so that they contain no
+		stones. It doesn't matter what was there before.
+		Clearing must not trigger any rule specific actions, e.g.
+		in Go GM[1]: no prisoners are taken.
+		Points must be unique.
+
+<A NAME="AW"><B>Property:</B>	AW</A>
+<B>Propvalue:</B>	list of <A HREF="../sgf4.html#stone">stone</A>
+<B>Propertytype:</B>	setup
+<B>Function:</B>	Add white stones to the board. This can be used to set up
+		positions or problems. Adding is done by 'overwriting' the
+		given points with white stones. It doesn't matter what
+		was there before. Adding a stone must not trigger any rule
+		specific actions, e.g. in Go GM[1]: no prisoners nor
+		any other captures (e.g. suicide). Thus it's possible
+		to create illegal board positions.
+		Points used in stone type must be unique.
+
+
+<A NAME="V"><B>Property:</B>	V</A>
+<B>Propvalue:</B>	<A HREF="../sgf4.html#types">real</A>
+<B>Propertytype:</B>	-
+<B>Function:</B>	Define a value for the node.
+		The interpretation of particular value is game-specific.
+		In Go, this is the estimated score. Positive values are
+		good for black, negative values are good for white.
+
+</PRE>
+
+</BODY>
+
+<!-- Mirrored from red-bean.com/sgf/ff5/rephrase.htm by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 30 Jun 2026 15:27:57 GMT -->
+</HTML>

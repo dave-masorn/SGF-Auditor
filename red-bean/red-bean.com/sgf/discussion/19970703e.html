@@ -1,0 +1,33 @@
+Date: Thu, 3 Jul 1997 16:05:24 -0400
+From: Jens Yllman <jens.yllman@mailbox.swipnet.se>
+Subject: Re: Formated text!
+
+At 01.58 1997-07-03 -0400, Mikael.Thulin@eu.pnu.com wrote:
+>The "formatted" text gives me a kind of a headache! In the
+>earlier versions of the SGF format I could treat "unknown
+>properties", private properties of an other application or
+>"known" properties that my application did not handle, all
+>the same. I read unknown properties as if they were a "list
+>of simpletext" values and kept them to store in the output
+>file. If I do that now I will destroy the format information?
+>e.g. if my program can't handle the ON[text] property and it
+>contains something like "Hi all,<nl> Is this\<nl>true?". My
+>current implementation would preserve it as "Hi all  Is this
+>true?". It looks to me that an application have to know the
+>"property value type" of an unknown property to be able to
+>preserve it's value.
+
+ Hello.
+
+ I've not read the standard word for word. But as I understand it.
+Linebreakes does not need to bee converted except in formated text. And
+when there is a property you don't understand keep the linebreaks. BTW:
+text that should be displayed should be stripped from linebreaks. And as in
+HTML I think that one or more whitespace in a row should be trated as a
+single space. I don't know what all you other think out there but this is
+my opinion.
+
+ Jens Yllman
+ (http://www.uniweb.se/~jens/)
+
+

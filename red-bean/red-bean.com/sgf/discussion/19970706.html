@@ -1,0 +1,51 @@
+Date: Sun, 6 Jul 1997 08:00:49 -0400
+From: Robert Jasiek <jasiek@berlin.snafu.de>
+Subject: Re: Compressed points
+
+> I have a question about compressed points.  If someone sets up a rectangle of
+> squares, SQ[bb:dd] and someone with an editor changes one of them to a triangle,
+> TR[CC] what should the result be?
+
+A result would be:
+;SQ[bb:bd][cb][cd][db:dd]TR[cc]
+
+> 2. Try to break up the original into multiple compressed points.  Anybody know
+> a simple algorithm for doing this?
+
+I certainly will not go through the trouble of reinventing an optimal
+algorithm for a shortest compressed list now.
+
+Here a compromise (sketch, "bad" performance):
+
+1. Use a 19x19-field. 0=no mark-up, 1=SQ, 2=TR overwrites all else.
+2. Initialize all to 0.
+3. Mark from decompressed SQ all 1. Empty SQ.
+4. Mark from decompressed TR all 2.
+5. Keep compressed form of TR.
+6. For all y-axis values of field do:
+6.1 For all x-axis values of field do:
+6.2 If Leftof is <> 1 and field-entry of actual = 1 then add 
+[actual:actual] to SQ.
+6.3 If Leftof and field-entry of actual are 1 then alter last [m:n] 
+of SQ to [m:actual].
+6.4 End x
+7. End y
+8. (A) Until unprocessed property value w in SQ for all of them from 
+left to right:
+8.1 Let [mn:op] be the actual property value of (A).
+8.2 (B) Until unprocessed property value after w in SQ for all of them
+from left to right:
+8.3 Let [qr:sr] be the actual property value of (B) if r constant.
+8.4 If m=q and o=s and r=p+1 then change [mn:op] to [mn:or] and delete
+[qr:sr] from SQ.
+8.5 End (B).
+9. End (A).
+10. For all property values of SQ do:
+10.1 If actual property value is of type [mn:mn] then change it to [mn].
+10.2 End.
+
+-- 
+robert jasiek
+http://www.inx.de/~jasiek/
+
+

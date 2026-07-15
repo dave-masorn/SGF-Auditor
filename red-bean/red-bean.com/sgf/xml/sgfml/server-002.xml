@@ -1,0 +1,372 @@
+<?xml version="1.0" ?>
+<!DOCTYPE sgfml SYSTEM "http://www.red-bean.com/sgf/xml/sgfml-0.02.dtd">
+
+<sgfml version='0.02'>
+<header>
+	<application name='SGFC' version='1.14'/>
+</header>
+
+<game type='GO'>
+<gameheader>
+	<board size='19x19'/>
+	<title>os-dango(B) IGS</title>
+</gameheader>
+
+<sequence>
+<node>
+	<gameinfo>
+	<person role='PLAYER' side='B'>
+		<name>dango</name>
+		<rating>1k*</rating>
+	</person>
+	<person role='PLAYER' side='W'>
+		<name>os</name>
+		<rating>1k*</rating>
+	</person>
+
+	<date><dateitem date='2000-01-09'/></date>
+	<place>IGS:  igs.joyjoy.net 6969</place>
+	<komi>5.5</komi>
+	<result>B+20.5</result>
+	<time>60</time>
+
+	<person role='RECORDER'>
+		<name>Brought to you by IGS</name>
+	</person>
+	<copyright>
+Copyright (c) NKB, Inc. 1998
+Permission to reproduce this game is given, provided proper credit is given.
+No warrantee, implied or explicit, is understood.
+Use of this game is an understanding and agreement of this notice.
+	</copyright>
+	</gameinfo>
+
+	<property name='LT'></property>
+	<property name='NW'> 31</property>
+	<property name='NB'> 31</property>
+</node>
+
+<node><move side='B' move='pd' timeleft='54'/></node>
+<node><move side='W' move='dp' timeleft='56'/></node>
+<node><move side='B' move='qp' timeleft='52'/></node>
+<node><move side='W' move='op' timeleft='54'/></node>
+<node><move side='B' move='pn' timeleft='51'/></node>
+<node><move side='W' move='qq' timeleft='51'/></node>
+<node><move side='B' move='rq' timeleft='50'/></node>
+<node><move side='W' move='pq' timeleft='49'/></node>
+<node><move side='B' move='ro' timeleft='49'/></node>
+<node><move side='W' move='dc' timeleft='45'/></node>
+<node><move side='B' move='lp' timeleft='47'/></node>
+<node><move side='W' move='on' timeleft='42'/></node>
+<node><move side='B' move='om' timeleft='46'/></node>
+<node><move side='W' move='nn' timeleft='41'/></node>
+<node><move side='B' move='pm' timeleft='43'/></node>
+<node><move side='W' move='nm' timeleft='39'/></node>
+<node><move side='B' move='ok' timeleft='41'/></node>
+<node><move side='W' move='jp' timeleft='37'/></node>
+<node><move side='B' move='ln' timeleft='30'/></node>
+<node><move side='W' move='nl' timeleft='33'/></node>
+<node><move side='B' move='jn' timeleft='25'/></node>
+<node><move side='W' move='hp' timeleft='32'/></node>
+<node><move side='B' move='nk' timeleft='21'/></node>
+<node><move side='W' move='ll' timeleft='29'/></node>
+<node><move side='B' move='iq' timeleft='12'/></node>
+<node><move side='W' move='jq' timeleft='22'/></node>
+<node><move side='B' move='ip' timeleft='177'/></node>
+<node><move side='W' move='io' timeleft='21'/></node>
+<node><move side='B' move='jo' timeleft='176'/></node>
+<node><move side='W' move='ir' timeleft='18'/></node>
+<node><move side='B' move='in' timeleft='174'/></node>
+<node><move side='W' move='ho' timeleft='15'/></node>
+<node><move side='B' move='kp' timeleft='172'/></node>
+<node><move side='W' move='mk' timeleft='12'/></node>
+<node><move side='B' move='mj' timeleft='169'/></node>
+<node><move side='W' move='lj' timeleft='11'/></node>
+<node><move side='B' move='mi' timeleft='168'/></node>
+<node><move side='W' move='li' timeleft='9'/></node>
+<node><move side='B' move='mh' timeleft='166'/></node>
+<node><move side='W' move='nc' timeleft='8'/></node>
+<node><move side='B' move='kk' timeleft='164'/></node>
+<node><move side='W' move='lk' timeleft='6'/></node>
+<node><move side='B' move='lh' timeleft='149'/></node>
+<node><move side='W' move='jd' timeleft='177'/></node>
+<node><move side='B' move='ji' timeleft='145'/></node>
+<node><move side='W' move='mq' timeleft='175'/></node>
+<node><move side='B' move='lr' timeleft='137'/></node>
+<node><move side='W' move='mr' timeleft='173'/></node>
+<node><move side='B' move='nd' timeleft='118'/></node>
+<node><move side='W' move='md' timeleft='169'/></node>
+<node><move side='B' move='mc' timeleft='117'/></node>
+<node><move side='W' move='lc' timeleft='163'/></node>
+<node><move side='B' move='mb' timeleft='115'/></node>
+<node><move side='W' move='nb' timeleft='158'/></node>
+<node><move side='B' move='me' timeleft='114'/></node>
+<node><move side='W' move='ld' timeleft='157'/></node>
+<node><move side='B' move='oc' timeleft='113'/></node>
+<node><move side='W' move='ob' timeleft='154'/></node>
+<node><move side='B' move='pb' timeleft='112'/></node>
+<node><move side='W' move='lb' timeleft='153'/></node>
+<node><move side='B' move='oa' timeleft='110'/></node>
+<node><move side='W' move='ma' timeleft='152'/></node>
+<node><move side='B' move='ne' timeleft='108'/></node>
+<node><move side='W' move='qh' timeleft='136'/></node>
+<node><move side='B' move='qf' timeleft='105'/></node>
+<node><move side='W' move='qk' timeleft='135'/></node>
+<node><move side='B' move='rl' timeleft='103'/></node>
+<node><move side='W' move='rk' timeleft='128'/></node>
+<node><move side='B' move='rg' timeleft='102'/></node>
+<node><move side='W' move='ql' timeleft='126'/></node>
+<node><move side='B' move='rm' timeleft='100'/></node>
+<node><move side='W' move='oi' timeleft='122'/></node>
+<node><move side='B' move='pj' timeleft='99'/></node>
+<node><move side='W' move='ol' timeleft='113'/></node>
+<node><move side='B' move='pl' timeleft='97'/></node>
+<node><move side='W' move='pk' timeleft='107'/></node>
+<node><move side='B' move='oj' timeleft='179'/></node>
+<node><move side='W' move='qj' timeleft='106'/></node>
+<node><move side='B' move='pi' timeleft='172'/></node>
+<node><move side='W' move='ph' timeleft='105'/></node>
+<node><move side='B' move='oh' timeleft='166'/></node>
+<node><move side='W' move='og' timeleft='102'/></node>
+<node><move side='B' move='ni' timeleft='164'/></node>
+<node><move side='W' move='pf' timeleft='101'/></node>
+<node><move side='B' move='qe' timeleft='160'/></node>
+<node><move side='W' move='rh' timeleft='100'/></node>
+<node><move side='B' move='ng' timeleft='153'/></node>
+<node><move side='W' move='po' timeleft='92'/></node>
+<node><move side='B' move='qo' timeleft='147'/></node>
+<node><move side='W' move='rr' timeleft='87'/></node>
+<node><move side='B' move='sr' timeleft='146'/></node>
+<node><move side='W' move='qr' timeleft='83'/></node>
+<node><move side='B' move='de' timeleft='124'/></node>
+<node><move side='W' move='dg' timeleft='167'/></node>
+<node><move side='B' move='fe' timeleft='116'/></node>
+<node><move side='W' move='fc' timeleft='165'/></node>
+<node><move side='B' move='he' timeleft='115'/></node>
+<node><move side='W' move='gd' timeleft='152'/></node>
+<node><move side='B' move='fg' timeleft='111'/></node>
+<node><move side='W' move='di' timeleft='150'/></node>
+<node><move side='B' move='cn' timeleft='104'/></node>
+<node><move side='W' move='cl' timeleft='149'/></node>
+<node><move side='B' move='cq' timeleft='103'/></node>
+<node><move side='W' move='cp' timeleft='143'/></node>
+<node><move side='B' move='dq' timeleft='100'/></node>
+<node><move side='W' move='eq' timeleft='142'/></node>
+<node><move side='B' move='bp' timeleft='94'/></node>
+<node><move side='W' move='bo' timeleft='140'/></node>
+<node><move side='B' move='bq' timeleft='93'/></node>
+<node><move side='W' move='co' timeleft='139'/></node>
+<node><move side='B' move='er' timeleft='92'/></node>
+<node><move side='W' move='fq' timeleft='138'/></node>
+<node><move side='B' move='fr' timeleft='85'/></node>
+<node><move side='W' move='gr' timeleft='137'/></node>
+<node><move side='B' move='cc' timeleft='78'/></node>
+<node><move side='W' move='cb' timeleft='134'/></node>
+<node><move side='B' move='cd' timeleft='77'/></node>
+<node><move side='W' move='dn' timeleft='133'/></node>
+<node><move side='B' move='fi' timeleft='65'/></node>
+<node><move side='W' move='hn' timeleft='129'/></node>
+<node><move side='B' move='hm' timeleft='60'/></node>
+<node><move side='W' move='gm' timeleft='128'/></node>
+<node><move side='B' move='hl' timeleft='59'/></node>
+<node><move side='W' move='kl' timeleft='117'/></node>
+<node><move side='B' move='gl' timeleft='48'/></node>
+<node><move side='W' move='jk' timeleft='110'/></node>
+<node><move side='B' move='im' timeleft='155'/></node>
+<node><move side='W' move='fl' timeleft='106'/></node>
+<node><move side='B' move='fm' timeleft='152'/></node>
+<node><move side='W' move='gn' timeleft='105'/></node>
+<node><move side='B' move='dj' timeleft='150'/></node>
+<node><move side='W' move='cj' timeleft='102'/></node>
+<node><move side='B' move='dk' timeleft='147'/></node>
+<node><move side='W' move='ck' timeleft='101'/></node>
+<node><move side='B' move='dl' timeleft='140'/></node>
+<node><move side='W' move='dm' timeleft='95'/></node>
+<node><move side='B' move='ei' timeleft='138'/></node>
+<node><move side='W' move='eh' timeleft='93'/></node>
+<node><move side='B' move='ci' timeleft='137'/></node>
+<node><move side='W' move='dh' timeleft='92'/></node>
+<node><move side='B' move='fk' timeleft='135'/></node>
+<node><move side='W' move='fh' timeleft='87'/></node>
+<node><move side='B' move='bb' timeleft='133'/></node>
+<node><move side='W' move='db' timeleft='178'/></node>
+<node><move side='B' move='bf' timeleft='124'/></node>
+<node><move side='W' move='bh' timeleft='175'/></node>
+<node><move side='B' move='gh' timeleft='117'/></node>
+<node><move side='W' move='gg' timeleft='169'/></node>
+<node><move side='B' move='hg' timeleft='112'/></node>
+<node><move side='W' move='gi' timeleft='168'/></node>
+<node><move side='B' move='hh' timeleft='108'/></node>
+<node><move side='W' move='ej' timeleft='167'/></node>
+<node><move side='B' move='fj' timeleft='105'/></node>
+<node><move side='W' move='el' timeleft='166'/></node>
+<node><move side='B' move='ek' timeleft='103'/></node>
+<node><move side='W' move='em' timeleft='165'/></node>
+<node><move side='B' move='ik' timeleft='101'/></node>
+<node><move side='W' move='qm' timeleft='154'/></node>
+<node><move side='B' move='qn' timeleft='98'/></node>
+<node><move side='W' move='sp' timeleft='153'/></node>
+<node><move side='B' move='sq' timeleft='93'/></node>
+<node><move side='W' move='sl' timeleft='146'/></node>
+<node><move side='B' move='sn' timeleft='83'/></node>
+<node><move side='W' move='sk' timeleft='145'/></node>
+<node><move side='B' move='sm' timeleft='81'/></node>
+<node><move side='W' move='gf' timeleft='131'/></node>
+<node><move side='B' move='ge' timeleft='65'/></node>
+<node><move side='W' move='ff' timeleft='128'/></node>
+<node><move side='B' move='ef' timeleft='60'/></node>
+<node><move side='W' move='eg' timeleft='127'/></node>
+<node><move side='B' move='hf' timeleft='59'/></node>
+<node><move side='W' move='fg' timeleft='124'/></node>
+<node><move side='B' move='ba' timeleft='28'/></node>
+<node><move side='W' move='fs' timeleft='123'/></node>
+<node><move side='B' move='ds' timeleft='26'/></node>
+<node><move side='W' move='jj' timeleft='116'/></node>
+<node><move side='B' move='ij' timeleft='178'/></node>
+<node><move side='W' move='kf' timeleft='113'/></node>
+<node><move side='B' move='jl' timeleft='177'/></node>
+<node><move side='W' move='kj' timeleft='112'/></node>
+<node><move side='B' move='ke' timeleft='161'/></node>
+<node><move side='W' move='je' timeleft='110'/></node>
+<node><move side='B' move='le' timeleft='157'/></node>
+<node><move side='W' move='hd' timeleft='104'/></node>
+<node><move side='B' move='kd' timeleft='155'/></node>
+<node><move side='W' move='kc' timeleft='102'/></node>
+<node><move side='B' move='jf' timeleft='142'/></node>
+<node><move side='W' move='jg' timeleft='101'/></node>
+<node><move side='B' move='if' timeleft='139'/></node>
+<node><move side='W' move='kh' timeleft='100'/></node>
+<node><move side='B' move='lf' timeleft='135'/></node>
+<node><move side='W' move='kg' timeleft='97'/></node>
+<node><move side='B' move='id' timeleft='132'/></node>
+<node><move side='W' move='ic' timeleft='178'/></node>
+<node><move side='B' move='ie' timeleft='130'/></node>
+<node><move side='W' move='jc' timeleft='177'/></node>
+<node><move side='B' move='bg' timeleft='119'/></node>
+<node><move side='W' move='bi' timeleft='165'/></node>
+<node><move side='B' move='mp' timeleft='105'/></node>
+<node><move side='W' move='nq' timeleft='149'/></node>
+<node><move side='B' move='no' timeleft='90'/></node>
+<node><move side='W' move='np' timeleft='140'/></node>
+<node><move side='B' move='mo' timeleft='81'/></node>
+<node><move side='W' move='oo' timeleft='138'/></node>
+<node><move side='B' move='mm' timeleft='71'/></node>
+<node><move side='W' move='lm' timeleft='134'/></node>
+<node><move side='B' move='mn' timeleft='70'/></node>
+<node><move side='W' move='ml' timeleft='132'/></node>
+<node><move side='B' move='ii' timeleft='65'/></node>
+<node><move side='W' move='ki' timeleft='131'/></node>
+<node><move side='B' move='fd' timeleft='58'/></node>
+<node><move side='W' move='ec' timeleft='124'/></node>
+<node><move side='B' move='ca' timeleft='55'/></node>
+<node><move side='W' move='dd' timeleft='116'/></node>
+<node><move side='B' move='ce' timeleft='53'/></node>
+<node><move side='W' move='fb' timeleft='110'/></node>
+<node><move side='B' move='da' timeleft='52'/></node>
+<node><move side='W' move='ea' timeleft='109'/></node>
+<node><move side='B' move='cg' timeleft='49'/></node>
+<node><move side='W' move='ch' timeleft='106'/></node>
+<node><move side='B' move='kq' timeleft='45'/></node>
+<node><move side='W' move='jr' timeleft='103'/></node>
+<node><move side='B' move='ms' timeleft='41'/></node>
+<node><move side='W' move='ns' timeleft='101'/></node>
+<node><move side='B' move='ls' timeleft='39'/></node>
+<node><move side='W' move='kr' timeleft='99'/></node>
+<node><move side='B' move='lq' timeleft='178'/></node>
+<node><move side='W' move='km' timeleft='97'/></node>
+<node><move side='B' move='kn' timeleft='171'/></node>
+<node><move side='W' move='df' timeleft='94'/></node>
+<node><move side='B' move='ee' timeleft='161'/></node>
+<node><move side='W' move='ap' timeleft='93'/></node>
+<node><move side='B' move='bs' timeleft='155'/></node>
+<node><move side='W' move='qc' timeleft='86'/></node>
+<node><move side='B' move='pc' timeleft='153'/></node>
+<node><move side='W' move='rd' timeleft='81'/></node>
+<node><move side='B' move='rb' timeleft='148'/></node>
+<node><move side='W' move='qb' timeleft='73'/></node>
+<node><move side='B' move='qa' timeleft='139'/></node>
+<node><move side='W' move='qd' timeleft='71'/></node>
+<node><move side='B' move='pe' timeleft='137'/></node>
+<node><move side='W' move='na' timeleft='62'/></node>
+<node><move side='B' move='pa' timeleft='135'/></node>
+<node><move side='W' move='lg' timeleft='170'/></node>
+<node><move side='B' move='mg' timeleft='133'/></node>
+<node><move side='W' move='cf' timeleft='167'/></node>
+<node><move side='B' move='aq' timeleft='128'/></node>
+<node><move side='W' move='ao' timeleft='163'/></node>
+<node><move side='B' move='es' timeleft='125'/></node>
+<node><move side='W' move='gs' timeleft='162'/></node>
+<node><move side='B' move='ks' timeleft='123'/></node>
+<node><move side='W' move='js' timeleft='161'/></node>
+<node><move side='B' move='ag' timeleft='107'/></node>
+<node><move side='W' move='ah' timeleft='160'/></node>
+<node><move side='B' move='be' timeleft='106'/></node>
+<node><move side='W' move='jm' timeleft='151'/></node>
+<node><move side='B' move='il' timeleft='105'/></node>
+<node><move side='W' move='pp' timeleft='147'/></node>
+<node><move side='B' move='rp' timeleft='101'/></node>
+<node><move side='W' move='rs' timeleft='142'/></node>
+<node><move side='B' move='ih' timeleft='93'/></node>
+<node><move side='W' move='PASS' timeleft='122'/></node>
+<node><move side='B' move='PASS' timeleft='81'/></node>
+<node><move side='W' move='PASS' timeleft='122'/>
+<comment>
+ os dead @ J3<br/>
+ os dead @ F7<br/>
+ os dead @ C6<br/>
+ dango dead @ R12<br/>
+ dango dead @ S16<br/>
+ dango dead @ Q14<br/>
+ os dead @ R9<br/>
+ dango dead @ P13<br/>
+ os dead @ G11<br/>
+ dango dead @ T4<br/>
+ os done
+</comment>
+</node>
+
+<node>
+<markup type='TERRITORY' side='W'>
+<point point='ai'/><point point='aj'/><point point='ak'/><point point='al'/>
+<point point='am'/><point point='an'/><point point='bj'/><point point='bk'/>
+<point point='bl'/><point point='bm'/><point point='bn'/><point point='ci'/>
+<point point='cm'/><point point='cn'/><point point='do'/><point point='eb'/>
+<point point='en'/><point point='eo'/><point point='ep'/><point point='fa'/>
+<point point='fm'/><point point='fn'/><point point='fo'/><point point='fp'/>
+<point point='ga'/><point point='gb'/><point point='gc'/><point point='go'/>
+<point point='gp'/><point point='gq'/><point point='ha'/><point point='hb'/>
+<point point='hc'/><point point='hq'/><point point='hr'/><point point='hs'/>
+<point point='ia'/><point point='ib'/><point point='ip'/><point point='iq'/>
+<point point='is'/><point point='ja'/><point point='jb'/><point point='ka'/>
+<point point='kb'/><point point='kk'/><point point='la'/><point point='mb'/>
+<point point='mc'/><point point='nr'/><point point='oq'/><point point='or'/>
+<point point='os'/><point point='pr'/><point point='ps'/><point point='qs'/>
+</markup>
+<markup type='TERRITORY' side='B'>
+<point point='aa'/><point point='ab'/><point point='ac'/><point point='ad'/>
+<point point='ae'/><point point='af'/><point point='ar'/><point point='as'/>
+<point point='bc'/><point point='bd'/><point point='br'/><point point='cr'/>
+<point point='cs'/><point point='dr'/><point point='ej'/><point point='gi'/>
+<point point='gj'/><point point='gk'/><point point='hi'/><point point='hj'/>
+<point point='hk'/><point point='ko'/><point point='lo'/><point point='mf'/>
+<point point='nf'/><point point='nh'/><point point='nj'/><point point='od'/>
+<point point='oe'/><point point='of'/><point point='og'/><point point='oi'/>
+<point point='pf'/><point point='pg'/><point point='ph'/><point point='pk'/>
+<point point='qb'/><point point='qc'/><point point='qd'/><point point='qg'/>
+<point point='qh'/><point point='qi'/><point point='qj'/><point point='qk'/>
+<point point='ql'/><point point='qm'/><point point='ra'/><point point='rc'/>
+<point point='rd'/><point point='re'/><point point='rf'/><point point='rh'/>
+<point point='ri'/><point point='rj'/><point point='rk'/><point point='rn'/>
+<point point='sa'/><point point='sb'/><point point='sc'/><point point='sd'/>
+<point point='se'/><point point='sf'/><point point='sg'/><point point='sh'/>
+<point point='si'/><point point='sj'/><point point='sk'/><point point='sl'/>
+<point point='so'/><point point='sp'/>
+</markup>
+</node>
+
+</sequence>
+
+</game>
+
+</sgfml>
+

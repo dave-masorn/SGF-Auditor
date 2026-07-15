@@ -1,0 +1,38 @@
+Date: Wed, 7 May 1997 22:29:22 -0400
+From: "William M. Shubert" <wms@hevanet.com>
+Subject: Re: linebreaks...
+
+Adrian Mariano wrote:
+> (quoting me)
+> >
+> >    The original statement was correct.  In C, \n is *ALWAYS* just a LF.  It
+> > has to be.  Saying:
+> >
+> >   char c = '\n';
+> >
+> > wouldn't work if \n was two characters!
+> 
+> This is misleading, at best.
+> 
+> Under DOS with my C compiler when "file" has been opened in text mode
+> then the code:
+> 
+>    fputc('\n',file)
+> 
+> writes two characters to the file: a carriage return and a line feed.
+> (Note that if the compiler didn't do this, then code written for unix
+> would all break because of missing \r characters.)
+
+   Huh?  This is fputc, not '\n'.  In unix, printf("\n") will actually emit
+*two* characters when it goes to a terminal!  The \n and the \r.  But the
+\n is still one character, and I don't see how that could be called
+misleading.
+
+> The Macintosh uses *just* "\r" to separate lines.
+
+   What a drag.  So I guess we need to treat \n *or* \r as newline.  But
+\n\r has to be a single newline, which makes it complex.  Ugh.
+-- 
+				-Bill (wms@hevanet.com)
+				 http://www.hevanet.com/wms/
+

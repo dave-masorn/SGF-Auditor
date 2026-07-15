@@ -1,0 +1,71 @@
+Date: Sat, 12 Jul 1997 16:55:22 -0400
+From: fotland@ix.netcom.com
+Subject: Many Faces of Go and FF[4] support
+
+
+I just went through the property index of all properties FF[1]-FF[4], and checked 
+the latest Many Faces of Go for which it supports.  I'd like you to comment on the
+degree of support I have implemented.  It seems to be enough for all existing files.
+
+Many Faces goes to the duplicator in about 3 weeks to have CD-ROM's made, so if I
+am to make any changes they have to be now.  In many cases I am converting to
+a common set that can be easily translated to Ishi format.  Also, I want to
+write files that can be read by older sgf readers.
+
+First a comment on the index.  It's extremely helpful.  It is missing the CI and DG
+properies (which MF silently discards and ignores), and the NW and NB properties,
+which IGS puts in files (and MF silently discards and ignores).
+
+MF silently discards and ignores, with no warning message:
+VW, WS, BS, CI, DG, AP, LT, NW, NB.
+
+MF converts all the following to english comments on input:
+CH, GB, GW, TE, BM, DM, IT, DO, UC, HO, SI
+
+The only double MF writes is TE[2], to indicate the correct move in a problem.
+
+BTW, shouldn't IT and DO have property value Double, rather than none?
+
+MF preserves, ignores, and prints a warning (unrecognized property) for:
+AR*, BL*, CA*, DD*, EL, EX, FG*, ID, IP*, IY*, KO*, LN*, OB*, OM, OP, OV, OW*,
+PM*, SE*, SU*, TC, WL*
+
+* are FF[4] properties not supported by MF.
+
+MF converts the following marks to triangles:
+RG, SC, TB, TW
+
+MF converts L to LB
+MF converts M to MA
+
+MF only allows AB, AW, AE at the root or at leafs, unless there is is only
+one AB or AW in a node, and no move.  MF will not correct mixed move and
+setup properties, but will give an error and not read the file.
+
+If an input file has a move in the root node, MF adds a new node after the
+root and moves the root move there.
+
+MF can skip junk in front of the inital (; (like e-mail headers), and can handle
+files starting with ( instead of (;.
+
+MF propbably does not handle soft and hard linebreaks correctly.
+
+MF expands compressed point lists on input, and will never write a compressed
+point list.
+
+On output, MF always uses [tt] for pass, and writes
+GM[1]FF[4]VW[]AP[Many Faces of Go:10.0] at the start of the file.  It always includes
+HA, SZ, and ST properties in the root node.  MF writes 2 upper case properties only, 
+but can read old style mixed upper and lower case properties.
+
+If anyone thinks there is something I am not supporting in sgf that I should,
+please let me know right away.  Otherwise this is what will ship.
+
+Thanks for your time,
+
+David Fotland
+
+
+ 
+
+

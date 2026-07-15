@@ -1,0 +1,43 @@
+Date: Wed, 14 May 1997 19:37:58 -0400
+From: Robert Jasiek <jasiek@berlin.snafu.de>
+Subject: FG flags
+
+Please accept my apologies for the very late discussion about 
+FG. Before having read draft 10 I did not have the slightest 
+idea what could have been meant with the FG property values.
+Only now I know, why flags are needed and very useful.
+
+FG has a good specification. However, now I think it might be
+even better. Whether or not all or part of the following
+should be part of SGF or only of a client's user interface,
+is not quite clear to me. So please comment.
+
+- game infos on/off (value: 0/128)
+- comment on/off (value: 0/256)
+- border closed/open (value: 0/512)
+  border closed means: grid has border line on edges with no
+  crossing lines.
+  border open means: grid has no border line on edges different
+  from minimal/maximal coordinates of board size and half lines
+  goto outside
+- hoshi dots on/off: (value: 0/1024)
+- thick borderline on/off: (value: 0/2048)
+- list all move1 on move2 cases on/off: (value: 0/4096)
+- list all ko captures on/off: (value: 0/8192)
+- list lists sequential / grouped as to first placed stone:
+(value: 0/16384)
+- show # captures on/off: (value: 0/32768)
+
+Printing has more characteristics. With a further property PS
+for Printing style reediting of diagrams' printing formats
+would become superfluous (optional). Color, Size (mmxmm),
+Place_Upper_Left_Corner, Places_Of_Parts_Of_Print. I mean
+the layout of a whole book could be in SGF without need for
+further graphics programs. (Seems PS is too late for FF[4],
+but part of the FG extensions can still be included.)
+
+BTW, many, many thanks to Arno for his great help!
+
+--robert jasiek
+
+

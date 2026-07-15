@@ -1,0 +1,117 @@
+Date: Tue, 29 Apr 1997 06:24:35 -0400
+From: Robert Jasiek <jasiek@berlin.snafu.de>
+Subject: Re: RE and Date formats
+
+>   - for more than two days:
+>     just specify the first and the last day the game was played and use
+>     ':' as delimeter, e.g. [1997-02-10:03-12]
+>     Year/month may be omitted for end date if they equal the beginning
+>     date
+
+This is not enough. Then st like
+[1997-02-10:03-12,15] or alternatively
+[1997-02-10:03-12][1997-03-15]
+seems to become illegal. Besides you have to specify operator
+association.
+
+>   - maybe we could even specify a sohisticated format like the one
+>     Robert mentioned, i.e. combination of ',' and ':' within the
+>     simpletext value.
+>     But this might be a little bit too much of a good thing.
+
+As you see from the above example a combination or a list of [] or
+a separation list is necessary. I agree that a combination of two 
+operators is too complicated.
+The most difficult possibilty is to allow a list of [] with
+date
+date,postdate
+Adate:Bdate
+
+being valid expressions in a simpletext.
+
+> I think that the first date is the most important (beginning of game).
+
+This is true for sorting. But in many title games on the first day only
+some celebratial moves are played, while the main part can be played on
+several days some months later. I think, the user wants to get all these
+days in correct format, i.e. they must also be in ISO.
+
+> If this is in ISO format I don't care about the rest, i.e.
+> it might be bad style, but I would've no problem with:
+> DT[1997-04-26 16pm-22pm, rainy afternoon]
+
+It is better to separate the ISO dates from each other and to separate
+the rest simpletext by the same separator: Example with separator '#' :
+[date#date#restsimpletextabout sunshine]
+
+---------------------------------------------------------
+What to do: 1 = new format , or 2 = expanded old format :
+---------------------------------------------------------
+
+Possibility 1:
+-----------------
+
+With - as David says - only 5-10% of old dates being correct we may as
+well choose a new format without doing us much harm:
+
+list of [simpletext] 
+, where simpletext is interpreted as ISO-date or blablasimpletext.
+
+Examples:
+
+;DT[1997-04-28]
+;DT[played on a warmy 4th April in year 3 of Meiji]
+;DT[1996-12-31][1997-01-01][1997-01-02][1997-04-28]
+[dayly schedule 10am-4pm]
+
+Note: wrong old dates are displayed as blablasimpletext.
+
+Compression could be added but is not really necessary for dates:
+Adate:Bdate like ;DT[1996-12-31:1997-01-02] .
+
+Possibility 2:
+-----------------
+
+Maintains old format (if with comma) 
+and allows several dates and comments and 
+treats wrong old dates as blablasimpletext.
+
+[simpletext]
+
+where ',' serves as a seperator and each separated part may be
+of one of the following formats:
+
+yyyy-mm-dd
+yyyy-mm
+yyyy
+mm-dd
+mm
+dd
+blablasimpletext
+
+Interpretation:
+>From left to right.
+Left-most must contain yyyy or all will be treated as blablasimpletext.
+mm-dd or mm acquires the last preceding yyyy.
+If dd is preceded by some mm and some yyyy (possibly at some other
+place), it acquires the last preceding mm and the last preceding
+yyyy.
+If xx follows yyyy-mm-dd or mm-dd or dd, then xx is dd.
+If xx follows yyyy-mm or mm, then xx is mm.
+All other will be treated as blablasimpletext.
+
+Compression is not allowed.
+
+As you see the new format is much simpler.
+
+> 
+> I'm still not sure what to do about illegal date/result fields.
+> /Arno
+
+See above: treat as blablasimpletext.
+
+Do you prefer possibility 1 or 2?
+
+--robert
+
+

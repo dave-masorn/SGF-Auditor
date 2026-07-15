@@ -1,0 +1,87 @@
+Date: Sat, 22 Mar 1997 16:11:19 +0100 (MET)
+From: Arno Hollosi <hollosi@sbox.tu-graz.ac.at>
+Subject: SGF FF[4] version 8
+
+
+Hello folks,
+
+I've uploaded a new version of the draft to 
+http://www.cis.tu-graz.ac.at/home/hollosi/sgf4_draft/
+
+Please have a look at the open questions at the bottom too.
+
+
+Changes from version 7 to version 8:
+------------------------------------
+
+* soft line breaks are converted to <nothing>.
+  This enables one to insert a linebreak anywhere in the Text datatype.
+
+* removed '^A', '^Number' jumpmarks from Text datatype
+  (no hyperlinks *sniff*)
+
+* deleted UM
+
+* deleted SM property and redefined MN property
+  Due to mistake in the FF[3] specification I thought MN ADDS the given 
+  value to the move number and thus defined SM.
+  Actually MN is meant to SET the move number (absolute).
+  Thus the new SM property is obsolete and got removed.
+  My apologies for the inconvinience.
+
+* inserted HO (hotspot) property
+  HO is a FF[3] property which has been removed in previous versions of FF[4]
+  Definiton in draft: Node is a 'hotspot', i.e. something interesting 
+    (e.g.node contains a game-deciding move).
+    SGF viewers should display a message.
+    The property is not related to any specific place
+    on the board, but marks the whole node instead.
+    Sophisticated applications could implement the navigation command
+    next/previous hotspot.
+
+* inserted LN (line) propertry
+  Definiton in draft: Applications should draw a simple line form one point
+    to the other. It's illegal to specify the same line twice,
+    e.g. (Go) LN[aa:bb][aa:bb]. Different lines may have the same
+    starting or ending point though.
+    It's illegal to specify a one point line, e.g. LN[cc:cc].
+
+* restricted LB property to 3 chars text length
+  Definiton in draft: Writes the given text on the board. The text should be
+    centered around the given point. The maximum text length is
+    3 chars. Any text longer than that should be truncated.
+    Note: in FF[3] 4 chars were allowed.
+
+* added 'void' result to RE[]
+  Definition: "Void" [is used] for no result or suspended play
+- renamed 'Forfait' to 'Forfeit'
+
+
+
+Open questions:
+---------------
+
+* TC (territory count): it's unclear what the value means: difference in
+  territory or score, i.e. territory + komi + prisoners
+  Anders will have a look at it.
+
+* Timing properties:
+  Is the current definition ok? (especially for overtime?)
+
+* should we add 'DG' (a diagram specification property)?
+  What should be stored in it?
+
+* To Dave Dyer, Matthew Burke & Tim Casey
+  Could you please send me a specification for the following games:
+  Chinese chess, Shogi, Lines of Action, Ataxx, Hex, Jungle, Neutron,
+  Philosopher's Football, Quadrature, Trax.
+
+* To Martin & Anders:
+  Who is responsible for 
+  Othello, chess, Gomoku+Renju and Nine Men's Morris?
+
+
+
+Thanks
+/Arno
+

@@ -1,0 +1,24 @@
+Date: Wed, 7 May 1997 10:16:12 -0400
+From: Jens Yllman <jens.yllman@mailbox.swipnet.se>
+Subject: linebreaks...
+
+ Hello.
+
+ I read in the description of the diffrent propertyvalues that in 'Text'
+type linebreaks should be LF only. Does this apply to the whole SGF file? I
+think that we should not specify this. I think the programs should be able
+to handle LF or LFCR or CR. That way users can still read the SGF file in
+their favorite text editor. One more thing. In the 'Text' type text it says
+that LF equals \n in C. That is NOT true. On UNIX systems yes. But on
+MS-DOS/MS-Windows \n equals LFCR. So you can not realy use \n in cases like
+this. If you want to be sure what character is read/written, use binary
+files and use the real values for the character you want. I've compiled
+SGFC v0.6 on my MS-Windows NT machine but I've not checked this yet. Do
+you, Arno, use \n in SGFC? It's not that hard to make the diffrence between
+systems transparent to your program. I think though that when you write
+files. Use the same linebreak through the file. For me it does not matter
+which.
+
+ Jens Yllman
+
+

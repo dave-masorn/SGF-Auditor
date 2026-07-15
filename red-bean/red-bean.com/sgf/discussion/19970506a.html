@@ -1,0 +1,49 @@
+Date: Tue, 6 May 1997 00:01:59 +0200 (MET DST)
+From: Arno Hollosi <hollosi@sbox.tu-graz.ac.at>
+Subject: Re: SGF
+
+
+On Mon, 5 May 1997, Jens Yllman wrote:
+
+>  I was just looking at the 'EBNF definition' of SGF. And there it says
+> 'GameTree = "(" Sequence { GameTree } ")"'. Does this mean that there
+> can not be any nodes between and after the GameTree? I know I sound
+
+Correct. No nodes in between gametrees.
+
+> avoid the kind of trouble we've had with diffrent implimentations of SGF
+> before. And then we should be very clear of these things. So everybody
+> writes files everybody can read.
+
+The EBNF definition is clear - there are no ambiguities.
+Every programmer has seen EBNF defintions at least once.
+I don't plan to extend the description as everyone not able to understand 
+this widely used syntax shouldn't be allowed to program anyway.
+
+>  I just have a small question to everybody. If the file you are about to
+> save does not contain anything that is new in SGF FF[4], should we save
+> it in a older version. I don't think so now, because I think we should
+
+FF[4] can be written in a FF[3] compatible way (and vice versa).
+Use 'tt' pass moves, no compressed point lists and no soft linebreaks.
+And of course no new properties (e.g arrow or line).
+It doesn't matter then, if you write 3 or 4 into the FF[] field.
+
+>  Arno, does your program only convert from FF[1-3] to FF[4] or can it
+> check FF[4] files for errors? I only wonder if we can use it to verify
+> our programs.
+
+SGFC is intended to be the SGF reference implementation.
+
+SGFC knows all FF[4] properties and all FF[123] properties which were
+defined in Anders' theses (FF[1]) or Martin's web pages (FF[3]).
+
+SGFC checks almost all error conditions that can occur in a SGF file.
+Sometimes it even warns about bad style.
+
+SGFC is able to check/correct and convert FF[1]-FF[4] files.
+
+And yes, it may be used to very the output of your program.
+
+/Arno
+

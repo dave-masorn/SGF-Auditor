@@ -1,0 +1,25 @@
+Date: Tue, 10 Jun 1997 13:25:50 +0200 (MET DST)
+From: Arno Hollosi <hollosi@sbox.tu-graz.ac.at>
+Subject: SGFC V1.10 uploaded
+
+
+A new version of SGFC is available from the SGF web pages.
+
+New in V1.10:
+-------------
+- new options:
+  -n ... delete empty nodes
+  -g ... print game signature
+- speeded SGFC up: 2-3 times faster now (up to !20 times! faster on large
+  files if DIRTY_FREE is specified)
+- added DIRTY_FREE define in all.h (see section building)
+- fixed bug: strnccmp() ignored length argument
+- fixed bug in board position calculation - could result in removing
+  wrong AB/AW/AE values
+
+
+Again: I urge all application coders to use SGFC to evrify the output of 
+their program.
+
+/Arno
+

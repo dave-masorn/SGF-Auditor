@@ -1,0 +1,52 @@
+Date: Fri, 25 Apr 1997 10:41:52 -0400
+From: fotland@ix.netcom.com
+Subject: Re: 
+
+
+
+I agree with all of your reasons for tightly specifying the fields.  And
+I think that FF[4] should tightly specify the fields.  Many Faces of Go
+will generate DT and RE in the correct format when it creates the fields
+itself.  So I am not suggesting you change the FF[4] spec.
+
+My problem is with importing old sgf files, and allowing the user to
+enter dates and results as he likes.  I've looked at a lot of old SGF
+files (I have thousands), and the date and result formats are quite
+varied.  I don't think I can write a parser to reliably convert them.
+
+This leaves no choice but to move them all to the comment field.  Some
+examples:
+
+6/8/94:  is this june 8 or august 6?
+
+1932 5 4,6  (a 3 day game)
+
+10 febriari 1956
+
+1993-10-3 to 5
+
+May 6th and 12th, 1941
+
+When someone reads an existing sgf file, I want to present him with all
+the data in the file, so I don't want to partially parse the dates and
+lose information.  I want to put the date information in the 'date' field
+of the game info dialog box, so he can find it.  I don't want to waste a
+lot of screen real estate by making the game comment field a large,
+multiline field.  The game info dialog box is already huge.
+
+I haven't seen any sgf files with a GC[] entry.  I suspect that some
+sgf viewers don't display GC.
+
+But if I put sgf DT data in the date field of the dialog box, it has to
+be presented as text.  This means that the user is not constrained to
+enter dates in ISO format (and Americans never use ISO format, so they
+won't).  So I have the same parsing problem for data entry.  Presenting
+ISO dates in the american style is not the issue.
+
+I don't like deliberately violating the spec either.  That's why I ask
+what people think of me using FF[3] or FF[4].
+
+I force komi and handicap to be numbers on input.  I ignore TM,WL,BL
+on input.
+
+-David

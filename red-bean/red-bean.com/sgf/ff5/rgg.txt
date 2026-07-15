@@ -1,0 +1,44 @@
+Subject: ** SGF FF[5] ** - Start of Discussion
+Newsgroups: rec.games.go
+Summary:
+Keywords:
+
+A new SGF standard is currently in the making.
+SGF stands for 'Smart Game Format' and is a standard
+for storing game records.
+
+The new standard SGF FF[5] aims at:
+
+- Defining property sets, in order to make it easier to
+  expand current programs or create new programs.
+  Continuing the work of FF[4] for a clean, consistent,
+  unambiguoues SGF specification.
+
+- Extending game-info properties to be able to store
+  information not covered by FF[4], e.g. team players,
+  people involved in game (referee, time keeper, ..),
+  more specific information about EVent, REsult, DaTe, etc.
+
+- supporting multiple languages in a single file
+
+- several other extensions
+
+
+If you are a coder of a SGF application or maintain a large
+archiv of SGF files you should join our discussion:
+
+EMail list: sgf-std@onelist.com
+
+To subscribe send an EMail to: sgf-std-subscribe@onelist.com
+
+This email list is for the discussion of the standard only.
+You should have some experience with SGF.
+
+Join the list now, if you want to be part of the discussion!
+
+For more information please contact me (Arno Hollosi).
+Don't send your questions to the EMail list, if they are not
+of public interest.
+
+/Arno Hollosi
+SGF Standard Working Group

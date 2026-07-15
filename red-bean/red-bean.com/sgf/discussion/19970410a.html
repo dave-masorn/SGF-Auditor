@@ -1,0 +1,95 @@
+Date: Thu, 10 Apr 1997 12:50:08 +0200 (MET DST)
+From: Arno Hollosi <hollosi@sbox.tu-graz.ac.at>
+Subject: SGF FF[4] - some answers
+
+
+Hello again,
+
+easter holidays are over and I'm back again.
+First of all: thanks for the >20 emails you wrote during the past 2 weeks.
+Some have pointed out mistakes in the current spec - I'm going
+to correct them as soon as possible - thanks for your report.
+
+
+So let's start:
+
+Pass '[]' issue:
+I'll include Anders' proposal in the standard:
+> for boards with size <= 19, allow [tt] as a legal FF[4] alternative 
+> representation of Pass, in addition to []. Programs have to read both, 
+> but you're free to choose which representation to write.
+
+Anders writes:
+> I don't like the restriction of LB to 3 characters. The file format 
+> should not restrict this, but rather people need to be aware that the 
+> display of labels may be restricted to 3 or even 2 characters on some 
+> systems. There are always ways to show more than that, e.g. using 
+> tooltips. I'd prefer the length of label text to be unlimited, but at 
+> least it should correspond to the FF[3] restriction of 4 characters. 
+> (This is not important enough to create a distinction between the two 
+> file formats.)
+
+I agree. I know that a lot of you hate labels with unlimited length.
+But we should at least increase it to 4 chars as in FF[3].
+Again: why not allow longer labels but make it very clear that not
+all programs can display labels longer than 3 chars?
+Then the restriction wouldn't be in the fileformat but in the applications.
+It's just like rectangular boards & boards >19x19.
+The fileformat allows those boards, but not every app does support them.
+
+
+Some answers to David's questions:
+
+> for converting from Ishi, I can't deal with some of the formatting 
+> requirements for game info - ince Ishi Format fields are free format.
+Then just move these non-standard info's into the GC field.
+
+> I don't like formatted text anyway, and planned to ignore your
+> formatting rules.  I have a comment text window, which will have different
+> size depending on the screen resolution and board size.  I plan to fill 
+
+I don't understand this. The spec says: word wrap all lines that don't 
+fit onto the display (just like your paragraphs). So why not handle
+it the standard way? Different resolutions can't be the reason.
+
+> Right - no spec!  I've seen files without a ; before the root node,
+> files with moves in the root node, and many other problems.
+Moves in the root node are legal. They are bad style though.
+
+> Third, the triples for describing the position are confusing.  For example
+> DM (even position) is mentioned in FF[4], but is not in Martin's spec
+It is in Martin's spec. Have a look again.
+
+> for FF[3].  Is this really new in FF[4]?  BM (bad move) seems to be dropped
+> from FF[4].  Altogether, I count 9 different triples that I could see
+BM isn't dropped. See spec.
+
+> in files (DM, UC, GB, GW, BM, CH, TE, DO, IT), and from my readings of
+> the various specs, only 2 of them (GB and GW) exist in all versions of
+> the spec.  Does anyone have any recommendation for which ones MFGO should
+
+As far as I can remember: GB, GW, BM, TE have always been part of SGF.
+New in FF[3] were DO and IT. Don't now about DM and UC.
+
+> Do people find these generally useful?  I'd guess not since the definition
+> changes so often.  Is it legal to have several of these in the same node?
+
+The definiton didn't change since FF[1]. Just some new properties appeared
+in FF[3]. That's all.
+
+Having several properties in the same node: FF[3] doesn't say anything about
+it. FF[4] says it's illegal to e.g. mix BM & TE in the same node, because 
+they are mutual exclusive. But you might have e.g. GB,TE in the same node.
+
+> Another suggestion for the FF[4] Specification: include a list of
+> recommended obsolete properties to parse correctly and convert.  This
+Will be done.
+
+
+
+That's it for now.
+I'm going to correct and update the spec this weekend.
+
+
+/Arno
+

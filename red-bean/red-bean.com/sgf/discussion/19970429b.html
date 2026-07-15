@@ -1,0 +1,38 @@
+Date: Tue, 29 Apr 1997 15:45:18 -0400
+From: Jens Yllman <jens.yllman@mailbox.swipnet.se>
+Subject: SGF FF[4] root node(s)
+
+Hello everybody.
+
+ I'm sorry that I've just started to realy study the draft. But today I
+read about root nodes. And I have some quiestions. The text about
+properties says:
+
+root    Root properties may only appear in root nodes. Root nodes are
+        the first nodes of gametrees, which are direct decents from a
+        collection (i.e. not gametrees within other gametrees).
+        They define some global 'attributes' such as board-size, kind
+        of game, used file format etc.
+
+ This text says, "Root nodes are the first nodes of gametrees". Can
+there be more then one root node in a gametree? And is there always a
+root node? As I see it FF[] is not optional when you want FF[4]. So that
+should always be in the root node. But if I use default values for all
+root properties. And no gameinfo. And the first thing I have to put in
+the file is a move. How should that be handled? Should I put a EMPTY
+node first? Is empty nodes possible? Why do I ask this. Because, as I se
+things. The state at the root node is what should be displayed when the
+file is loaded. And when I make one step forward I should get the next
+node. And I don't want the first move displayed when the file is loaded.
+One way to handle this is to display the first node with a setup or the
+state of the node before the first node. Does the standard say anything
+about this?
+
+ Sorry if I ask questions already discussed here. And I'm also sorry
+that I ask these questions like the last second. I know Arno Hollosi
+wants to release this now.
+
+ Jens Yllman
+
+
+

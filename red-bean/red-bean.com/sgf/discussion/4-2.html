@@ -1,0 +1,147 @@
+Date: Mon, 14 Oct 1996 11:36:58 +0100 (MET)
+From: Arno Hollosi <hollosi@sbox.tu-graz.ac.at>
+Subject: Re: SGF Std FF[4] - Version 4
+
+
+
+On Sat, 12 Oct 1996, Adrian Mariano wrote:
+
+> > C[This move is a little slack.
+> > Check variation \B instead.]
+> I think the text above read "check variation ^B" ?
+
+I corrected it.
+
+> The GB and GW properties take a "triple" which seems to be either "1"
+> or "2".  Why is this property value called a "triple" and what does it
+> mean for these properties?
+
+This comes from the spec of FF[3]. I added the following:
+
+Triple values are used for annotation properties. They are called triple 
+because either a property doesn't exist, it exists or it is emphasized. A 
+value of '1' means 'normal' value, '2' means that it is emphasized. 
+Example: 
+GB[1] could be displayed as: Good for black 
+GB[2] could be displayed as: Very good for black 
+
+> Why does "DM" stand for an even position?
+
+This too comes from the spec of FF[3].
+It is kept for compatibility reasons.
+
+> What should be done when someone writes AR[cc:cc]?  Is this permitted?
+
+Thanks for mentioning this.
+I've added the following:
+
+It's illegal to specify a one point arrow, e.g. AR[cc:cc]
+as it's impossible to tell into which direction the arrow points.
+
+> The definition of MA says "Marks the given positions with a cross."
+> Does this mean a "+" or a "X".   (The wording makes me think the
+> former.)  It could be stated more clearly.  
+
+Actually it's 'X'. I don't know the word for 'X' crosses.
+Is there one?
+
+> I don't understand UM.  It says:
+> *Function:*	Assign a number to a given node. This number must be unique
+> What is "a given node"?  Is this supposed to assign the specified
+
+I changed the text to: 'Assign a number to the node containing this property.'
+
+> Is there some reason for restriction Unique Marks to be numbers?
+
+Numbers are easier to handle than any other marks.
+Why should we want to allow text?
+
+> ST (style) is also somewhat obscure.  I think you might want to write
+> the long names of every property in the list.    (BS = BlackSpecies is
+> another obscure one.)
+> I don't understand the description of the different number values for
+> the ST property.  (The first two categories are mysterious to me.) 
+
+BS/WS comes from FF[3]. 
+About the ST[] property: the draft states:
+
+Basically most programs show variations in two ways:
+as (A) markup on the board (if the variation contains a move)
+and/or as (B) a list (in a seperate window).
+(A) is done e.g. by xgoban
+(B) is done e.g. by MGT
+
+It continues with:
+		The style number consists two options.
+		1) show variations of successor node (childs)    (value: 0)
+		   show variations of current node   (siblings)  (value: 1)
+		   affects markup & list
+		2) do board markup         (value: 0)
+		   no (auto-) board markup (value: 2)
+		   affects markup only.
+		The  final number is calculated by adding the values of each
+		option.	Example: 3 = no board markup/variations of current node
+				 1 = board markup/variations of current node
+
+I changed the text a little bit and removed the second item (lowercase or 
+uppercase letters) as I think it's too much a user-interface question as 
+to address it in a file format spec.
+Does the new text clarify your questions?
+If not, what's obscure about it?
+
+> It is not clear from the SZ description whether [2:19] is a tall
+> skinny board or a wide short board.
+
+I've added the following:
+If a rectangular board is specified, the first number
+specifies the number of columns, the second provides
+the number of rows.
+
+> It can't hurt to clarify that HA does not add any stones.  
+
+I've added:
+HA itself doesn't add any stones to the board, nor does
+it imply any particular way of placing the handicap stones.
+
+> What is "Operator Overhead" OV?  I wouldn't mind seeing the computer
+> type properties disappear.   
+
+This property is part of FF[3]. I don't know if it's an computer type 
+property. If it is, it should be removed, yes.
+
+> For rule types, there are at least the following:
+
+The rule property has NO mandatory format. The rules listed are just
+*examples* of rules. I've changed the text to:
+
+Rule names should be spelled consistently for all games.
+Examples (for Go): Chinese, Japanese, AGA, Ing, ...
+
+> I'm not sure how well-defined "Chinese" rules are.  It wouldn't hurt
+> to have a bit of expansion about the rules in the standards.
+> Basically there are issues of counting, suicide, ko, and pass stones.
+> If the program has to keep track of captured stones under AGA rules it
+> must know to increase the captures for each pass.  This should be
+> explicitly spelled out.
+
+It's beyond of the scope of this spec to list the rules.
+However AGA rules seem to be a problem, because prisoners must be added
+for every pass move. I haven't thought of this before.
+Any ideas how to solve this?
+
+> I looked through the old discussions and didn't see much about text
+> formatting.  
+> 
+Text formatting is an odd point.
+We didn't come to a conclusion so far.
+
+I think wrapping the text is a good solution.
+The only problem is that if one writes a long paragraph it would be saved
+all in one (very long) line, which may cause troubles.
+
+Any ideas for formatting text?
+(RTF is out of question, David :)
+
+
+/Arno
+
