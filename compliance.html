@@ -500,15 +500,15 @@
 
         /* Background scrolling logs */
         .terminal-bg-container {
-            position: fixed;
+            position: absolute;
             top: 0;
-            left: 0;
-            right: 0;
+            left: 20px;
+            right: 20px;
             bottom: 0;
             overflow: hidden;
             z-index: 0;
             pointer-events: none;
-            padding: 100px 40px 40px 40px;
+            padding: 100px 0 40px 0;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
@@ -830,7 +830,7 @@
 </head>
 <body>
     <header class="top-header">
-        <div class="changelog-version">v=0.0.016 (2026-07-16 01:00:00)</div>
+        <div class="changelog-version">v=0.0.017 (2026-07-16 01:06:00)</div>
         <div class="header-logo">SGF Auditor</div>
         <div class="header-pill" id="header-pill-card" style="display: none;">
             <span>We already have your <span class="filename-pixel" id="header-filename">game.sgf</span> file.</span>
@@ -844,7 +844,6 @@
             <div class="code-box-line">- Ready to run SGF diagnostics...</div>
             <div class="code-box-line">- Press PLAY or click "Run SGF FF[4] Diagnostic" to start.</div>
         </div>
-        <div class="changelog-version">v=0.0.016 (2026-07-16 01:00:00)</div>
 
         <!-- Play Button, Stepper Card and Status Banner Section -->
         <div class="play-section-container">
