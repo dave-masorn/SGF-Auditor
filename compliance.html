@@ -621,6 +621,12 @@
             border-bottom-color: var(--primary-color);
         }
 
+        .tab-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
         .tab-content {
             display: none;
         }
@@ -803,7 +809,7 @@
 </head>
 <body>
     <header class="top-header">
-        <div class="changelog-version">v=0.0.014 (2026-07-16 00:18:00)</div>
+        <div class="changelog-version">v=0.0.015 (2026-07-16 00:43:00)</div>
         <div class="header-logo">SGF Auditor</div>
         <div class="header-pill" id="header-pill-card" style="display: none;">
             <span>We already have your <span class="filename-pixel" id="header-filename">game.sgf</span> file.</span>
@@ -1237,6 +1243,9 @@
             stepNode1.classList.add('completed');
             stepNode2.classList.add('active');
 
+            // Display intermediate Step 1 results
+            displayStep1Results();
+
             const playBtn = document.getElementById('play-btn');
             const stepBar = document.getElementById('step1-bar');
 
@@ -1376,6 +1385,9 @@
 
         // Populates detailed results cards and rolls them into view
         function displayDetailedResults() {
+            // Enable Raw Report tab
+            document.getElementById('btn-report-tab').disabled = false;
+
             // Populate stats and issues
             document.getElementById('raw-report-display').textContent = auditResult.report;
 
@@ -1485,6 +1497,53 @@
             activeFilter = severity;
 
             renderIssuesList();
+        }
+
+        function displayStep1Results() {
+            const errors = auditResult.issues.filter(i => i.severity === 'error');
+            const warnings = auditResult.issues.filter(i => i.severity === 'warning');
+
+            // Populate counts
+            document.getElementById('filter-all-count').textContent = auditResult.issues.length;
+            document.getElementById('filter-error-count').textContent = errors.length;
+            document.getElementById('filter-warning-count').textContent = warnings.length;
+
+            // Select Validation Issues tab & disable Raw Report tab
+            const btnIssues = document.getElementById('btn-issues-tab');
+            const btnReport = document.getElementById('btn-report-tab');
+            btnReport.disabled = true;
+            switchTab(btnIssues, 'issues-tab');
+
+            // Set placeholder content for Raw Report tab
+            document.getElementById('raw-report-display').textContent = "Raw SGFC Reference Report will be generated on Step 2 completion.";
+
+            // Populate right-side banner with Step 1 status
+            const rightBanner = document.getElementById('right-banner');
+            const rightIcon = document.getElementById('right-banner-icon');
+            const rightTitle = document.getElementById('right-banner-title');
+            const rightDesc = document.getElementById('right-banner-desc');
+
+            if (errors.length > 0) {
+                rightBanner.className = 'right-status-banner fail visible';
+                rightIcon.textContent = '✗';
+                rightTitle.textContent = 'Step 1 Fail';
+                rightDesc.innerHTML = `SGF structure violations found during parser check. Click Play to run SGFC reference validator.`;
+            } else if (warnings.length > 0) {
+                rightBanner.className = 'right-status-banner warning visible';
+                rightIcon.textContent = '⚠';
+                rightTitle.textContent = 'Step 1 Warnings';
+                rightDesc.innerHTML = `SGF structure is valid but has ${warnings.length} warning(s). Click Play to run SGFC reference validator.`;
+            } else {
+                rightBanner.className = 'right-status-banner pass visible';
+                rightIcon.textContent = '✓';
+                rightTitle.textContent = 'Step 1 Pass';
+                rightDesc.innerHTML = `SGF structure parsed successfully. Ready to execute SGFC Reference validator.`;
+            }
+
+            renderIssuesList();
+
+            // Slide results wrapper down smoothly
+            document.getElementById('results-wrapper').classList.add('visible');
         }
 
         function goBack() {
