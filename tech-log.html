@@ -88,14 +88,10 @@
             display: flex;
             width: 100%;
             max-width: 1100px;
-            margin: 0 auto 40px auto;
+            margin: 100px auto 40px auto;
             gap: 40px;
-            padding: 30px 20px 40px 20px;
+            padding: 0 20px;
             box-sizing: border-box;
-            background: #ffffff;
-            border-radius: 16px;
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow-md);
         }
 
         /* Sidebar Navigation */
@@ -108,10 +104,11 @@
         }
 
         .toc-card {
-            background: transparent;
-            border: none;
-            padding: 0;
-            box-shadow: none;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
         }
 
         .toc-title {
@@ -149,10 +146,11 @@
         /* Main Content Panel */
         .content-panel {
             flex-grow: 1;
-            background: transparent;
-            border: none;
-            padding: 0;
-            box-shadow: none;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: var(--shadow-sm);
             box-sizing: border-box;
             max-width: calc(100% - var(--sidebar-width) - 40px);
         }
@@ -271,7 +269,7 @@
 <body>
     <header class="top-header">
         <a href="index.html" class="header-logo">← SGF Auditor</a>
-        <div class="header-version">v=0.0.021 (2026-07-16 01:38:00)</div>
+        <div class="header-version">v=0.0.022 (2026-07-16 01:48:00)</div>
     </header>
 
     <div class="layout-container">
