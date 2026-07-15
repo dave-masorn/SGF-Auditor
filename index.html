@@ -161,12 +161,371 @@
         #file-input {
             display: none;
         }
+
+        /* Dashboard Styling */
+        .dashboard-container {
+            display: none;
+            width: 100%;
+            max-width: 900px;
+            animation: fadeIn 0.4s ease-out;
+            margin-bottom: 40px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            width: 100%;
+        }
+
+        .back-btn {
+            background-color: transparent;
+            border: 2px solid var(--badge-bg);
+            color: var(--badge-bg);
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:hover {
+            background-color: var(--badge-bg);
+            color: white;
+        }
+
+        .audit-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .audit-badge.pass {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .audit-badge.warning {
+            background-color: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+        }
+
+        .audit-badge.fail {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #1a1a1a;
+            border-bottom: 2px solid #f3f4f6;
+            padding-bottom: 10px;
+        }
+
+        .metadata-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .metadata-table td {
+            padding: 8px 0;
+            font-size: 0.9rem;
+        }
+
+        .metadata-table td.label {
+            color: #718096;
+            font-weight: 500;
+            width: 40%;
+        }
+
+        .metadata-table td.value {
+            color: #2d3748;
+            font-weight: 600;
+            text-align: right;
+        }
+
+        /* Timeline and Phase Detector Styling */
+        .timeline-bar {
+            height: 24px;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            margin-bottom: 20px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .timeline-segment {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: bold;
+            transition: width 0.3s ease;
+        }
+
+        .timeline-segment.fuseki {
+            background-color: #4f46e5;
+        }
+
+        .timeline-segment.chuban {
+            background-color: #06b6d4;
+        }
+
+        .timeline-segment.yose {
+            background-color: #10b981;
+        }
+
+        .phase-legend {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 15px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            margin-right: 6px;
+        }
+
+        .legend-color.fuseki { background-color: #4f46e5; }
+        .legend-color.chuban { background-color: #06b6d4; }
+        .legend-color.yose { background-color: #10b981; }
+
+        .phase-notes {
+            font-size: 0.85rem;
+            color: #4a5568;
+            line-height: 1.5;
+            background: #f7fafc;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid var(--badge-bg);
+        }
+
+        /* Issues / Logs Section */
+        .logs-section {
+            width: 100%;
+        }
+
+        .tabs-header {
+            display: flex;
+            border-bottom: 2px solid #e2e8f0;
+            margin-bottom: 15px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #718096;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        .tab-btn.active {
+            color: var(--badge-bg);
+            border-bottom: 2px solid var(--badge-bg);
+        }
+
+        .issues-list {
+            max-height: 250px;
+            overflow-y: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+
+        .issue-row {
+            display: flex;
+            padding: 12px 16px;
+            border-bottom: 1px solid #edf2f7;
+            font-size: 0.9rem;
+            align-items: flex-start;
+        }
+
+        .issue-row:last-child {
+            border-bottom: none;
+        }
+
+        .issue-badge {
+            font-size: 0.75rem;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-right: 12px;
+            text-transform: uppercase;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .issue-badge.error {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .issue-badge.warning {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        .issue-move {
+            color: #718096;
+            font-family: monospace;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .issue-msg {
+            color: #2d3748;
+            word-break: break-word;
+        }
+
+        .no-issues {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100px;
+            color: #718096;
+            font-weight: 500;
+        }
     </style>
+    <script src="sgf_parser.js"></script>
 </head>
 <body>
-    <div class="changelog-version">v=0.0.001 (2026-07-15 18:54:00)</div>
+    <div class="changelog-version">v=0.0.002 (2026-07-15 19:10:00)</div>
 
     <h1>SGF Auditor</h1>
+
+    <!-- Dashboard Container -->
+    <div class="dashboard-container" id="dashboard-container">
+        <div class="dashboard-header">
+            <button class="back-btn" onclick="resetAuditor()">← Audit Another File</button>
+            <div id="audit-badge-container"></div>
+        </div>
+
+        <div class="grid-container">
+            <!-- Game Info Card -->
+            <div class="card">
+                <h3 class="card-title">Game Information</h3>
+                <table class="metadata-table">
+                    <tr>
+                        <td class="label">Black Player</td>
+                        <td class="value" id="meta-black">-</td>
+                    </tr>
+                    <tr>
+                        <td class="label">White Player</td>
+                        <td class="value" id="meta-white">-</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Result</td>
+                        <td class="value" id="meta-result">-</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Board Size</td>
+                        <td class="value" id="meta-size">-</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Komi</td>
+                        <td class="value" id="meta-komi">-</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Handicap</td>
+                        <td class="value" id="meta-handicap">-</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Rules</td>
+                        <td class="value" id="meta-rules">-</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Date</td>
+                        <td class="value" id="meta-date">-</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Phase Detector Card -->
+            <div class="card">
+                <h3 class="card-title">Go Phase Detector</h3>
+                <div class="timeline-bar">
+                    <div class="timeline-segment fuseki" id="seg-fuseki" style="width: 33%;">Fuseki</div>
+                    <div class="timeline-segment chuban" id="seg-chuban" style="width: 33%;">Chuban</div>
+                    <div class="timeline-segment yose" id="seg-yose" style="width: 34%;">Yose</div>
+                </div>
+                <div class="phase-legend">
+                    <div class="legend-item"><span class="legend-color fuseki"></span>Fuseki (<span id="pct-fuseki">33</span>%)</div>
+                    <div class="legend-item"><span class="legend-color chuban"></span>Chuban (<span id="pct-chuban">33</span>%)</div>
+                    <div class="legend-item"><span class="legend-color yose"></span>Yose (<span id="pct-yose">34</span>%)</div>
+                </div>
+                <div class="phase-notes" id="phase-notes-text">
+                    Loading phase analysis...
+                </div>
+            </div>
+        </div>
+
+        <!-- Audit Logs Card -->
+        <div class="card logs-section">
+            <h3 class="card-title">Compliance & Rules Report</h3>
+            <div class="tabs-header">
+                <button class="tab-btn active" id="tab-all" onclick="switchTab('all')">All (<span id="count-all">0</span>)</button>
+                <button class="tab-btn" id="tab-errors" onclick="switchTab('errors')">Errors (<span id="count-errors">0</span>)</button>
+                <button class="tab-btn" id="tab-warnings" onclick="switchTab('warnings')">Warnings (<span id="count-warnings">0</span>)</button>
+            </div>
+            <div class="issues-list" id="issues-list">
+                <!-- Issues populated dynamically -->
+            </div>
+        </div>
+    </div>
 
     <div class="upload-container">
         <div class="drop-zone" id="drop-zone">
@@ -204,6 +563,8 @@
     <script>
         const dropZone = document.getElementById('drop-zone');
         const fileInput = document.getElementById('file-input');
+        let currentReport = null;
+        let currentTab = 'all';
 
         // Prevent default drag behaviors
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
@@ -246,13 +607,197 @@
         });
 
         function handleFile(file) {
-            // Check if it's an SGF file by extension
-            if (file.name.toLowerCase().endsWith('.sgf')) {
-                console.log("SGF File selected:", file.name);
-                alert("SGF file '" + file.name + "' loaded successfully.\nReady for audit!");
-            } else {
+            if (!file.name.toLowerCase().endsWith('.sgf')) {
                 alert("Please select a valid .sgf file.");
+                return;
             }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                try {
+                    // Parse SGF
+                    const trees = SGFAuditor.parseSGF(text);
+                    const mainTree = trees[0]; // Analyze the main game tree
+
+                    // Audit
+                    currentReport = SGFAuditor.auditSGF(mainTree);
+
+                    // Detect Phases
+                    const phasesReport = SGFAuditor.detectPhases(currentReport.movesList, currentReport.gameInfo.boardSize);
+                    currentReport.phasesReport = phasesReport;
+
+                    // Display Dashboard
+                    displayDashboard(currentReport);
+                } catch (err) {
+                    console.error(err);
+                    alert("Failed to parse SGF file:\n" + err.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function displayDashboard(report) {
+            // Hide standard upload view
+            document.querySelector('.upload-container').style.display = 'none';
+            document.querySelector('.info-list').style.display = 'none';
+            
+            // Show dashboard
+            const dashboard = document.getElementById('dashboard-container');
+            dashboard.style.display = 'block';
+
+            // Populate Metadata
+            const info = report.gameInfo;
+            document.getElementById('meta-black').textContent = `${info.blackPlayer} ${info.blackRank ? `(${info.blackRank})` : ''}`.trim();
+            document.getElementById('meta-white').textContent = `${info.whitePlayer} ${info.whiteRank ? `(${info.whiteRank})` : ''}`.trim();
+            document.getElementById('meta-result').textContent = info.result;
+            document.getElementById('meta-size').textContent = info.boardSize;
+            document.getElementById('meta-komi').textContent = info.komi;
+            document.getElementById('meta-handicap').textContent = info.handicap;
+            document.getElementById('meta-rules').textContent = info.rules;
+            document.getElementById('meta-date').textContent = info.date;
+
+            // Populate Audit Badge Status
+            const badgeContainer = document.getElementById('audit-badge-container');
+            badgeContainer.innerHTML = '';
+            
+            let badgeClass = 'pass';
+            let badgeText = 'Pass';
+            if (report.errors.length > 0) {
+                badgeClass = 'fail';
+                badgeText = `${report.errors.length} Spec/Rules Errors`;
+            } else if (report.warnings.length > 0) {
+                badgeClass = 'warning';
+                badgeText = `${report.warnings.length} Warnings`;
+            }
+            
+            const badge = document.createElement('span');
+            badge.className = `audit-badge ${badgeClass}`;
+            badge.textContent = badgeText;
+            badgeContainer.appendChild(badge);
+
+            // Populate Issues Tab Counts
+            document.getElementById('count-all').textContent = report.errors.length + report.warnings.length;
+            document.getElementById('count-errors').textContent = report.errors.length;
+            document.getElementById('count-warnings').textContent = report.warnings.length;
+
+            // Populate Phase Detection
+            const total = report.movesList.length;
+            const phases = report.phasesReport;
+
+            if (total === 0) {
+                document.getElementById('seg-fuseki').style.width = '0%';
+                document.getElementById('seg-chuban').style.width = '0%';
+                document.getElementById('seg-yose').style.width = '0%';
+                document.getElementById('pct-fuseki').textContent = '0';
+                document.getElementById('pct-chuban').textContent = '0';
+                document.getElementById('pct-yose').textContent = '0';
+                document.getElementById('phase-notes-text').textContent = 'No move sequence found. Handled as setup only.';
+            } else {
+                let fusekiCount = 0;
+                let chubanCount = 0;
+                let yoseCount = 0;
+                
+                phases.phases.forEach(p => {
+                    if (p === 'Fuseki') fusekiCount++;
+                    else if (p === 'Chuban') chubanCount++;
+                    else if (p === 'Yose') yoseCount++;
+                });
+
+                const fPct = Math.round((fusekiCount / total) * 100);
+                const cPct = Math.round((chubanCount / total) * 100);
+                const yPct = 100 - fPct - cPct; // Adjust to prevent rounding errors
+
+                document.getElementById('seg-fuseki').style.width = `${fPct}%`;
+                document.getElementById('seg-fuseki').style.display = fPct > 0 ? 'flex' : 'none';
+                document.getElementById('seg-chuban').style.width = `${cPct}%`;
+                document.getElementById('seg-chuban').style.display = cPct > 0 ? 'flex' : 'none';
+                document.getElementById('seg-yose').style.width = `${yPct}%`;
+                document.getElementById('seg-yose').style.display = yPct > 0 ? 'flex' : 'none';
+
+                document.getElementById('pct-fuseki').textContent = fPct;
+                document.getElementById('pct-chuban').textContent = cPct;
+                document.getElementById('pct-yose').textContent = yPct;
+
+                let note = `Total moves: ${total}.`;
+                if (phases.fusekiEnd > 0) {
+                    note += ` Opening (Fuseki) ended at Move ${phases.fusekiEnd}.`;
+                }
+                if (phases.chubanEnd > 0 && phases.chubanEnd < total) {
+                    note += ` Middlegame (Chuban) ended at Move ${phases.chubanEnd}. Endgame (Yose) lasted until the end.`;
+                } else {
+                    note += ` Chuban lasted until the end of the game (no Yose detected).`;
+                }
+                document.getElementById('phase-notes-text').textContent = note;
+            }
+
+            // Render Issues
+            renderIssues();
+        }
+
+        function renderIssues() {
+            const list = document.getElementById('issues-list');
+            list.innerHTML = '';
+
+            let items = [];
+            if (currentTab === 'all') {
+                items = currentReport.errors.map(e => ({...e, isError: true}))
+                        .concat(currentReport.warnings.map(w => ({...w, isError: false})));
+            } else if (currentTab === 'errors') {
+                items = currentReport.errors.map(e => ({...e, isError: true}));
+            } else if (currentTab === 'warnings') {
+                items = currentReport.warnings.map(w => ({...w, isError: false}));
+            }
+
+            items.sort((a, b) => (a.moveNum || 0) - (b.moveNum || 0));
+
+            if (items.length === 0) {
+                list.innerHTML = '<div class="no-issues">No issues detected! Perfect compliance.</div>';
+                return;
+            }
+
+            items.forEach(item => {
+                const row = document.createElement('div');
+                row.className = 'issue-row';
+
+                const badge = document.createElement('span');
+                badge.className = `issue-badge ${item.isError ? 'error' : 'warning'}`;
+                badge.textContent = item.isError ? 'Error' : 'Warning';
+
+                const moveStr = item.moveNum ? `Move ${item.moveNum}` : 'File Header';
+                const move = document.createElement('span');
+                move.className = 'issue-move';
+                move.textContent = moveStr;
+
+                const msg = document.createElement('span');
+                msg.className = 'issue-msg';
+                msg.textContent = item.msg;
+
+                row.appendChild(badge);
+                row.appendChild(move);
+                row.appendChild(msg);
+                list.appendChild(row);
+            });
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.getElementById('tab-all').classList.remove('active');
+            document.getElementById('tab-errors').classList.remove('active');
+            document.getElementById('tab-warnings').classList.remove('active');
+            
+            document.getElementById(`tab-${tab}`).classList.add('active');
+            renderIssues();
+        }
+
+        function resetAuditor() {
+            // Show main upload view
+            document.querySelector('.upload-container').style.display = 'flex';
+            document.querySelector('.info-list').style.display = 'block';
+            
+            // Hide dashboard
+            document.getElementById('dashboard-container').style.display = 'none';
+            currentReport = null;
         }
     </script>
 </body>
