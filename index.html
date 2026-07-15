@@ -177,12 +177,44 @@
             font-weight: 400;
             font-style: normal;
         }
+
+        .red-subheader {
+            color: #ef4444;
+            font-size: 0.95rem;
+            margin-top: -45px;
+            margin-bottom: 45px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .tech-log-btn {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            background-color: #000000;
+            color: #ffd600;
+            text-decoration: none;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, background-color 0.2s;
+            z-index: 100;
+        }
+
+        .tech-log-btn:hover {
+            transform: scale(1.05);
+            background-color: #1a1a1a;
+        }
     </style>
 </head>
 <body>
-    <div class="changelog-version">v=0.0.006 (2026-07-15 23:22:00)</div>
+    <div class="changelog-version">v=0.0.007 (2026-07-15 23:38:00)</div>
 
     <h1>SGF Auditor</h1>
+    <div class="red-subheader">We only accept SGF files of Go (WeiQi/Baduk) game records.</div>
+    <a href="tech-log.html" class="tech-log-btn">Technical-log</a>
 
     <div class="upload-container">
         <div class="drop-zone" id="drop-zone">

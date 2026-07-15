@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGF Auditor - Technical Log</title>
+    <meta name="description" content="Technical Log & Architecture Documentation for SGF Auditor web application.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist+Pixel&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Geist:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --orange-color: #ff9800;
+            --bg-color: #f8fafc;
+            --text-color: #1e293b;
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0;
+            --sidebar-width: 250px;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            font-family: "Geist", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        /* Top Header */
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 40px;
+            background-color: transparent;
+            border-bottom: 1px solid var(--border-color);
+            width: 100%;
+            box-sizing: border-box;
+            background-color: var(--card-bg);
+            position: sticky;
+            top: 0;
+            z-index: 200;
+        }
+
+        .header-logo {
+            font-family: "Geist Pixel", sans-serif;
+            font-optical-sizing: auto;
+            font-weight: 400;
+            font-style: normal;
+            font-variation-settings: "ELSH" 0;
+            font-size: 1.5rem;
+            color: #1e293b;
+        }
+
+        .back-btn {
+            background-color: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: background-color 0.2s;
+        }
+
+        .back-btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        /* Main Container layout: sidebar + content */
+        .layout-container {
+            display: flex;
+            width: 100%;
+            max-width: 1100px;
+            margin: 40px auto;
+            gap: 40px;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            width: var(--sidebar-width);
+            flex-shrink: 0;
+            position: sticky;
+            top: 100px;
+            height: fit-content;
+        }
+
+        .toc-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .toc-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-top: 0;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+        }
+
+        .toc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .toc-item a {
+            color: #475569;
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: color 0.2s;
+            display: block;
+        }
+
+        .toc-item a:hover {
+            color: var(--primary-color);
+        }
+
+        /* Main Content Panel */
+        .content-panel {
+            flex-grow: 1;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: var(--shadow-sm);
+            box-sizing: border-box;
+            max-width: calc(100% - var(--sidebar-width) - 40px);
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--orange-color);
+            margin-top: 0;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-top: 35px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 8px;
+            scroll-margin-top: 100px; /* Offset for sticky header */
+        }
+
+        p {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: #334155;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        ul, ol {
+            margin-top: 0;
+            margin-bottom: 20px;
+            padding-left: 25px;
+        }
+
+        li {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: #334155;
+            margin-bottom: 8px;
+        }
+
+        code {
+            font-family: "Geist Mono", monospace;
+            background-color: #f1f5f9;
+            color: #0f172a;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        pre {
+            background-color: #1e1e20;
+            color: #f8fafc;
+            border-radius: 8px;
+            padding: 20px;
+            font-family: "Geist Mono", monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            overflow-x: auto;
+            margin-bottom: 25px;
+            border: 1px solid #2d2d2f;
+        }
+
+        pre code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+            border-radius: 0;
+            font-size: inherit;
+        }
+
+        blockquote {
+            margin: 0;
+            margin-bottom: 25px;
+            padding: 15px 20px;
+            background-color: #f0fdf4;
+            border-left: 4px solid #10b981;
+            border-radius: 0 8px 8px 0;
+        }
+
+        blockquote p {
+            margin: 0;
+            color: #166534;
+            font-weight: 500;
+            font-size: 0.98rem;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+        }
+
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.95rem;
+        }
+
+        th {
+            background-color: #f8fafc;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .changelog-version {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-family: "Geist Mono", monospace;
+            font-size: 0.8rem;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="changelog-version">v=0.0.007 (2026-07-15 23:38:00)</div>
+
+    <header class="top-header">
+        <div class="header-logo">SGF Auditor</div>
+        <a href="index.html" class="back-btn">← Go to Home Page</a>
+    </header>
+
+    <div class="layout-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="toc-card">
+                <h3 class="toc-title">Table of Contents</h3>
+                <ul class="toc-list">
+                    <li class="toc-item"><a href="#intro">1. Introduction</a></li>
+                    <li class="toc-item"><a href="#sgf-spec">2. SGF FF[4] Standard</a></li>
+                    <li class="toc-item"><a href="#go-focus">3. Go Game Focus</a></li>
+                    <li class="toc-item"><a href="#techniques">4. Underlying Techniques</a></li>
+                    <li class="toc-item"><a href="#status-roadmap">5. Status & Roadmap</a></li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Main Panel -->
+        <main class="content-panel">
+            <h1 id="top">Technical Log & Architecture</h1>
+            
+            <section id="intro">
+                <h2>1. Introduction</h2>
+                <p>
+                    <strong>SGF Auditor</strong> is a web application designed to check, validate, and analyze Smart Game Format (SGF) files. The core focus of this tool is to ensure that game records adhere strictly to the formal specifications defined by the SGF standards.
+                </p>
+                <p>
+                    The project aims to serve two distinct functions:
+                </p>
+                <ol>
+                    <li><strong>Compliance Auditing</strong>: Finding standard errors, warning about obsolete properties, and verifying game tree rules.</li>
+                    <li><strong>Game Analytics</strong>: Segmenting games into tactical phases and preparing metadata annotations, paving the way for advanced custom SGF generation.</li>
+                </ol>
+            </section>
+
+            <section id="sgf-spec">
+                <h2>2. SGF FF[4] Standard</h2>
+                <p>
+                    The <strong>Smart Game Format (SGF)</strong> is a text-based format used to store records of board games. The current standard is <strong>File Format 4 (FF[4])</strong>, originally defined in 1999 by Arno Hollosi.
+                </p>
+                <p>
+                    An SGF file consists of a tree structure made up of game nodes:
+                </p>
+                <ul>
+                    <li><strong>Game Collection</strong>: A group of GameTrees. Can contain multiple independent games.</li>
+                    <li><strong>Game Tree</strong>: Represents a single game sequence, consisting of Nodes and Variations.</li>
+                    <li><strong>Node</strong>: A collection of Properties (e.g. moves, comments, setup actions).</li>
+                    <li><strong>Property</strong>: Composed of a Property Identifier (e.g., <code>SZ</code> for board size) and one or more values enclosed in brackets (e.g., <code>[19]</code>).</li>
+                </ul>
+                <p>
+                    Values in SGF have specific formats. Key data types include:
+                </p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Value Type</th>
+                            <th>Syntax Description</th>
+                            <th>Examples</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>Number</code> / <code>Real</code></td>
+                            <td>Integer or floating point values.</td>
+                            <td><code>[6.5]</code> (Komi), <code>[19]</code> (Size)</td>
+                        </tr>
+                        <tr>
+                            <td><code>Color</code></td>
+                            <td>Single character: B (Black) or W (White).</td>
+                            <td><code>[B]</code>, <code>[W]</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>Point</code></td>
+                            <td>Alphabetic letters indicating board coordinates.</td>
+                            <td><code>[pd]</code>, <code>[dp]</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>Move</code></td>
+                            <td>Board point indicating where a stone is played, or pass.</td>
+                            <td><code>[pd]</code>, <code>[]</code> (Pass in FF[4])</td>
+                        </tr>
+                        <tr>
+                            <td><code>SimpleText</code> / <code>Text</code></td>
+                            <td>Strings of characters, text permits newlines and spaces.</td>
+                            <td><code>[AlphaGo vs Lee Sedol]</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section id="go-focus">
+                <h2>3. Go Game Focus</h2>
+                <p>
+                    While SGF FF[4] supports multiple games (such as Chess, Othello, and Backgammon), <strong>SGF Auditor focuses strictly on Go (GM[1])</strong>.
+                </p>
+                <p>
+                    By locking our audit scope to Go, we enforce a strict set of Go-specific compliance rules:
+                </p>
+                <ul>
+                    <li><strong>Coordinates System</strong>: Points must consist of lowercase alphabetic characters in the range <code>[a-s]</code> for 19x19 boards. Bounds check dynamically shifts if board size (<code>SZ</code>) varies from 1 to 52.</li>
+                    <li><strong>Pass Move Notation</strong>: A pass move in SGF FF[4] is represented as an empty value <code>[]</code>. The obsolete coordinate <code>[tt]</code> is permitted only for board sizes 19x19 or smaller.</li>
+                    <li><strong>Node Separation</strong>: Move properties (<code>B</code> / <code>W</code>) and Setup properties (<code>AB</code> / <code>AW</code> / <code>AE</code>) cannot exist within the same node.</li>
+                    <li><strong>Cardinality Rules</strong>: Game info properties (e.g., <code>KM</code>, <code>RU</code>, <code>RE</code>, <code>PB</code>, <code>PW</code>) must reside strictly in the Root Node and occur at most once.</li>
+                </ul>
+            </section>
+
+            <section id="techniques">
+                <h2>4. Underlying Techniques</h2>
+                <p>
+                    The web application implements two parallel compliance engines to guarantee high performance and 100% compliance with reference validation tools:
+                </p>
+                
+                <h3>A. Native JavaScript Parser & Validator</h3>
+                <p>
+                    We built a custom recursive-descent parser and rules checker in JavaScript (<a href="sgf-ff4-compliance.js" class="filename-pixel">sgf-ff4-compliance.js</a>). It handles escape sequences (e.g., <code>\]</code>, <code>\\</code>), constructs the node syntax trees, validates all standard FF[4] properties, checks Go coordinate bounds, and flags warnings (like obsolete properties or custom non-standard tags).
+                </p>
+
+                <h3>B. WebAssembly C-Ported reference Engine (SGFC)</h3>
+                <p>
+                    We compiled the official <strong>SGFC (SGF Syntax Checker & Converter) v2.3</strong> C codebase into WebAssembly (WASM).
+                </p>
+                <blockquote>
+                    <p>
+                        Technical Detail: Using the Emscripten SDK, we compiled the 13 C files of the reference SGFC tool with virtual filesystem support. We route SGF data in-browser to a virtual file buffer and execute the C-compiled main routine to extract the exact standard-reference validation output directly on your static page!
+                    </p>
+                </blockquote>
+                
+                <h3>C. Dynamic Fallback System</h3>
+                <p>
+                    If the browser fails to load or execute WebAssembly (e.g. missing <code>sgfc.js</code> assets or old browsers), the application automatically falls back to our native JavaScript compliance checker, maintaining absolute usability at all times.
+                </p>
+
+                <h3>D. Move Phase Detection</h3>
+                <p>
+                    We developed a dynamic phase classifier in JavaScript. By calculating move indexes and the density of stone placement on the board, it dynamically segments the game record into:
+                </p>
+                <ol>
+                    <li><strong>Fuseki (Opening)</strong>: Early game setup.</li>
+                    <li><strong>Chuban (Middlegame)</strong>: Tactical clashes and fight structures.</li>
+                    <li><strong>Yose (Endgame)</strong>: Bound validation and territory definition.</li>
+                </ol>
+            </section>
+
+            <section id="status-roadmap">
+                <h2>5. Status & Roadmap</h2>
+                <p>
+                    Our roadmap outlines our progressive path to creating a comprehensive, standard-compliant SGF pipeline:
+                </p>
+                
+                <h3>Phase 1: SGF Compliance Auditor (COMPLETED)</h3>
+                <p>
+                    Allows users to drag/upload SGF files. Runs them through both WASM and JS validators, displays statistical cards immediately, runs a real-time progress diagnostics playback, and displays structured tables of errors and warnings.
+                </p>
+
+                <h3>Phase 1.1: Compliance Editor (UPCOMING)</h3>
+                <p>
+                    When a file is flagged as non-compliant, the application will redirect users to an interactive editing workspace. This space will list errors and provide automated fixes (e.g. deleting empty nodes, removing obsolete tags, correcting invalid formats) to export a 100% compliant SGF.
+                </p>
+
+                <h3>Phase 2: Term-to-Node Move Assigner (NEW / IN PROGRESS)</h3>
+                <p>
+                    We are designing a system to assign metadata and tactical terms directly to individual move nodes (e.g., classifying a node as a "Tesuji", "Ko", "Sente", or "Joseki"). This assigns structured intelligence to the game record.
+                </p>
+
+                <h3>Phase 3: Phase Detector (COMPLETED)</h3>
+                <p>
+                    Classifies the moves of a game into Fuseki, Chuban, and Yose. Built into the auditor pipeline and visualized dynamically.
+                </p>
+
+                <h3>Phase 4, 5, 6: Advanced Compliant Appending (UPCOMING)</h3>
+                <p>
+                    We plan to generate advanced SGF files by appending modern analytical data (such as AI evaluation scores, win rates, and tactical coordinates) to standard records.
+                </p>
+                <p>
+                    <strong>Core Constraint</strong>: The final advanced SGF file must remain 100% compliant with SGF FF[4] Go specifications. We will achieve this by encapsulating our custom data inside valid, standard-compliant channels (e.g., standard comment structures or private properties prefix-guarded by <code>X-</code>), allowing modern readers to decode the extra metrics while ensuring legacy SGF readers do not crash.
+                </p>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
