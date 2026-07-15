@@ -37,20 +37,23 @@
             box-sizing: border-box;
         }
 
-        /* Top Header */
+        /* Top Header (centered card header) */
         .top-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 40px;
-            background-color: transparent;
-            border-bottom: 1px solid var(--border-color);
+            padding: 0 25px;
+            background-color: #0f172a; /* Dark slate sitewide color for tech log */
+            color: white;
+            height: 55px;
             width: 100%;
+            max-width: 1100px;
             box-sizing: border-box;
-            background-color: var(--card-bg);
-            position: sticky;
-            top: 0;
+            position: relative;
             z-index: 200;
+            margin: 30px auto 0 auto;
+            border-radius: 16px 16px 0 0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
 
         .header-logo {
@@ -59,8 +62,8 @@
             font-weight: 400;
             font-style: normal;
             font-variation-settings: "ELSH" 0;
-            font-size: 1.5rem;
-            color: #1e293b;
+            font-size: 1.15rem;
+            color: white;
             text-decoration: none;
             transition: opacity 0.2s;
         }
@@ -71,8 +74,8 @@
 
         .header-version {
             font-family: "Geist Mono", monospace;
-            font-size: 0.8rem;
-            color: #888;
+            font-size: 0.78rem;
+            color: rgba(255, 255, 255, 0.8);
         }
 
         /* Main Container layout: sidebar + content */
@@ -80,10 +83,15 @@
             display: flex;
             width: 100%;
             max-width: 1100px;
-            margin: 40px auto;
+            margin: 0 auto 40px auto;
             gap: 40px;
-            padding: 0 20px;
+            padding: 30px 20px 40px 20px;
             box-sizing: border-box;
+            background: #ffffff;
+            border-radius: 0 0 16px 16px;
+            border: 1px solid var(--border-color);
+            border-top: none;
+            box-shadow: var(--shadow-md);
         }
 
         /* Sidebar Navigation */
@@ -261,7 +269,7 @@
 <body>
     <header class="top-header">
         <a href="index.html" class="header-logo">← SGF Auditor</a>
-        <div class="header-version">v=0.0.017 (2026-07-16 01:06:00)</div>
+        <div class="header-version">v=0.0.018 (2026-07-16 01:26:00)</div>
     </header>
 
     <div class="layout-container">

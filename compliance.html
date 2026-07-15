@@ -41,17 +41,23 @@
         }
 
         /* Top Header */
+        /* Top Header (centered card header) */
         .top-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 40px;
-            background-color: var(--bg-color);
-            border-bottom: 1px solid var(--border-color);
+            padding: 0 25px;
+            background-color: #2563eb; /* Blue sitewide color for auditor */
+            color: white;
+            height: 55px;
             width: 100%;
+            max-width: 850px;
             box-sizing: border-box;
             position: relative;
             z-index: 10;
+            margin: 30px auto 0 auto;
+            border-radius: 16px 16px 0 0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
 
         .header-logo {
@@ -60,61 +66,70 @@
             font-weight: 400;
             font-style: normal;
             font-variation-settings: "ELSH" 0;
-            font-size: 1.5rem;
-            color: #1e293b;
+            font-size: 1.15rem;
+            color: white;
+            text-decoration: none;
+            transition: opacity 0.2s;
         }
 
+        .header-logo:hover {
+            opacity: 0.85;
+        }
+
+        .header-version {
+            font-family: "Geist Mono", monospace;
+            font-size: 0.78rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Pill card */
         .header-pill {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            padding: 10px 24px;
-            border-radius: 30px;
+            background-color: rgba(219, 234, 254, 0.95);
+            color: #1e3a8a;
+            padding: 6px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            backdrop-filter: blur(4px);
             display: flex;
             align-items: center;
-            gap: 20px;
             box-shadow: var(--shadow-sm);
-            font-size: 0.95rem;
-            color: #475569;
+        }
+
+        .header-pill span {
+            color: #1e3a8a;
         }
 
         .filename-pixel {
             font-family: "Geist Pixel", sans-serif;
-            font-optical-sizing: auto;
-            font-weight: 400;
-            font-style: normal;
-            font-variation-settings: "ELSH" 0;
-            color: var(--primary-color);
-        }
-
-        .upload-link {
-            color: var(--primary-color);
-            text-decoration: none;
             font-weight: 600;
-            transition: color 0.2s;
-        }
-
-        .upload-link:hover {
-            color: var(--primary-hover);
+            color: #2563eb;
         }
 
         /* Container */
         .main-container {
             width: 100%;
             max-width: 850px;
-            padding: 40px 20px;
+            padding: 30px 20px 40px 20px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
             align-items: center;
             position: relative; /* support absolute children like background logs */
+            background: #ffffff; /* White background body */
+            margin: 0 auto 40px auto;
+            border-radius: 0 0 16px 16px;
+            border: 1px solid var(--border-color);
+            border-top: none;
+            box-shadow: var(--shadow-md);
         }
 
         .main-title {
-            font-size: 2.2rem;
+            font-size: 1.45rem;
             font-weight: 700;
-            color: var(--orange-color);
-            margin-top: 10px;
-            margin-bottom: 30px;
+            color: #ea580c; /* Darker orange for high contrast on white background */
+            margin-top: 15px;
+            margin-bottom: 25px;
             text-align: center;
         }
 
@@ -818,24 +833,15 @@
             background-color: var(--primary-hover);
         }
 
-        .changelog-version {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-family: "Geist Mono", monospace;
-            font-size: 0.8rem;
-            color: #888;
-        }
     </style>
 </head>
 <body>
     <header class="top-header">
-        <div class="changelog-version">v=0.0.017 (2026-07-16 01:06:00)</div>
-        <div class="header-logo">SGF Auditor</div>
+        <a href="index.html" class="header-logo">← SGF Auditor</a>
         <div class="header-pill" id="header-pill-card" style="display: none;">
-            <span>We already have your <span class="filename-pixel" id="header-filename">game.sgf</span> file.</span>
-            <a href="index.html" class="upload-link">← Upload Another File</a>
+            <span>You're currently auditing <span class="filename-pixel" id="header-filename">game.sgf</span> file.</span>
         </div>
+        <div class="header-version">v=0.0.018 (2026-07-16 01:26:00)</div>
     </header>
 
     <div class="main-container" id="main-container" style="display: none;">
