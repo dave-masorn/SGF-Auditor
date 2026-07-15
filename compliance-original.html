@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGF Compliance Auditor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist+Pixel&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f4f5f7;
+            --text-color: #2d3748;
+            --primary-color: #323da5;
+            --card-bg: #ffffff;
+            --success-bg: #e6fffa;
+            --success-color: #047481;
+            --success-border: #b2f5ea;
+            --warning-bg: #fffaf0;
+            --warning-color: #dd6b20;
+            --warning-border: #ffe3c3;
+            --error-bg: #fff5f5;
+            --error-color: #e53e3e;
+            --error-border: #fed7d7;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            margin: 0;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .changelog-version {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: #718096;
+        }
+
+        h1 {
+            font-family: "Geist Pixel", sans-serif;
+            font-weight: 400;
+            font-size: 2.5rem;
+            margin-top: 0;
+            margin-bottom: 30px;
+            color: #1a202c;
+            text-align: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 960px;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .back-btn {
+            background-color: transparent;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:hover {
+            background-color: var(--primary-color);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .filename-banner {
+            font-family: monospace;
+            background-color: #edf2f7;
+            color: #4a5568;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            border: 1px solid #cbd5e0;
+        }
+
+        /* Compliance Banner */
+        .status-banner {
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+        }
+
+        .status-banner.pass {
+            background-color: var(--success-bg);
+            color: var(--success-color);
+            border: 1px solid var(--success-border);
+        }
+
+        .status-banner.warning {
+            background-color: var(--warning-bg);
+            color: var(--warning-color);
+            border: 1px solid var(--warning-border);
+        }
+
+        .status-banner.fail {
+            background-color: var(--error-bg);
+            color: var(--error-color);
+            border: 1px solid var(--error-border);
+        }
+
+        .status-icon {
+            font-size: 3rem;
+            line-height: 1;
+        }
+
+        .status-details h2 {
+            margin: 0 0 5px 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .status-details p {
+            margin: 0;
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px 15px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #718096;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        /* Main Section / Tabs */
+        .main-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+            border: 1px solid var(--border-color);
+        }
+
+        .tabs-header {
+            display: flex;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 12px 24px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #718096;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        .tab-btn.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Issues List */
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .filter-btn {
+            background-color: #f7fafc;
+            border: 1px solid var(--border-color);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            color: #4a5568;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            background-color: #edf2f7;
+        }
+
+        .filter-btn.active {
+            background-color: #edf2f7;
+            border-color: #718096;
+            color: #1a202c;
+            font-weight: 600;
+        }
+
+        .issues-list {
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+            max-height: 450px;
+            overflow-y: auto;
+        }
+
+        .issue-row {
+            display: flex;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            align-items: flex-start;
+            gap: 15px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .issue-row:last-child {
+            border-bottom: none;
+        }
+
+        .issue-row.row-error {
+            background-color: rgba(254, 215, 215, 0.15);
+        }
+
+        .issue-row.row-warning {
+            background-color: rgba(254, 235, 200, 0.15);
+        }
+
+        .issue-tag {
+            font-size: 0.75rem;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            flex-shrink: 0;
+        }
+
+        .issue-tag.error {
+            background-color: #fed7d7;
+            color: #9b2c2c;
+        }
+
+        .issue-tag.warning {
+            background-color: #feebc8;
+            color: #9c4221;
+        }
+
+        .issue-pos {
+            color: #718096;
+            font-family: monospace;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            flex-shrink: 0;
+            width: 130px;
+        }
+
+        .issue-msg {
+            color: #2d3748;
+            word-break: break-word;
+        }
+
+        .no-issues {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 50px 20px;
+            color: #718096;
+        }
+
+        .no-issues-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        /* Raw Terminal Report */
+        .terminal-report {
+            background-color: #1a202c;
+            color: #f7fafc;
+            border-radius: 8px;
+            padding: 24px;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
+            border: 1px solid #4a5568;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .empty-state h2 {
+            margin-top: 0;
+            color: #1a202c;
+        }
+
+        .empty-state p {
+            color: #718096;
+            margin-bottom: 25px;
+        }
+    </style>
+</head>
+<body>
+    <div class="changelog-version">v=0.0.004 (2026-07-15 22:52:00)</div>
+
+    <h1>SGF Compliance Auditor</h1>
+
+    <div class="container" id="main-container" style="display: none;">
+        <div class="header-actions">
+            <button class="back-btn" onclick="goBack()">← Upload Another File</button>
+            <div class="filename-banner" id="filename-display">game.sgf</div>
+        </div>
+
+        <!-- Status Banner -->
+        <div class="status-banner" id="status-banner">
+            <div class="status-icon" id="status-icon">✓</div>
+            <div class="status-details">
+                <h2 id="status-title">100% Compliant</h2>
+                <p id="status-desc">This SGF file is fully compliant with the SGF FF[4] Standard.</p>
+            </div>
+        </div>
+
+        <!-- Statistics Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="stat-trees">0</div>
+                <div class="stat-label">Game Trees</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-nodes">0</div>
+                <div class="stat-label">Nodes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-properties">0</div>
+                <div class="stat-label">Properties</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-moves">0</div>
+                <div class="stat-label">Moves</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-variations">0</div>
+                <div class="stat-label">Variations</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-board">19x19</div>
+                <div class="stat-label">Board Size</div>
+            </div>
+        </div>
+
+        <!-- Main tabs card -->
+        <div class="main-card">
+            <div class="tabs-header">
+                <button class="tab-btn active" onclick="switchTab(this, 'issues-tab')">Validation Issues</button>
+                <button class="tab-btn" onclick="switchTab(this, 'report-tab')">Raw Report</button>
+            </div>
+
+            <!-- Tab 1: Issues -->
+            <div class="tab-content active" id="issues-tab">
+                <div class="filter-bar">
+                    <button class="filter-btn active" onclick="filterIssues(this, 'all')">All (<span id="filter-all-count">0</span>)</button>
+                    <button class="filter-btn" onclick="filterIssues(this, 'error')">Errors (<span id="filter-error-count">0</span>)</button>
+                    <button class="filter-btn" onclick="filterIssues(this, 'warning')">Warnings (<span id="filter-warning-count">0</span>)</button>
+                </div>
+                <div class="issues-list" id="issues-list-container">
+                    <!-- Issue rows populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Tab 2: Raw Report -->
+            <div class="tab-content" id="report-tab">
+                <pre class="terminal-report" id="raw-report-display">Generating report...</pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Empty State / Warning when accessed directly without content -->
+    <div class="empty-state" id="empty-state" style="display: none;">
+        <h2>No SGF Data Loaded</h2>
+        <p>Please upload a valid Go SGF file first on the home page.</p>
+        <button class="back-btn" onclick="goBack()">Go to Home Page</button>
+    </div>
+
+    <script src="sgf-ff4-compliance.js"></script>
+    <script>
+        let currentResult = null;
+        let activeFilter = 'all';
+        let wasmModule = null;
+        let wasmOutput = [];
+
+        window.onload = function() {
+            const content = sessionStorage.getItem('sgf_content');
+            const filename = sessionStorage.getItem('sgf_filename') || 'game.sgf';
+
+            if (!content) {
+                document.getElementById('empty-state').style.display = 'block';
+                return;
+            }
+
+            document.getElementById('main-container').style.display = 'block';
+            document.getElementById('filename-display').textContent = filename;
+
+            // Attempt to load SGFC WASM
+            loadSGFC((success) => {
+                if (success) {
+                    runWasmAudit(content, filename);
+                } else {
+                    runJSAudit(content, filename);
+                }
+            });
+        };
+
+        function loadSGFC(callback) {
+            const script = document.createElement('script');
+            script.src = 'sgfc.js';
+            script.onload = () => {
+                if (typeof createSGFC !== 'undefined') {
+                    createSGFC({
+                        print: function(text) { wasmOutput.push(text); },
+                        printErr: function(text) { wasmOutput.push(text); }
+                    }).then(Module => {
+                        wasmModule = Module;
+                        callback(true);
+                    }).catch(err => {
+                        console.error("WASM Init failed:", err);
+                        callback(false);
+                    });
+                } else {
+                    callback(false);
+                }
+            };
+            script.onerror = () => {
+                console.warn("sgfc.js not found, falling back to pure JS auditor.");
+                callback(false);
+            };
+            document.head.appendChild(script);
+        }
+
+        function runWasmAudit(content, filename) {
+            wasmOutput = [];
+            try {
+                // Write SGF to virtual filesystem
+                wasmModule.FS.writeFile('/input.sgf', content);
+
+                // Call main entry point:
+                // -U = UTF-8 encoding
+                try {
+                    wasmModule.callMain(['-U', '/input.sgf']);
+                } catch (e) {
+                    // Emscripten throws an exit status exception which is normal
+                }
+
+                const report = wasmOutput.join('\n');
+                const issues = [];
+                let hasErrors = false;
+
+                wasmOutput.forEach(line => {
+                    // Match "Line:12 Col:5 - Error 47: ..." or similar
+                    const match = line.match(/^\s*Line:(\d+)\s+Col:(\d+)\s+-\s+([^\s:]+)(?:\s+\d+)?(?:\s*\(critical\))?:\s*(.*)$/i);
+                    if (match) {
+                        const lineNum = parseInt(match[1], 10);
+                        const colNum = parseInt(match[2], 10);
+                        let severity = match[3].toLowerCase();
+                        if (severity.startsWith('fatal') || severity.startsWith('critical')) severity = 'error';
+                        const message = match[4];
+
+                        if (severity === 'error') hasErrors = true;
+
+                        issues.push({
+                            severity: severity === 'error' ? 'error' : 'warning',
+                            message,
+                            position: { line: lineNum, col: colNum }
+                        });
+                    } else {
+                        // Match general errors like "Error 12: ..." or "Warning 5: ..."
+                        const genMatch = line.match(/^\s*(Error|Warning|Fatal\s+error)\s+\d+(?:\s*\(critical\))?:\s*(.*)$/i);
+                        if (genMatch) {
+                            let severity = genMatch[1].toLowerCase();
+                            if (severity.startsWith('fatal') || severity.startsWith('critical')) severity = 'error';
+                            const message = genMatch[2];
+
+                            if (severity === 'error') hasErrors = true;
+
+                            issues.push({
+                                severity: severity === 'error' ? 'error' : 'warning',
+                                message,
+                                position: null
+                            });
+                        }
+                    }
+                });
+
+                // Parse stats from report
+                const nodesMatch = report.match(/Nodes:\s+(\d+)/i);
+                const propsMatch = report.match(/Properties:\s+(\d+)/i);
+                const treesMatch = report.match(/Game trees:\s+(\d+)/i);
+                const variationsMatch = report.match(/Variations:\s+(\d+)/i);
+                const boardMatch = report.match(/Board size:\s+(\d+x\d+)/i);
+
+                // Estimate moves: count number of move properties
+                const moveCount = (content.match(/[BW]\[/g) || []).length;
+
+                const stats = {
+                    nodes: nodesMatch ? parseInt(nodesMatch[1], 10) : 0,
+                    properties: propsMatch ? parseInt(propsMatch[1], 10) : 0,
+                    gameTrees: treesMatch ? parseInt(treesMatch[1], 10) : 1,
+                    variations: variationsMatch ? parseInt(variationsMatch[1], 10) : 0,
+                    moves: moveCount
+                };
+
+                let boardSize = { width: 19, height: 19 };
+                if (boardMatch) {
+                    const parts = boardMatch[1].split('x');
+                    boardSize.width = parseInt(parts[0], 10);
+                    boardSize.height = parseInt(parts[1], 10);
+                }
+
+                currentResult = {
+                    compliant: !hasErrors,
+                    issues,
+                    stats,
+                    board: boardSize,
+                    report
+                };
+
+                displayResults(currentResult);
+
+                // Add indicator that it is running WebAssembly
+                const desc = document.getElementById('status-desc');
+                desc.innerHTML += ' <small style="display:block;margin-top:5px;opacity:0.7;">(Powered by official SGFC v2.3 WebAssembly)</small>';
+            } catch (err) {
+                console.error("WASM audit failed, falling back to JS:", err);
+                runJSAudit(content, filename);
+            }
+        }
+
+        function runJSAudit(content, filename) {
+            try {
+                currentResult = window.SGFCompliance.checkSGFContent(content, filename);
+                displayResults(currentResult);
+
+                const desc = document.getElementById('status-desc');
+                desc.innerHTML += ' <small style="display:block;margin-top:5px;opacity:0.7;">(Powered by SGF Compliance JS Engine)</small>';
+            } catch (err) {
+                console.error(err);
+                showFatalError(err);
+            }
+        }
+
+        function displayResults(result) {
+            // Populate stats
+            document.getElementById('stat-trees').textContent = result.stats.gameTrees;
+            document.getElementById('stat-nodes').textContent = result.stats.nodes;
+            document.getElementById('stat-properties').textContent = result.stats.properties;
+            document.getElementById('stat-moves').textContent = result.stats.moves;
+            document.getElementById('stat-variations').textContent = result.stats.variations;
+            document.getElementById('stat-board').textContent = `${result.board.width}x${result.board.height}`;
+
+            // Populate Raw Report
+            document.getElementById('raw-report-display').textContent = result.report;
+
+            // Populate Status Banner
+            const banner = document.getElementById('status-banner');
+            const icon = document.getElementById('status-icon');
+            const title = document.getElementById('status-title');
+            const desc = document.getElementById('status-desc');
+
+            const errors = result.issues.filter(i => i.severity === 'error');
+            const warnings = result.issues.filter(i => i.severity === 'warning');
+
+            document.getElementById('filter-all-count').textContent = result.issues.length;
+            document.getElementById('filter-error-count').textContent = errors.length;
+            document.getElementById('filter-warning-count').textContent = warnings.length;
+
+            if (result.compliant && warnings.length === 0) {
+                banner.className = 'status-banner pass';
+                icon.textContent = '✓';
+                title.textContent = '100% Compliant';
+                desc.textContent = 'This SGF file is fully compliant with the SGF FF[4] standard for Go.';
+            } else if (result.compliant && warnings.length > 0) {
+                banner.className = 'status-banner warning';
+                icon.textContent = '⚠';
+                title.textContent = 'Compliant (with Warnings)';
+                desc.textContent = `The SGF is functionally compliant but has ${warnings.length} warning(s).`;
+            } else {
+                banner.className = 'status-banner fail';
+                icon.textContent = '✗';
+                title.textContent = 'Non-Compliant';
+                desc.textContent = `Found ${errors.length} error(s) and ${warnings.length} warning(s) violating SGF FF[4] specifications.`;
+            }
+
+            // Populate Issues list
+            renderIssues();
+        }
+
+        function renderIssues() {
+            const container = document.getElementById('issues-list-container');
+            container.innerHTML = '';
+
+            let filtered = currentResult.issues;
+            if (activeFilter === 'error') {
+                filtered = currentResult.issues.filter(i => i.severity === 'error');
+            } else if (activeFilter === 'warning') {
+                filtered = currentResult.issues.filter(i => i.severity === 'warning');
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="no-issues">
+                        <div class="no-issues-icon">✓</div>
+                        <div>No compliance issues found in this category!</div>
+                    </div>
+                `;
+                return;
+            }
+
+            filtered.forEach(issue => {
+                const row = document.createElement('div');
+                row.className = `issue-row row-${issue.severity}`;
+
+                const tag = document.createElement('span');
+                tag.className = `issue-tag ${issue.severity}`;
+                tag.textContent = issue.severity;
+
+                const pos = document.createElement('span');
+                pos.className = 'issue-pos';
+                if (issue.position) {
+                    pos.textContent = `Line ${issue.position.line}, Col ${issue.position.col}`;
+                } else {
+                    pos.textContent = 'General Scope';
+                }
+
+                const msg = document.createElement('span');
+                msg.className = 'issue-msg';
+                msg.textContent = issue.message;
+
+                row.appendChild(tag);
+                row.appendChild(pos);
+                row.appendChild(msg);
+                container.appendChild(row);
+            });
+        }
+
+        function switchTab(btn, tabId) {
+            const tabs = document.querySelectorAll('.tab-btn');
+            tabs.forEach(t => t.classList.remove('active'));
+
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(c => c.classList.remove('active'));
+
+            btn.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        function filterIssues(btn, severity) {
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            filterBtns.forEach(b => b.classList.remove('active'));
+
+            btn.classList.add('active');
+            activeFilter = severity;
+
+            renderIssues();
+        }
+
+        function showFatalError(err) {
+            const banner = document.getElementById('status-banner');
+            const icon = document.getElementById('status-icon');
+            const title = document.getElementById('status-title');
+            const desc = document.getElementById('status-desc');
+
+            banner.className = 'status-banner fail';
+            icon.textContent = '✗';
+            title.textContent = 'Parser Error';
+            desc.textContent = err.message;
+
+            const container = document.getElementById('issues-list-container');
+            container.innerHTML = `
+                <div class="issue-row row-error">
+                    <span class="issue-tag error">Error</span>
+                    <span class="issue-pos">Fatal Exception</span>
+                    <span class="issue-msg">${err.message}<br><br><small style="color: #718096;">Stack Trace:<br>${err.stack.replace(/\n/g, '<br>')}</small></span>
+                </div>
+            `;
+        }
+
+        function goBack() {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
