@@ -126,20 +126,15 @@
             position: relative;
         }
 
-        .spacer-left {
-            width: 220px; /* matches stepper-card width + spacing */
-            flex-shrink: 0;
-        }
-
         .play-button-container {
             flex-grow: 1;
             display: flex;
             justify-content: center;
         }
 
-        /* Stepper Card */
+        /* Stepper Card (on the left side) */
         .stepper-card {
-            width: 200px;
+            width: 220px;
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 12px;
@@ -155,7 +150,7 @@
 
         .stepper-line {
             position: absolute;
-            left: 32px; /* centered on the 24px indicator (20px padding + 24px/2) */
+            right: 32px; /* centered on the 24px indicator (20px padding + 24px/2) from the right */
             top: 32px;
             bottom: 32px;
             width: 2px;
@@ -165,11 +160,11 @@
 
         .stepper-step {
             display: flex;
+            justify-content: flex-end; /* aligns content to the right edge */
             align-items: center;
             gap: 12px;
             position: relative;
             z-index: 2;
-            text-align: left;
         }
 
         .step-indicator {
@@ -220,6 +215,7 @@
             font-weight: 600;
             color: #64748b;
             transition: color 0.2s ease;
+            text-align: right;
         }
 
         .stepper-step.active .step-label {
@@ -229,6 +225,50 @@
 
         .stepper-step.completed .step-label {
             color: #475569;
+        }
+
+        /* Right Section Container for Status Banner */
+        .right-section-container {
+            width: 220px;
+            flex-shrink: 0;
+            display: flex;
+            justify-content: flex-start;
+            box-sizing: border-box;
+        }
+
+        .right-status-banner {
+            width: 100%;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: var(--shadow-sm);
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            box-sizing: border-box;
+            text-align: left;
+        }
+
+        .right-status-banner.visible {
+            display: block;
+            opacity: 1;
+        }
+
+        .right-status-banner.pass {
+            background-color: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+        }
+
+        .right-status-banner.warning {
+            background-color: #fff9db;
+            border: 1px solid #ffe3b3;
+            color: #b25e00;
+        }
+
+        .right-status-banner.fail {
+            background-color: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
         }
 
         .circular-play-btn {
@@ -763,7 +803,7 @@
 </head>
 <body>
     <header class="top-header">
-        <div class="changelog-version">v=0.0.013 (2026-07-16 00:03:00)</div>
+        <div class="changelog-version">v=0.0.014 (2026-07-16 00:18:00)</div>
         <div class="header-logo">SGF Auditor</div>
         <div class="header-pill" id="header-pill-card" style="display: none;">
             <span>We already have your <span class="filename-pixel" id="header-filename">game.sgf</span> file.</span>
@@ -774,37 +814,51 @@
     <div class="main-container" id="main-container" style="display: none;">
         <h1 class="main-title">Smart SGF Compliance Checker</h1>
 
-        <!-- Play Button and Stepper Card Section -->
+        <!-- Play Button, Stepper Card and Status Banner Section -->
         <div class="play-section-container">
-            <div class="spacer-left"></div>
+            <!-- Stepper Card (on the left) -->
+            <div class="stepper-card">
+                <div class="stepper-line"></div>
+                <div class="stepper-step active" id="step-node-1">
+                    <div class="step-label">SGF FF[4]<br>Diagnostic</div>
+                    <div class="step-indicator">
+                        <span class="check-icon">✓</span>
+                        <span class="step-number">1</span>
+                    </div>
+                </div>
+                <div class="stepper-step" id="step-node-2">
+                    <div class="step-label">SGFC Syntax<br>Checker</div>
+                    <div class="step-indicator">
+                        <span class="check-icon">✓</span>
+                        <span class="step-number">2</span>
+                    </div>
+                </div>
+                <div class="stepper-step" id="step-node-3">
+                    <div class="step-label">Phase Detector</div>
+                    <div class="step-indicator">
+                        <span class="check-icon">✓</span>
+                        <span class="step-number">3</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Center Play Button -->
             <div class="play-button-container">
                 <button class="circular-play-btn" id="play-btn" onclick="startDiagnostics()" title="Run Compliance Checker">
                     <div class="circular-play-icon"></div>
                 </button>
             </div>
-            <!-- Stepper Card -->
-            <div class="stepper-card">
-                <div class="stepper-line"></div>
-                <div class="stepper-step active" id="step-node-1">
-                    <div class="step-indicator">
-                        <span class="check-icon">✓</span>
-                        <span class="step-number">1</span>
+
+            <!-- Right Column Status Banner -->
+            <div class="right-section-container">
+                <div class="right-status-banner" id="right-banner">
+                    <div style="font-weight: 700; font-size: 0.98rem; display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+                        <span id="right-banner-icon">✓</span>
+                        <span id="right-banner-title">100% Compliant</span>
                     </div>
-                    <div class="step-label">SGF FF[4]<br>Diagnostic</div>
-                </div>
-                <div class="stepper-step" id="step-node-2">
-                    <div class="step-indicator">
-                        <span class="check-icon">✓</span>
-                        <span class="step-number">2</span>
+                    <div id="right-banner-desc" style="font-size: 0.8rem; line-height: 1.4; opacity: 0.9;">
+                        This SGF file is fully compliant with the SGF FF[4] standard for Go.
                     </div>
-                    <div class="step-label">SGFC Syntax<br>Checker</div>
-                </div>
-                <div class="stepper-step" id="step-node-3">
-                    <div class="step-indicator">
-                        <span class="check-icon">✓</span>
-                        <span class="step-number">3</span>
-                    </div>
-                    <div class="step-label">Phase Detector</div>
                 </div>
             </div>
         </div>
@@ -860,14 +914,6 @@
 
         <!-- Detailed Results Card (slide down on completion) -->
         <div class="detailed-results-wrapper" id="results-wrapper">
-            <!-- Status Banner -->
-            <div class="status-banner" id="status-banner">
-                <div class="status-icon" id="status-icon">✓</div>
-                <div class="status-details">
-                    <h2 id="status-title">100% Compliant</h2>
-                    <p id="status-desc">This SGF file is fully compliant with the SGF FF[4] Standard.</p>
-                </div>
-            </div>
 
             <!-- Detailed Tabs Card -->
             <div class="main-card">
@@ -1333,11 +1379,6 @@
             // Populate stats and issues
             document.getElementById('raw-report-display').textContent = auditResult.report;
 
-            const banner = document.getElementById('status-banner');
-            const icon = document.getElementById('status-icon');
-            const title = document.getElementById('status-title');
-            const desc = document.getElementById('status-desc');
-
             const errors = auditResult.issues.filter(i => i.severity === 'error');
             const warnings = auditResult.issues.filter(i => i.severity === 'warning');
 
@@ -1345,21 +1386,27 @@
             document.getElementById('filter-error-count').textContent = errors.length;
             document.getElementById('filter-warning-count').textContent = warnings.length;
 
+            // Populate right-side banner
+            const rightBanner = document.getElementById('right-banner');
+            const rightIcon = document.getElementById('right-banner-icon');
+            const rightTitle = document.getElementById('right-banner-title');
+            const rightDesc = document.getElementById('right-banner-desc');
+
             if (auditResult.compliant && warnings.length === 0) {
-                banner.className = 'status-banner pass';
-                icon.textContent = '✓';
-                title.textContent = '100% Compliant';
-                desc.innerHTML = `This SGF file is fully compliant with the SGF FF[4] standard for Go. ${auditResult.isWasm ? '<br><small>(Audited via official SGFC WebAssembly engine)</small>' : '<br><small>(Audited via SGF Compliance JS Engine)</small>'}`;
+                rightBanner.className = 'right-status-banner pass visible';
+                rightIcon.textContent = '✓';
+                rightTitle.textContent = '100% Compliant';
+                rightDesc.innerHTML = `This SGF file is fully compliant with the SGF FF[4] standard for Go. <br><small>(Audited via official SGFC WebAssembly engine)</small>`;
             } else if (auditResult.compliant && warnings.length > 0) {
-                banner.className = 'status-banner warning';
-                icon.textContent = '⚠';
-                title.textContent = 'Compliant (with Warnings)';
-                desc.innerHTML = `The SGF is functionally compliant but has ${warnings.length} warning(s). ${auditResult.isWasm ? '<br><small>(Audited via official SGFC WebAssembly engine)</small>' : '<br><small>(Audited via SGF Compliance JS Engine)</small>'}`;
+                rightBanner.className = 'right-status-banner warning visible';
+                rightIcon.textContent = '⚠';
+                rightTitle.textContent = 'Compliant (Warnings)';
+                rightDesc.innerHTML = `The SGF is functionally compliant but has ${warnings.length} warning(s). <br><small>(Audited via official SGFC WebAssembly engine)</small>`;
             } else {
-                banner.className = 'status-banner fail';
-                icon.textContent = '✗';
-                title.textContent = 'Non-Compliant';
-                desc.innerHTML = `Found ${errors.length} error(s) and ${warnings.length} warning(s) violating SGF specifications. ${auditResult.isWasm ? '<br><small>(Audited via official SGFC WebAssembly engine)</small>' : '<br><small>(Audited via SGF Compliance JS Engine)</small>'}`;
+                rightBanner.className = 'right-status-banner fail visible';
+                rightIcon.textContent = '✗';
+                rightTitle.textContent = 'Non-Compliant';
+                rightDesc.innerHTML = `Found ${errors.length} error(s) and ${warnings.length} warning(s) violating SGF specifications. <br><small>(Audited via official SGFC WebAssembly engine)</small>`;
             }
 
             renderIssuesList();
