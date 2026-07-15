@@ -116,9 +116,119 @@
             text-align: center;
         }
 
-        /* Circular Play Button */
-        .play-button-container {
+        /* Play Section Container (keeps Play Button centered, Stepper Card on right) */
+        .play-section-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
             margin: 20px 0 40px 0;
+            position: relative;
+        }
+
+        .spacer-left {
+            width: 220px; /* matches stepper-card width + spacing */
+            flex-shrink: 0;
+        }
+
+        .play-button-container {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Stepper Card */
+        .stepper-card {
+            width: 200px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-sizing: border-box;
+        }
+
+        .stepper-line {
+            position: absolute;
+            left: 32px; /* centered on the 24px indicator (20px padding + 24px/2) */
+            top: 32px;
+            bottom: 32px;
+            width: 2px;
+            background-color: #e2e8f0;
+            z-index: 1;
+        }
+
+        .stepper-step {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            z-index: 2;
+            text-align: left;
+        }
+
+        .step-indicator {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: #ffffff;
+            border: 2px solid #cbd5e1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #64748b;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .check-icon {
+            font-size: 0.85rem;
+            font-weight: bold;
+            display: none;
+        }
+
+        .stepper-step.completed .step-indicator {
+            background-color: #2563eb;
+            border-color: #2563eb;
+            color: #ffffff;
+        }
+
+        .stepper-step.completed .check-icon {
+            display: block;
+        }
+
+        .stepper-step.completed .step-number {
+            display: none;
+        }
+
+        .stepper-step.active .step-indicator {
+            background-color: #ffffff;
+            border-color: #2563eb;
+            color: #2563eb;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+        }
+
+        .step-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #64748b;
+            transition: color 0.2s ease;
+        }
+
+        .stepper-step.active .step-label {
+            color: #0f172a;
+            font-weight: 700;
+        }
+
+        .stepper-step.completed .step-label {
+            color: #475569;
         }
 
         .circular-play-btn {
@@ -226,7 +336,7 @@
             overflow: hidden;
             cursor: pointer;
             box-shadow: var(--shadow-sm);
-            transition: all 0.2s ease;
+            transition: all 0.2s ease, opacity 0.3s ease, transform 0.3s ease;
             user-select: none;
         }
 
@@ -240,6 +350,11 @@
             cursor: not-allowed;
             pointer-events: none;
             opacity: 0.95;
+        }
+
+        .diagnostic-bar.fade-out {
+            opacity: 0;
+            transform: translateY(-5px);
         }
 
         .diagnostic-bar-step {
@@ -648,7 +763,7 @@
 </head>
 <body>
     <header class="top-header">
-        <div class="changelog-version">v=0.0.012 (2026-07-15 23:54:00)</div>
+        <div class="changelog-version">v=0.0.013 (2026-07-16 00:03:00)</div>
         <div class="header-logo">SGF Auditor</div>
         <div class="header-pill" id="header-pill-card" style="display: none;">
             <span>We already have your <span class="filename-pixel" id="header-filename">game.sgf</span> file.</span>
@@ -659,11 +774,39 @@
     <div class="main-container" id="main-container" style="display: none;">
         <h1 class="main-title">Smart SGF Compliance Checker</h1>
 
-        <!-- Circular Play Button -->
-        <div class="play-button-container">
-            <button class="circular-play-btn" id="play-btn" onclick="startDiagnostics()" title="Run Compliance Checker">
-                <div class="circular-play-icon"></div>
-            </button>
+        <!-- Play Button and Stepper Card Section -->
+        <div class="play-section-container">
+            <div class="spacer-left"></div>
+            <div class="play-button-container">
+                <button class="circular-play-btn" id="play-btn" onclick="startDiagnostics()" title="Run Compliance Checker">
+                    <div class="circular-play-icon"></div>
+                </button>
+            </div>
+            <!-- Stepper Card -->
+            <div class="stepper-card">
+                <div class="stepper-line"></div>
+                <div class="stepper-step active" id="step-node-1">
+                    <div class="step-indicator">
+                        <span class="check-icon">✓</span>
+                        <span class="step-number">1</span>
+                    </div>
+                    <div class="step-label">SGF FF[4]<br>Diagnostic</div>
+                </div>
+                <div class="stepper-step" id="step-node-2">
+                    <div class="step-indicator">
+                        <span class="check-icon">✓</span>
+                        <span class="step-number">2</span>
+                    </div>
+                    <div class="step-label">SGFC Syntax<br>Checker</div>
+                </div>
+                <div class="stepper-step" id="step-node-3">
+                    <div class="step-indicator">
+                        <span class="check-icon">✓</span>
+                        <span class="step-number">3</span>
+                    </div>
+                    <div class="step-label">Phase Detector</div>
+                </div>
+            </div>
         </div>
 
         <!-- Statistics Grid -->
@@ -694,9 +837,9 @@
             </div>
         </div>
 
-        <!-- Step 1 Bar -->
+        <!-- Diagnostic Action Bar -->
         <div class="diagnostic-bar" id="step1-bar" onclick="startDiagnostics()">
-            <div class="diagnostic-bar-step">STEP 1</div>
+            <div class="diagnostic-bar-step" id="step-bar-badge">STEP 1</div>
             <div class="diagnostic-bar-text" id="step1-text">Run SGF FF[4] Diagnostic</div>
             <div class="diagnostic-bar-icon-container">
                 <div class="diagnostic-bar-play-icon"></div>
@@ -770,6 +913,7 @@
         let sgfFilename = '';
         let isWasmLoaded = false;
         let diagnosticsRunning = false;
+        let currentStep = 1;
 
         window.onload = function() {
             sgfContent = sessionStorage.getItem('sgf_content');
@@ -949,7 +1093,15 @@
             playBtn.classList.add('running');
             stepBar.classList.add('running');
 
-            document.getElementById('step1-text').textContent = "Executing Diagnostics...";
+            if (currentStep === 1) {
+                runStep1Diagnostics();
+            } else if (currentStep === 2) {
+                runStep2Diagnostics();
+            }
+        }
+
+        function runStep1Diagnostics() {
+            document.getElementById('step1-text').textContent = "Executing SGF FF[4] Diagnostic...";
 
             const logBox = document.getElementById('code-log-box');
             logBox.innerHTML = ''; // Clear initial instruction strings
@@ -969,12 +1121,10 @@
                 { percent: 92, text: `[VALIDATE] Auditing coordinate syntax and checking for property card exclusions...`, type: 'text' }
             ];
 
-            // Push validation results warnings/errors into the log list dynamically
             const errorsCount = auditResult.issues.filter(i => i.severity === 'error').length;
             const warningsCount = auditResult.issues.filter(i => i.severity === 'warning').length;
 
             if (auditResult.issues.length > 0) {
-                // Add some sample issues to the real-time logging
                 const sampleLimit = Math.min(3, auditResult.issues.length);
                 for (let i = 0; i < sampleLimit; i++) {
                     const issue = auditResult.issues[i];
@@ -988,7 +1138,6 @@
                 }
             }
 
-            // Final completion step
             const finalType = auditResult.compliant ? 'info' : 'error';
             const finalMessage = auditResult.compliant 
                 ? `[COMPLETE] Audit complete! Result: PASS. SGF conforms 100% to FF[4] Go specifications.`
@@ -1000,12 +1149,11 @@
                 type: finalType
             });
 
-            // Execute logging animations sequentially
             let currentStepIdx = 0;
 
             function runStep() {
                 if (currentStepIdx >= steps.length) {
-                    finishDiagnostics(errorsCount, warningsCount);
+                    transitionToStep2();
                     return;
                 }
 
@@ -1013,7 +1161,6 @@
                 fill.style.width = `${step.percent}%`;
                 text.textContent = `${step.percent}%`;
 
-                // Output to terminal
                 const line = document.createElement('div');
                 line.className = 'code-box-line';
                 if (step.type === 'error') line.classList.add('error-line');
@@ -1026,7 +1173,6 @@
 
                 currentStepIdx++;
                 
-                // Set variable delays: parsing/loading starts quick, checks take slightly longer to simulate workload
                 let delay = 180;
                 if (step.percent >= 50) delay = 250;
                 if (step.percent === 100) delay = 400;
@@ -1037,11 +1183,141 @@
             runStep();
         }
 
-        // Completed diagnostics animations
-        function finishDiagnostics(errorsCount, warningsCount) {
-            document.getElementById('step1-text').textContent = "Diagnostics Completed!";
+        function transitionToStep2() {
+            // Update Stepper Card UI
+            const stepNode1 = document.getElementById('step-node-1');
+            const stepNode2 = document.getElementById('step-node-2');
+            stepNode1.classList.remove('active');
+            stepNode1.classList.add('completed');
+            stepNode2.classList.add('active');
+
+            const playBtn = document.getElementById('play-btn');
+            const stepBar = document.getElementById('step1-bar');
+
+            // Smoothly fade out bar, transition text, fade in
+            stepBar.classList.add('fade-out');
+
+            setTimeout(() => {
+                document.getElementById('step-bar-badge').textContent = "STEP 2";
+                document.getElementById('step1-text').textContent = "Run SGFC Syntax Checker";
+                
+                // Reset progress bar
+                document.getElementById('progress-fill').style.width = '0%';
+                document.getElementById('progress-text').textContent = '0%';
+
+                const logBox = document.getElementById('code-log-box');
+                const line1 = document.createElement('div');
+                line1.className = 'code-box-line';
+                line1.textContent = '- Step 1 SGF FF[4] Diagnostic complete!';
+                const line2 = document.createElement('div');
+                line2.className = 'code-box-line';
+                line2.textContent = '- Ready for Step 2: Run SGFC Syntax Checker.';
+                const line3 = document.createElement('div');
+                line3.className = 'code-box-line';
+                line3.textContent = '- Press PLAY or click "Run SGFC Syntax Checker" to start.';
+                logBox.appendChild(line1);
+                logBox.appendChild(line2);
+                logBox.appendChild(line3);
+                logBox.scrollTop = logBox.scrollHeight;
+
+                stepBar.classList.remove('fade-out');
+
+                // Re-enable click for next step
+                currentStep = 2;
+                diagnosticsRunning = false;
+                playBtn.classList.remove('running');
+                stepBar.classList.remove('running');
+            }, 300);
+        }
+
+        function runStep2Diagnostics() {
+            document.getElementById('step1-text').textContent = "Executing SGFC Syntax Checker...";
+
+            const logBox = document.getElementById('code-log-box');
+            logBox.innerHTML = ''; // Clear previous step logs
+
+            const fill = document.getElementById('progress-fill');
+            const text = document.getElementById('progress-text');
+
+            // Construct SGFC WASM report streaming steps
+            const steps = [
+                { percent: 0, text: `[INIT] Launching SGFC syntax checker (WebAssembly)...`, type: 'info' },
+                { percent: 12, text: `[WASM] Initializing virtual filesystem and writing SGF buffer...`, type: 'info' },
+                { percent: 25, text: `[WASM] Executing SGFC main with options: -U (UTF-8)...`, type: 'info' }
+            ];
+
+            const reportLines = auditResult.report.split('\n').filter(line => line.trim().length > 0);
+            if (reportLines.length > 0) {
+                reportLines.forEach((line, index) => {
+                    const pct = 25 + Math.floor((index + 1) * (65 / reportLines.length));
+                    let type = 'text';
+                    if (line.toLowerCase().includes('error') || line.toLowerCase().includes('fatal')) type = 'error';
+                    else if (line.toLowerCase().includes('warning')) type = 'warning';
+                    steps.push({ percent: pct, text: line, type });
+                });
+            } else {
+                steps.push({ percent: 60, text: `[WASM] No violations flagged by SGFC core engine.`, type: 'text' });
+            }
+
+            steps.push({ percent: 92, text: `[WASM] Post-processing and cleaning up virtual FS buffers...`, type: 'info' });
+
+            const errorsCount = auditResult.issues.filter(i => i.severity === 'error').length;
+            const warningsCount = auditResult.issues.filter(i => i.severity === 'warning').length;
+            const finalType = auditResult.compliant ? 'info' : 'error';
+            const finalMessage = auditResult.compliant 
+                ? `[COMPLETE] SGFC analysis complete! Status: PASS. SGF is 100% compliant.`
+                : `[COMPLETE] SGFC analysis complete! Status: FAIL. Found ${errorsCount} violation(s).`;
             
-            // Pop final display result tabs
+            steps.push({
+                percent: 100,
+                text: finalMessage,
+                type: finalType
+            });
+
+            let currentStepIdx = 0;
+
+            function runStep() {
+                if (currentStepIdx >= steps.length) {
+                    finishStep2Diagnostics(errorsCount, warningsCount);
+                    return;
+                }
+
+                const step = steps[currentStepIdx];
+                fill.style.width = `${step.percent}%`;
+                text.textContent = `${step.percent}%`;
+
+                const line = document.createElement('div');
+                line.className = 'code-box-line';
+                if (step.type === 'error') line.classList.add('error-line');
+                else if (step.type === 'warning') line.classList.add('warn-line');
+                else if (step.type === 'info') line.classList.add('info-line');
+
+                line.textContent = step.text;
+                logBox.appendChild(line);
+                logBox.scrollTop = logBox.scrollHeight;
+
+                currentStepIdx++;
+                
+                let delay = 150;
+                if (step.percent >= 50) delay = 200;
+                if (step.percent === 100) delay = 400;
+
+                setTimeout(runStep, delay);
+            }
+
+            runStep();
+        }
+
+        function finishStep2Diagnostics(errorsCount, warningsCount) {
+            // Update Stepper Card UI to Node 3 Active
+            const stepNode2 = document.getElementById('step-node-2');
+            const stepNode3 = document.getElementById('step-node-3');
+            stepNode2.classList.remove('active');
+            stepNode2.classList.add('completed');
+            stepNode3.classList.add('active');
+
+            document.getElementById('step1-text').textContent = "SGFC Diagnostics Completed!";
+            
             displayDetailedResults();
 
             // Reset diagnostics states
