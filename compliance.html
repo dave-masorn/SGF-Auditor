@@ -293,6 +293,34 @@
             color: #991b1b;
         }
 
+        .autofix-btn {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            box-sizing: border-box;
+            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+            margin-top: 12px;
+        }
+
+        .autofix-btn:hover {
+            background-color: #1d4ed8;
+        }
+
+        .autofix-btn:active {
+            transform: scale(0.98);
+        }
+
         .circular-play-btn {
             width: 130px;
             height: 130px;
@@ -848,7 +876,7 @@
                 <span>You're currently auditing <span class="filename-pixel" id="header-filename">game.sgf</span> file.</span>
             </div>
         </div>
-        <div class="header-version">v=0.0.022 (2026-07-16 01:48:00)</div>
+        <div class="header-version">v=0.0.023 (2026-07-16 02:24:00)</div>
     </header>
 
     <div class="main-container" id="main-container" style="display: none;">
@@ -903,6 +931,9 @@
                     <div id="right-banner-desc" style="font-size: 0.8rem; line-height: 1.4; opacity: 0.9;">
                         This SGF file is fully compliant with the SGF FF[4] standard for Go.
                     </div>
+                    <button class="autofix-btn" id="autofix-download-btn" style="display: none;" onclick="downloadCorrectedSgf()">
+                        Auto-Fix & Download SGF
+                    </button>
                 </div>
             </div>
         </div>
@@ -998,6 +1029,7 @@
         let isWasmLoaded = false;
         let diagnosticsRunning = false;
         let currentStep = 1;
+        let correctedSgfContent = null;
 
         window.onload = function() {
             sgfContent = sessionStorage.getItem('sgf_content');
@@ -1055,11 +1087,30 @@
         function runWasmAuditBg() {
             wasmOutput = [];
             try {
+                // Delete old output file if exists to prevent caching/stale files
+                try {
+                    wasmModule.FS.unlink('/output.sgf');
+                } catch(e) {}
+
                 wasmModule.FS.writeFile('/input.sgf', sgfContent);
                 try {
-                    wasmModule.callMain(['-U', '/input.sgf']);
+                    // Pass -c to write output even on critical errors
+                    wasmModule.callMain(['-U', '-c', '/input.sgf', '/output.sgf']);
                 } catch (e) {
                     // Normal exit exception
+                }
+
+                // Check if output file was successfully generated
+                let hasOutput = false;
+                try {
+                    wasmModule.FS.stat('/output.sgf');
+                    hasOutput = true;
+                } catch(e) {}
+
+                if (hasOutput) {
+                    correctedSgfContent = wasmModule.FS.readFile('/output.sgf', { encoding: 'utf8' });
+                } else {
+                    correctedSgfContent = null;
                 }
 
                 const report = wasmOutput.join('\n');
@@ -1453,6 +1504,14 @@
                 rightDesc.innerHTML = `Found ${errors.length} error(s) and ${warnings.length} warning(s) violating SGF specifications. <br><small>(Audited via official SGFC WebAssembly engine)</small>`;
             }
 
+            // Toggle autofix download button
+            const autofixBtn = document.getElementById('autofix-download-btn');
+            if (correctedSgfContent && (errors.length > 0 || warnings.length > 0)) {
+                autofixBtn.style.display = 'block';
+            } else {
+                autofixBtn.style.display = 'none';
+            }
+
             renderIssuesList();
 
             // Slide results wrapper down smoothly
@@ -1580,6 +1639,27 @@
 
         function goBack() {
             window.location.href = 'index.html';
+        }
+
+        // Helper to download auto-fixed SGF content
+        function downloadCorrectedSgf() {
+            if (!correctedSgfContent) {
+                alert("No corrected SGF content is available.");
+                return;
+            }
+            const blob = new Blob([correctedSgfContent], { type: 'application/x-go-sgf' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            
+            const originalName = sessionStorage.getItem('sgf_filename') || 'game.sgf';
+            const baseName = originalName.substring(0, originalName.lastIndexOf('.')) || originalName;
+            a.download = `corrected_${baseName}.sgf`;
+            
+            a.href = url;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
 
         // Smooth header shrink on scroll
