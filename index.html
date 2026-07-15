@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGF Auditor</title>
+    <meta name="description" content="SGF Auditor - 100% Compliance Audit for SGF FF[4] Standard with Phase-Detector function.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist+Pixel&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f5f5f7;
+            --text-color: #333333;
+            --box-bg-left: #8ed2f5;
+            --box-bg-right: #75c5f0;
+            --badge-bg: #323da5;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-family: "Geist Pixel", sans-serif;
+            font-optical-sizing: auto;
+            font-weight: 400;
+            font-style: normal;
+            font-variation-settings: "ELSH" 0;
+            font-size: 2.8rem;
+            margin-top: 0;
+            margin-bottom: 50px;
+            letter-spacing: normal;
+        }
+
+        .upload-container {
+            display: flex;
+            background-color: var(--box-bg-left);
+            border-radius: 20px;
+            overflow: hidden;
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 50px;
+            box-shadow: 0 8px 24px rgba(117, 197, 240, 0.25);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .upload-container:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(117, 197, 240, 0.35);
+        }
+
+        .drop-zone {
+            flex: 2.2;
+            padding: 60px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+            font-weight: 500;
+            text-align: center;
+            transition: background-color 0.3s ease;
+        }
+        
+        .drop-zone.dragover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .browse-zone {
+            flex: 1;
+            background-color: var(--box-bg-right);
+            padding: 50px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 1.1rem;
+            transition: background-color 0.3s ease;
+        }
+        
+        .browse-zone:hover {
+            background-color: #69bdee;
+        }
+
+        .folder-icon {
+            margin-top: 15px;
+            width: 50px;
+            height: 50px;
+            transition: transform 0.2s ease;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+        }
+        
+        .browse-zone:hover .folder-icon {
+            transform: scale(1.1) translateY(-2px);
+        }
+
+        .info-list {
+            max-width: 640px;
+            margin-bottom: 80px;
+            color: #4a4a4a;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+        
+        .info-list ol {
+            padding-left: 20px;
+            margin: 0;
+        }
+
+        .info-list li {
+            margin-bottom: 8px;
+        }
+
+        .badge-link {
+            margin-bottom: 30px;
+            display: inline-block;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .badge-link:hover {
+            transform: translateY(-2px);
+        }
+
+        .badge-image {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-radius: 2px;
+        }
+
+        .footer-text {
+            color: #b0b0b0;
+            font-style: italic;
+            font-size: 0.9rem;
+        }
+        
+        #file-input {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>SGF Auditor</h1>
+
+    <div class="upload-container">
+        <div class="drop-zone" id="drop-zone">
+            Drop your SGF file here ...
+        </div>
+        <div class="browse-zone" onclick="document.getElementById('file-input').click()">
+            OR browse
+            <svg class="folder-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <!-- Back of folder -->
+                <path d="M10,25 L35,25 L45,35 L90,35 L90,85 L10,85 Z" fill="#ffd149" />
+                <!-- Front of folder -->
+                <path d="M10,40 L90,40 L85,85 L15,85 Z" fill="#ffb400" />
+                <!-- Green Arrow pointing in -->
+                <path d="M55,10 L55,25 L65,25 L50,40 L35,25 L45,25 L45,10 Z" fill="#28a745" stroke="white" stroke-width="2" stroke-linejoin="round"/>
+            </svg>
+        </div>
+        <input type="file" id="file-input" accept=".sgf">
+    </div>
+
+    <div class="info-list">
+        <ol>
+            <li>We conduct a 100% Compliance Audit to adhere to the SGF FF[4] Standard.</li>
+            <li>We made available a Phase-Detector function, which will classify the given (SGF) Game into 3 phases: Fuseki, Chuban, and Yose.</li>
+        </ol>
+    </div>
+
+    <a href="https://red-bean.com/sgf/" target="_blank" rel="noopener noreferrer" class="badge-link">
+        <img src="https://red-bean.com/sgf/images/head.png" alt="SGF FF[4] - Smart Game Format" class="badge-image">
+    </a>
+
+    <div class="footer-text">
+        Work best in desktop setting ...
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+
+        // Prevent default drag behaviors
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        // Highlight drop zone when item is dragged over it
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => {
+                dropZone.classList.add('dragover');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => {
+                dropZone.classList.remove('dragover');
+            }, false);
+        });
+
+        // Handle dropped files
+        dropZone.addEventListener('drop', (e) => {
+            if (e.dataTransfer.files.length > 0) {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        // Handle file browse
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+                // Reset input value so the same file can be selected again
+                fileInput.value = '';
+            }
+        });
+
+        function handleFile(file) {
+            // Check if it's an SGF file by extension
+            if (file.name.toLowerCase().endsWith('.sgf')) {
+                console.log("SGF File selected:", file.name);
+                alert("SGF file '" + file.name + "' loaded successfully.\nReady for audit!");
+            } else {
+                alert("Please select a valid .sgf file.");
+            }
+        }
+    </script>
+</body>
+</html>
