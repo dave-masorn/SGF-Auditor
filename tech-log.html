@@ -61,21 +61,18 @@
             font-variation-settings: "ELSH" 0;
             font-size: 1.5rem;
             color: #1e293b;
-        }
-
-        .back-btn {
-            background-color: var(--primary-color);
-            color: white;
             text-decoration: none;
-            padding: 8px 18px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: background-color 0.2s;
+            transition: opacity 0.2s;
         }
 
-        .back-btn:hover {
-            background-color: var(--primary-hover);
+        .header-logo:hover {
+            opacity: 0.85;
+        }
+
+        .header-version {
+            font-family: "Geist Mono", monospace;
+            font-size: 0.8rem;
+            color: #888;
         }
 
         /* Main Container layout: sidebar + content */
@@ -259,21 +256,12 @@
             color: #0f172a;
         }
 
-        .changelog-version {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-family: "Geist Mono", monospace;
-            font-size: 0.8rem;
-            color: #888;
-        }
     </style>
 </head>
 <body>
     <header class="top-header">
-        <div class="changelog-version">v=0.0.011 (2026-07-15 23:50:00)</div>
-        <div class="header-logo">SGF Auditor — Technical log</div>
-        <a href="index.html" class="back-btn">← Go to Home Page</a>
+        <a href="index.html" class="header-logo">← SGF Auditor</a>
+        <div class="header-version">v=0.0.012 (2026-07-15 23:54:00)</div>
     </header>
 
     <div class="layout-container">
