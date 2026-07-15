@@ -29,11 +29,11 @@
             justify-content: center;
             min-height: 100vh;
             margin: 0;
-            padding: 75px 20px 20px 20px;
+            padding: 40px 20px;
             box-sizing: border-box;
         }
 
-        /* Top Header (sitewide top bar) */
+        /* Top Header (centered card header) */
         .top-header {
             display: flex;
             justify-content: space-between;
@@ -43,12 +43,13 @@
             color: white;
             height: 55px;
             width: 100%;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 100;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            max-width: 600px;
             box-sizing: border-box;
+            position: relative;
+            z-index: 100;
+            margin: 0 auto;
+            border-radius: 16px 16px 0 0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
 
         .header-logo {
@@ -83,7 +84,9 @@
         .upload-container {
             display: flex;
             background-color: var(--box-bg-left);
-            border-radius: 20px;
+            border-radius: 0 0 16px 16px;
+            border: 1px solid var(--border-color);
+            border-top: none;
             overflow: hidden;
             width: 100%;
             max-width: 600px;
@@ -236,14 +239,14 @@
     </style>
 </head>
 <body>
-    <header class="top-header">
-        <span class="header-logo">SGF Auditor</span>
-        <div class="header-version">v=0.0.019 (2026-07-16 01:29:00)</div>
-    </header>
-
     <h1>SGF Auditor</h1>
     <div class="red-subheader">We only accept SGF files of Go (WeiQi/Baduk) game records.</div>
     <a href="tech-log.html" class="tech-log-btn">Technical-log</a>
+
+    <header class="top-header">
+        <span class="header-logo">SGF Auditor</span>
+        <div class="header-version">v=0.0.020 (2026-07-16 01:31:00)</div>
+    </header>
 
     <div class="upload-container">
         <div class="drop-zone" id="drop-zone">
