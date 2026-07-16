@@ -8,15 +8,15 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Geist+Pixel&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Geist:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary-color: #2563eb;
             --primary-hover: #1d4ed8;
-            --orange-color: #ff9800;
+            --orange-color: #ea580c;
             --bg-color: #f8fafc;
-            --text-color: #1e293b;
+            --text-color: #334155;
             --card-bg: #ffffff;
             --border-color: #e2e8f0;
             --sidebar-width: 250px;
@@ -35,6 +35,7 @@
             align-items: center;
             min-height: 100vh;
             box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
         }
 
         /* Top Header (fixed viewport wide header) */
@@ -81,6 +82,7 @@
             font-family: "Geist Mono", monospace;
             font-size: 0.78rem;
             color: rgba(255, 255, 255, 0.8);
+            font-weight: 400;
         }
 
         /* Main Container layout: sidebar + content */
@@ -88,10 +90,11 @@
             display: flex;
             width: 100%;
             max-width: 1100px;
-            margin: 100px auto 40px auto;
+            margin: 0 auto;
             gap: 40px;
             padding: 0 20px;
             box-sizing: border-box;
+            position: relative;
         }
 
         /* Sidebar Navigation */
@@ -112,7 +115,7 @@
         }
 
         .toc-title {
-            font-size: 1rem;
+            font-size: 0.8rem;
             font-weight: 700;
             margin-top: 0;
             margin-bottom: 16px;
@@ -131,16 +134,25 @@
         }
 
         .toc-item a {
-            color: #475569;
+            color: #64748b;
             text-decoration: none;
-            font-size: 0.95rem;
-            font-weight: 500;
-            transition: color 0.2s;
+            font-size: 0.9rem;
+            font-weight: 400;
             display: block;
+            border-left: 2px solid transparent;
+            padding-left: 8px;
+            transition: all 0.2s ease;
         }
 
         .toc-item a:hover {
             color: var(--primary-color);
+            border-left-color: #cbd5e1;
+        }
+
+        .toc-item.active a {
+            color: var(--primary-color) !important;
+            font-weight: 600;
+            border-left-color: var(--primary-color);
         }
 
         /* Main Content Panel */
@@ -156,21 +168,35 @@
         }
 
         h1 {
-            font-size: 2.2rem;
+            font-family: "Geist", sans-serif;
             font-weight: 800;
+            font-size: 2.2rem;
             color: var(--orange-color);
             margin-top: 0;
             margin-bottom: 30px;
+            letter-spacing: -0.03em;
         }
 
         h2 {
+            font-family: "Geist", sans-serif;
+            font-weight: 600;
             font-size: 1.45rem;
-            font-weight: 700;
             color: #0f172a;
-            margin-top: 35px;
+            margin-top: 40px;
             margin-bottom: 15px;
             border-bottom: 2px solid var(--border-color);
             padding-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+
+        h3 {
+            font-family: "Geist", sans-serif;
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #1e293b;
+            margin-top: 25px;
+            margin-bottom: 12px;
+            letter-spacing: -0.01em;
         }
 
         section {
@@ -178,11 +204,17 @@
         }
 
         p {
-            font-size: 1rem;
+            font-weight: 300; /* Thin elegant font weight */
+            font-size: 0.98rem;
             line-height: 1.7;
-            color: #334155;
+            color: #475569;
             margin-top: 0;
             margin-bottom: 20px;
+        }
+
+        p strong {
+            font-weight: 600;
+            color: #0f172a;
         }
 
         ul, ol {
@@ -192,10 +224,16 @@
         }
 
         li {
-            font-size: 1rem;
+            font-weight: 300;
+            font-size: 0.98rem;
             line-height: 1.7;
-            color: #334155;
+            color: #475569;
             margin-bottom: 8px;
+        }
+
+        li strong {
+            font-weight: 600;
+            color: #0f172a;
         }
 
         code {
@@ -204,20 +242,21 @@
             color: #0f172a;
             padding: 2px 6px;
             border-radius: 4px;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
+            font-weight: 400;
         }
 
         pre {
-            background-color: #1e1e20;
+            background-color: #0f172a;
             color: #f8fafc;
             border-radius: 8px;
-            padding: 20px;
+            padding: 16px;
             font-family: "Geist Mono", monospace;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             line-height: 1.5;
             overflow-x: auto;
             margin-bottom: 25px;
-            border: 1px solid #2d2d2f;
+            border: 1px solid #1e293b;
         }
 
         pre code {
@@ -226,22 +265,51 @@
             padding: 0;
             border-radius: 0;
             font-size: inherit;
+            font-weight: inherit;
+        }
+
+        /* Code Grid for transformation examples */
+        .code-comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0 30px 0;
+        }
+
+        .code-col {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .code-header {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #64748b;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+        }
+
+        .code-col pre {
+            margin-bottom: 0;
+            flex-grow: 1;
+            height: 100%;
         }
 
         blockquote {
             margin: 0;
             margin-bottom: 25px;
             padding: 15px 20px;
-            background-color: #f0fdf4;
-            border-left: 4px solid #10b981;
+            background-color: #eff6ff;
+            border-left: 4px solid #3b82f6;
             border-radius: 0 8px 8px 0;
         }
 
         blockquote p {
             margin: 0;
-            color: #166534;
-            font-weight: 500;
-            font-size: 0.98rem;
+            color: #1e3a8a;
+            font-weight: 400;
+            font-size: 0.95rem;
         }
 
         /* Tables */
@@ -249,27 +317,40 @@
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 25px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
         }
 
         th, td {
             padding: 12px 16px;
             text-align: left;
             border-bottom: 1px solid var(--border-color);
-            font-size: 0.95rem;
+            font-size: 0.92rem;
         }
 
         th {
             background-color: #f8fafc;
-            font-weight: 700;
+            font-weight: 600;
             color: #0f172a;
         }
 
+        td {
+            font-weight: 300;
+        }
+
+        /* Code Color Highlights */
+        .c-kw { color: #f43f5e; font-weight: 500; } /* keyword */
+        .c-fn { color: #3b82f6; } /* function */
+        .c-st { color: #10b981; } /* string */
+        .c-cm { color: #64748b; font-style: italic; } /* comment */
+        .c-tp { color: #a855f7; } /* type */
     </style>
 </head>
 <body>
     <header class="top-header">
         <a href="index.html" class="header-logo">← SGF Auditor</a>
-        <div class="header-version">v=0.0.023 (2026-07-16 02:24:00)</div>
+        <div class="header-version">v=0.0.024 (2026-07-16 18:41:00)</div>
     </header>
 
     <div class="layout-container">
@@ -281,33 +362,35 @@
                     <li class="toc-item"><a href="#intro">1. Introduction</a></li>
                     <li class="toc-item"><a href="#sgf-spec">2. SGF FF[4] Standard</a></li>
                     <li class="toc-item"><a href="#go-focus">3. Go Game Focus</a></li>
-                    <li class="toc-item"><a href="#techniques">4. Underlying Techniques</a></li>
-                    <li class="toc-item"><a href="#status-roadmap">5. Status & Roadmap</a></li>
+                    <li class="toc-item"><a href="#wasm-integration">4. WebAssembly & SGFC</a></li>
+                    <li class="toc-item"><a href="#phase-detection">5. Move Phase Detection</a></li>
+                    <li class="toc-item"><a href="#roadmap">6. Roadmap</a></li>
                 </ul>
             </div>
         </aside>
 
+        <!-- Main Content -->
         <main class="content-panel">
             <h1 id="top">SGF Auditor — Technical log</h1>
             
             <section id="intro">
                 <h2>1. Introduction</h2>
                 <p>
-                    <strong>SGF Auditor</strong> is a web application designed to check, validate, and analyze Smart Game Format (SGF) files. The core focus of this tool is to ensure that game records adhere strictly to the formal specifications defined by the SGF standards.
+                    <strong>SGF Auditor</strong> is a specialized web application engineered to validate, sanitize, and analyze Smart Game Format (SGF) files. The core engine is built strictly around the global reference validation standards to ensure that game records adhere strictly to standard specifications.
                 </p>
                 <p>
-                    The project aims to serve two distinct functions:
+                    The platform performs two key operations:
                 </p>
                 <ol>
-                    <li><strong>Compliance Auditing</strong>: Finding standard errors, warning about obsolete properties, and verifying game tree rules.</li>
-                    <li><strong>Game Analytics</strong>: Segmenting games into tactical phases and preparing metadata annotations, paving the way for advanced custom SGF generation.</li>
+                    <li><strong>Compliance Auditing</strong>: Executing standard syntax checking, identifying obsolete properties, checking coordinate structures, and flagging non-standard properties.</li>
+                    <li><strong>Sanitization & Auto-Fixing</strong>: Re-encoding, restructuring, and repairing syntax anomalies in-browser, generating standard-compliant clean SGF assets for export.</li>
                 </ol>
             </section>
 
             <section id="sgf-spec">
                 <h2>2. SGF FF[4] Standard</h2>
                 <p>
-                    The <strong>Smart Game Format (SGF)</strong> is a text-based format used to store records of board games. The current standard is <strong>File Format 4 (FF[4])</strong>, originally defined in 1999 by Arno Hollosi.
+                    The <strong>Smart Game Format (SGF)</strong> is a tree-structured text format used to store board game records. The current standard is <strong>File Format 4 (FF[4])</strong>, originally defined in 1999 by Arno Hollosi.
                 </p>
                 <p>
                     An SGF file consists of a tree structure made up of game nodes:
@@ -375,52 +458,119 @@
                 </ul>
             </section>
 
-            <section id="techniques">
-                <h2>4. Underlying Techniques</h2>
+            <section id="wasm-integration">
+                <h2>4. WebAssembly & SGFC Integration</h2>
                 <p>
-                    The web application implements two parallel compliance engines to guarantee high performance and 100% compliance with reference validation tools:
-                </p>
-                
-                <h3>A. Native JavaScript Parser & Validator</h3>
-                <p>
-                    We built a custom recursive-descent parser and rules checker in JavaScript (<a href="sgf-ff4-compliance.js" class="filename-pixel">sgf-ff4-compliance.js</a>). It handles escape sequences (e.g., <code>\]</code>, <code>\\</code>), constructs the node syntax trees, validates all standard FF[4] properties, checks Go coordinate bounds, and flags warnings (like obsolete properties or custom non-standard tags).
-                </p>
-
-                <h3>B. WebAssembly C-Ported reference Engine (SGFC)</h3>
-                <p>
-                    We compiled the official <strong>SGFC (SGF Syntax Checker & Converter) v2.3</strong> C codebase into WebAssembly (WASM).
+                    SGF Auditor is powered exclusively by the official <strong>SGFC (SGF Syntax Checker & Converter) v2.3</strong> codebase written in C. We compiled the C sources directly into a WebAssembly module (<code>sgfc.wasm</code>) with JavaScript glue code (<code>sgfc.js</code>) using the Emscripten compiler.
                 </p>
                 <blockquote>
                     <p>
-                        Technical Detail: Using the Emscripten SDK, we compiled the 13 C files of the reference SGFC tool with virtual filesystem support. We route SGF data in-browser to a virtual file buffer and execute the C-compiled main routine to extract the exact standard-reference validation output directly on your static page!
+                        Technical Detail: To enable in-browser execution, we configured Emscripten's virtual filesystem (FS). When a user drops an SGF file, JavaScript writes it to a virtual file buffer, calls the C-compiled main routine, intercepts standard output streams in real-time, and reads back the repaired file.
                     </p>
                 </blockquote>
-                
-                <h3>C. Dynamic Fallback System</h3>
+
+                <h3>Code Transformation: File Loading & Validation</h3>
                 <p>
-                    If the browser fails to load or execute WebAssembly (e.g. missing <code>sgfc.js</code> assets or old browsers), the application automatically falls back to our native JavaScript compliance checker, maintaining absolute usability at all times.
+                    In the native C environment, files are loaded via standard disk I/O. In our WebAssembly port, this is mapped to a virtual filesystem in the browser's sandbox:
                 </p>
 
-                <h3>D. Move Phase Detection</h3>
+                <div class="code-comparison-grid">
+                    <div class="code-col">
+                        <div class="code-header">C Source Code (SGFC main.c)</div>
+                        <pre><code><span class="c-cm">/* Load and validate file in C */</span>
+<span class="c-tp">int</span> <span class="c-fn">main</span>(<span class="c-tp">int</span> argc, <span class="c-tp">char</span> **argv) {
+    <span class="c-tp">SGFInfo</span> *info;
+    <span class="c-tp">char</span> *infile, *outfile;
+
+    <span class="c-fn">ParseArgs</span>(argc, argv, &amp;infile, &amp;outfile);
+    
+    <span class="c-cm">// Read SGF from disk path</span>
+    info = <span class="c-fn">LoadSGF</span>(infile);
+    <span class="c-kw">if</span> (info) {
+        <span class="c-fn">CheckSGF</span>(info);
+        <span class="c-kw">if</span> (outfile)
+            <span class="c-fn">SaveSGF</span>(info, outfile); <span class="c-cm">// Save output</span>
+    }
+    <span class="c-kw">return</span> <span class="c-tp">0</span>;
+}</code></pre>
+                    </div>
+                    <div class="code-col">
+                        <div class="code-header">JavaScript (Emscripten Web Port)</div>
+                        <pre><code><span class="c-cm">// Virtual FS & WASM wrapper in JS</span>
+<span class="c-kw">function</span> <span class="c-fn">runWasmAuditBg</span>() {
+    <span class="c-cm">// 1. Write file to virtual FS</span>
+    wasmModule.<span class="c-tp">FS</span>.<span class="c-fn">writeFile</span>(<span class="c-st">'/input.sgf'</span>, sgfContent);
+
+    <span class="c-kw">try</span> {
+        <span class="c-cm">// 2. Execute C main via callMain</span>
+        wasmModule.<span class="c-fn">callMain</span>([
+            <span class="c-st">'-U'</span>, <span class="c-st">'-c'</span>, 
+            <span class="c-st">'/input.sgf'</span>, <span class="c-st">'/output.sgf'</span>
+        ]);
+    } <span class="c-kw">catch</span> (e) {}
+
+    <span class="c-cm">// 3. Read auto-fixed content back</span>
+    correctedSgfContent = wasmModule.<span class="c-tp">FS</span>.<span class="c-fn">readFile</span>(
+        <span class="c-st">'/output.sgf'</span>, { encoding: <span class="c-st">'utf8'</span> }
+    );
+}</code></pre>
+                    </div>
+                </div>
+
+                <h3>Code Transformation: Output & Stream Redirection</h3>
+                <p>
+                    Instead of printing reports directly to the terminal stdout/stderr stream, the WebAssembly module redirects all output to custom JavaScript event handlers:
+                </p>
+
+                <div class="code-comparison-grid">
+                    <div class="code-col">
+                        <div class="code-header">C Source Code (SGFC error.c)</div>
+                        <pre><code><span class="c-cm">/* Print error details in C */</span>
+<span class="c-tp">void</span> <span class="c-fn">PrintError</span>(<span class="c-tp">int</span> err_num, <span class="c-tp">const char</span> *msg) {
+    <span class="c-cm">// Prints directly to stdout/stderr stream</span>
+    <span class="c-fn">fprintf</span>(stderr, <span class="c-st">"Error %d: %s\n"</span>, err_num, msg);
+}</code></pre>
+                    </div>
+                    <div class="code-col">
+                        <div class="code-header">JavaScript (Emscripten Web Port)</div>
+                        <pre><code><span class="c-cm">// Intercept stdout and stderr streams</span>
+<span class="c-fn">createSGFC</span>({
+    <span class="c-cm">// Intercept standard output stream</span>
+    print: <span class="c-kw">function</span>(text) { 
+        wasmOutput.<span class="c-fn">push</span>(text); 
+    },
+    <span class="c-cm">// Intercept standard error stream</span>
+    printErr: <span class="c-kw">function</span>(text) { 
+        wasmOutput.<span class="c-fn">push</span>(text); 
+    }
+}).<span class="c-fn">then</span>(Module =&gt; {
+    wasmModule = Module;
+});</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section id="phase-detection">
+                <h2>5. Move Phase Detection</h2>
                 <p>
                     We developed a dynamic phase classifier in JavaScript. By calculating move indexes and the density of stone placement on the board, it dynamically segments the game record into:
                 </p>
                 <ol>
                     <li><strong>Fuseki (Opening)</strong>: Early game setup.</li>
                     <li><strong>Chuban (Middlegame)</strong>: Tactical clashes and fight structures.</li>
-                    <li><strong>Yose (Endgame)</strong>: Bound validation and territory definition.</li>
+                    <li><strong>Yose (Endgame)</strong>: Territory definition.</li>
                 </ol>
             </section>
 
-            <section id="status-roadmap">
-                <h2>5. Status & Roadmap</h2>
+            <section id="roadmap">
+                <h2>6. Roadmap</h2>
                 <p>
                     Our roadmap outlines our progressive path to creating a comprehensive, standard-compliant SGF pipeline:
                 </p>
                 
                 <h3>Phase 1: SGF Compliance Auditor (COMPLETED)</h3>
                 <p>
-                    Allows users to drag/upload SGF files. Runs them through both WASM and JS validators, displays statistical cards immediately, runs a real-time progress diagnostics playback, and displays structured tables of errors and warnings.
+                    Allows users to drag/upload SGF files. Runs them through the official SGFC reference validator compiled to WebAssembly, displays statistical cards immediately, runs a real-time progress diagnostics playback, and displays structured tables of errors and warnings.
                 </p>
 
                 <h3>Phase 1.1: Compliance Editor (UPCOMING)</h3>
@@ -450,6 +600,38 @@
     </div>
 
     <script>
+        // TOC active link scrollspy using IntersectionObserver
+        document.addEventListener('DOMContentLoaded', function() {
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.toc-item');
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '-20% 0px -60% 0px',
+                threshold: 0
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.getAttribute('id');
+                        navLinks.forEach(item => {
+                            const link = item.querySelector('a');
+                            if (link.getAttribute('href') === `#${id}`) {
+                                item.classList.add('active');
+                            } else {
+                                item.classList.remove('active');
+                            }
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+        });
+
         // Smooth header shrink on scroll
         window.addEventListener('scroll', function() {
             const header = document.querySelector('.top-header');

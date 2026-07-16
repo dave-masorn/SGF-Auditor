@@ -1015,10 +1015,8 @@
     <div class="empty-state" id="empty-state" style="display: none;">
         <h2>No SGF Data Loaded</h2>
         <p>Please upload a valid Go SGF file first on the home page.</p>
-        <button class="back-btn" onclick="goBack()">Go to Home Page</button>
     </div>
 
-    <script src="sgf-ff4-compliance.js"></script>
     <script>
         let auditResult = null;
         let activeFilter = 'all';
@@ -1051,7 +1049,7 @@
                 if (success) {
                     runWasmAuditBg();
                 } else {
-                    runJSAuditBg();
+                    showImmediateFatalError(new Error("SGFC WebAssembly engine failed to load."));
                 }
             });
         };
@@ -1185,19 +1183,7 @@
 
                 populateImmediateStats(auditResult);
             } catch (err) {
-                console.error("WASM background audit failed, switching to JS:", err);
-                runJSAuditBg();
-            }
-        }
-
-        // Background parsing (JS path)
-        function runJSAuditBg() {
-            try {
-                auditResult = window.SGFCompliance.checkSGFContent(sgfContent, sgfFilename);
-                auditResult.isWasm = false;
-                populateImmediateStats(auditResult);
-            } catch (err) {
-                console.error("JS background audit failed:", err);
+                console.error("WASM background audit failed:", err);
                 showImmediateFatalError(err);
             }
         }
@@ -1215,6 +1201,18 @@
         function showImmediateFatalError(err) {
             document.getElementById('stat-board').textContent = 'ERROR';
             console.error("Immediate error:", err.message);
+            const rawDisplay = document.getElementById('raw-report-display');
+            if (rawDisplay) {
+                rawDisplay.textContent = `FATAL ERROR: ${err.message}\nFailed to load SGFC WebAssembly validator.`;
+            }
+            const resultsWrapper = document.getElementById('results-wrapper');
+            if (resultsWrapper) {
+                resultsWrapper.classList.add('visible');
+            }
+            const reportTabBtn = document.getElementById('btn-report-tab');
+            if (reportTabBtn) {
+                reportTabBtn.disabled = false;
+            }
         }
 
         // Real-time playback diagnostic execution
