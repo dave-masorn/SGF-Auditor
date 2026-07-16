@@ -113,6 +113,20 @@
             border-radius: 12px;
             padding: 24px;
             box-shadow: var(--shadow-sm);
+            width: 250px;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: hidden;
+            box-sizing: border-box;
+            position: sticky;
+            top: 100px;
+            z-index: 100;
+        }
+
+        .toc-card.collapsed {
+            width: 56px;
+            padding: 20px 8px;
+            border-radius: 30px;
+            box-shadow: var(--shadow-md);
         }
 
         .toc-title {
@@ -123,6 +137,17 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
             color: #64748b;
+            transition: opacity 0.3s ease, max-height 0.3s ease, margin-bottom 0.3s ease;
+            max-height: 20px;
+            opacity: 1;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .toc-card.collapsed .toc-title {
+            opacity: 0;
+            max-height: 0;
+            margin-bottom: 0;
         }
 
         .toc-list {
@@ -139,21 +164,63 @@
             text-decoration: none;
             font-size: 0.9rem;
             font-weight: 400;
-            display: block;
-            border-left: 2px solid transparent;
-            padding-left: 8px;
+            display: flex;
+            align-items: center;
+            height: 32px;
+            box-sizing: border-box;
             transition: all 0.2s ease;
         }
 
-        .toc-item a:hover {
-            color: var(--primary-color);
-            border-left-color: #cbd5e1;
+        .toc-num {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #f1f5f9;
+            color: #64748b;
+            font-weight: 600;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
         }
 
-        .toc-item.active a {
-            color: var(--primary-color) !important;
+        .toc-item:hover .toc-num {
+            background-color: #e2e8f0;
+            color: var(--primary-color);
+        }
+
+        .toc-item.active .toc-num {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+        }
+
+        .toc-text {
+            margin-left: 12px;
+            white-space: nowrap;
+            opacity: 1;
+            transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform: scaleX(1);
+            transform-origin: left;
+            font-weight: 300;
+        }
+
+        .toc-item.active .toc-text {
+            color: var(--primary-color);
             font-weight: 600;
-            border-left-color: var(--primary-color);
+        }
+
+        .toc-card.collapsed .toc-text {
+            opacity: 0;
+            transform: scaleX(0);
+            width: 0;
+            margin-left: 0;
+        }
+
+        .toc-card.collapsed .toc-item a {
+            justify-content: center;
         }
 
         /* Main Content Panel */
@@ -351,21 +418,21 @@
 <body>
     <header class="top-header">
         <a href="index.html" class="header-logo">← SGF Auditor</a>
-        <div class="header-version">v=0.0.025 (2026-07-16 18:44:00)</div>
+        <div class="header-version">v=0.0.026 (2026-07-16 18:57:00)</div>
     </header>
 
     <div class="layout-container">
         <!-- Sidebar -->
         <aside class="sidebar">
-            <div class="toc-card">
+            <div class="toc-card" id="toc-panel">
                 <h3 class="toc-title">Table of Contents</h3>
                 <ul class="toc-list">
-                    <li class="toc-item"><a href="#intro">1. Introduction</a></li>
-                    <li class="toc-item"><a href="#sgf-spec">2. SGF FF[4] Standard</a></li>
-                    <li class="toc-item"><a href="#go-focus">3. Go Game Focus</a></li>
-                    <li class="toc-item"><a href="#wasm-integration">4. WebAssembly & SGFC</a></li>
-                    <li class="toc-item"><a href="#phase-detection">5. Move Phase Detection</a></li>
-                    <li class="toc-item"><a href="#roadmap">6. Roadmap</a></li>
+                    <li class="toc-item active"><a href="#intro"><span class="toc-num">1</span><span class="toc-text">Introduction</span></a></li>
+                    <li class="toc-item"><a href="#sgf-spec"><span class="toc-num">2</span><span class="toc-text">SGF FF[4] Standard</span></a></li>
+                    <li class="toc-item"><a href="#go-focus"><span class="toc-num">3</span><span class="toc-text">Go Game Focus</span></a></li>
+                    <li class="toc-item"><a href="#wasm-integration"><span class="toc-num">4</span><span class="toc-text">WebAssembly & SGFC</span></a></li>
+                    <li class="toc-item"><a href="#phase-detection"><span class="toc-num">5</span><span class="toc-text">Move Phase Detection</span></a></li>
+                    <li class="toc-item"><a href="#roadmap"><span class="toc-num">6</span><span class="toc-text">Roadmap</span></a></li>
                 </ul>
             </div>
         </aside>
@@ -601,11 +668,14 @@
     </div>
 
     <script>
-        // TOC active link scrollspy using IntersectionObserver
+        // TOC active link scrollspy using IntersectionObserver & Floating collapse
         document.addEventListener('DOMContentLoaded', function() {
             const sections = document.querySelectorAll('section');
             const navLinks = document.querySelectorAll('.toc-item');
+            const tocPanel = document.getElementById('toc-panel');
+            let isScrolled = false;
 
+            // Scrollspy logic
             const observerOptions = {
                 root: null,
                 rootMargin: '-20% 0px -60% 0px',
@@ -630,6 +700,35 @@
 
             sections.forEach(section => {
                 observer.observe(section);
+            });
+
+            // Collapse on scroll logic
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 80) {
+                    if (!isScrolled) {
+                        isScrolled = true;
+                        tocPanel.classList.add('collapsed');
+                    }
+                } else {
+                    if (isScrolled) {
+                        isScrolled = false;
+                        tocPanel.classList.remove('collapsed');
+                    }
+                }
+            });
+
+            // Expand on hover
+            tocPanel.addEventListener('mouseenter', function() {
+                if (isScrolled) {
+                    tocPanel.classList.remove('collapsed');
+                }
+            });
+
+            // Collapse on hover leave
+            tocPanel.addEventListener('mouseleave', function() {
+                if (isScrolled) {
+                    tocPanel.classList.add('collapsed');
+                }
             });
         });
 
