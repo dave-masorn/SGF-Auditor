@@ -1084,7 +1084,7 @@
                 <span>You're currently auditing <span class="filename-pixel" id="header-filename">game.sgf</span> file.</span>
             </div>
         </div>
-        <div class="header-version">v=0.0.032 (2026-07-16 20:16:00)</div>
+        <div class="header-version">v=0.0.033 (2026-07-16 20:30:00)</div>
     </header>
 
     <div class="main-container" id="main-container" style="display: none;">
@@ -1096,28 +1096,14 @@
 
         <!-- Play Button, Stepper Card and Status Banner Section -->
         <div class="play-section-container">
-            <!-- Stepper Card (on the left) -->
+            <!-- Stepper Card (single step) -->
             <div class="stepper-card">
-                <div class="stepper-line"></div>
+                <div class="stepper-line" style="display: none;"></div>
                 <div class="stepper-step active" id="step-node-1">
                     <div class="step-label">SGFC<br>Diagnostic</div>
                     <div class="step-indicator">
                         <span class="check-icon">✓</span>
                         <span class="step-number">1</span>
-                    </div>
-                </div>
-                <div class="stepper-step" id="step-node-2">
-                    <div class="step-label">SGFC Syntax<br>Checker</div>
-                    <div class="step-indicator">
-                        <span class="check-icon">✓</span>
-                        <span class="step-number">2</span>
-                    </div>
-                </div>
-                <div class="stepper-step" id="step-node-3">
-                    <div class="step-label">Phase Detector</div>
-                    <div class="step-indicator">
-                        <span class="check-icon">✓</span>
-                        <span class="step-number">3</span>
                     </div>
                 </div>
             </div>
@@ -1213,7 +1199,7 @@
 
                 <!-- Tab 2: Raw Report -->
                 <div class="tab-content" id="report-tab">
-                    <pre class="terminal-report" id="raw-report-display">Generating report...</pre>
+                    <pre class="terminal-report" id="raw-report-display">SGFC Reference Report will be shown after diagnostics complete.</pre>
                 </div>
             </div>
         </div>
@@ -1225,6 +1211,7 @@
         <p>Please upload a valid Go SGF file first on the home page.</p>
     </div>
 
+    <script src="sgf_parser.js"></script>
     <script>
         let auditResult = null;
         let activeFilter = 'all';
@@ -1234,7 +1221,6 @@
         let sgfFilename = '';
         let isWasmLoaded = false;
         let diagnosticsRunning = false;
-        let currentStep = 1;
         let correctedSgfContent = null;
 
         window.onload = function() {
@@ -1423,82 +1409,77 @@
             }
         }
 
-        // Real-time playback diagnostic execution
+        // ── Combined diagnostic: 1.1 Syntax Checker → 1.2 Properties Validation → Completed ──
         function startDiagnostics() {
             if (diagnosticsRunning || !auditResult) return;
             diagnosticsRunning = true;
 
-            // Toggle play buttons styling
+            // Reset progress bar
+            document.getElementById('progress-fill').style.width = '0%';
+            document.getElementById('progress-text').textContent = '0%';
+
             const playBtn = document.getElementById('play-btn');
             const stepBar = document.getElementById('step1-bar');
             playBtn.classList.add('running');
             stepBar.classList.add('running');
 
-            if (currentStep === 1) {
-                runStep1Diagnostics();
-            } else if (currentStep === 2) {
-                runStep2Diagnostics();
-            }
+            runPhase1SyntaxChecker();
         }
 
-        function runStep1Diagnostics() {
-            document.getElementById('step1-text').textContent = "Executing SGFC Diagnostic...";
+        // ── Phase 1.1: Execute SGFC Syntax Checker (animated playback of WASM results) ──
+        function runPhase1SyntaxChecker() {
+            document.getElementById('step1-text').textContent = "Executing SGFC Syntax Checker ...";
 
             const logBox = document.getElementById('code-log-box');
-            logBox.innerHTML = ''; // Clear initial instruction strings
+            logBox.innerHTML = '';
 
             const fill = document.getElementById('progress-fill');
             const text = document.getElementById('progress-text');
 
-            // Steps configuration containing actual data points
             const steps = [
-                { percent: 0, text: `[INIT] Loading SGF file...`, type: 'info' },
+                { percent: 0,  text: `[INIT] Loading SGF file...`, type: 'info' },
                 { percent: 12, text: `[INIT] File target: ${sgfFilename} (${sgfContent.length} bytes read)`, type: 'info' },
                 { percent: 25, text: `[PARSE] Initializing SGFC WebAssembly engine...`, type: 'text' },
                 { percent: 38, text: `[PARSE] Scanning game tree nodes: Found ${auditResult.stats.gameTrees} game tree(s) and ${auditResult.stats.nodes} node(s)...`, type: 'text' },
                 { percent: 52, text: `[VALIDATE] Commencing SGFC compliance check for Go GM[1] FF[4]...`, type: 'info' },
                 { percent: 68, text: `[VALIDATE] Verifying board dimensions: SZ[${auditResult.board.width}x${auditResult.board.height}] checked successfully`, type: 'text' },
                 { percent: 80, text: `[VALIDATE] Analyzing game move sequences: ${auditResult.stats.moves} moves, ${auditResult.stats.variations} variations...`, type: 'text' },
-                { percent: 92, text: `[VALIDATE] Auditing coordinate syntax and checking for property card exclusions...`, type: 'text' }
+                { percent: 88, text: `[VALIDATE] Auditing coordinate syntax and checking for property card exclusions...`, type: 'text' }
             ];
 
-            const errorsCount = auditResult.issues.filter(i => i.severity === 'error').length;
-            const warningsCount = auditResult.issues.filter(i => i.severity === 'warning').length;
-
-            if (auditResult.issues.length > 0) {
-                const sampleLimit = Math.min(3, auditResult.issues.length);
+            // Stream any WASM report lines as sub-steps
+            const reportLines = auditResult.report.split('\n').filter(line => line.trim().length > 0);
+            if (reportLines.length > 0) {
+                const sampleLimit = Math.min(5, reportLines.length);
                 for (let i = 0; i < sampleLimit; i++) {
-                    const issue = auditResult.issues[i];
-                    const posStr = issue.position ? `at Line ${issue.position.line}, Col ${issue.position.col}` : 'globally';
-                    const sev = issue.severity.toUpperCase();
+                    const line = reportLines[i];
+                    let type = 'text';
+                    if (line.toLowerCase().includes('error') || line.toLowerCase().includes('fatal')) type = 'error';
+                    else if (line.toLowerCase().includes('warning')) type = 'warning';
                     steps.push({
-                        percent: 92 + Math.floor((i + 1) * (7 / (sampleLimit + 1))),
-                        text: `[${sev}] Rule violation found ${posStr}: ${issue.message}`,
-                        type: issue.severity === 'error' ? 'error' : 'warning'
+                        percent: 88 + Math.floor((i + 1) * (10 / (sampleLimit + 1))),
+                        text: line,
+                        type
                     });
                 }
             }
 
+            const errorsCount = auditResult.issues.filter(i => i.severity === 'error').length;
             const finalType = auditResult.compliant ? 'info' : 'error';
-            const finalMessage = auditResult.compliant 
-                ? `[COMPLETE] Audit complete! Result: PASS. SGF conforms 100% to FF[4] Go specifications.`
-                : `[COMPLETE] Audit complete! Result: FAIL. Found ${errorsCount} standard violations.`;
-            
-            steps.push({
-                percent: 100,
-                text: finalMessage,
-                type: finalType
-            });
+            const finalMessage = auditResult.compliant
+                ? `[1.1 DONE] SGFC Syntax Checker complete — PASS.`
+                : `[1.1 DONE] SGFC Syntax Checker complete — FAIL (${errorsCount} violation(s)).`;
+            steps.push({ percent: 100, text: finalMessage, type: finalType });
 
-            let currentStepIdx = 0;
+            let currentIdx = 0;
 
             function runStep() {
-                if (currentStepIdx >= steps.length) {
-                    transitionToStep2();
+                if (currentIdx >= steps.length) {
+                    setTimeout(runPhase2PropertiesValidation, 300);
                     return;
                 }
 
-                const step = steps[currentStepIdx];
+                const step = steps[currentIdx];
                 fill.style.width = `${step.percent}%`;
                 text.textContent = `${step.percent}%`;
 
@@ -1507,126 +1488,83 @@
                 if (step.type === 'error') line.classList.add('error-line');
                 else if (step.type === 'warning') line.classList.add('warn-line');
                 else if (step.type === 'info') line.classList.add('info-line');
-
                 line.textContent = step.text;
                 logBox.appendChild(line);
                 logBox.scrollTop = logBox.scrollHeight;
 
-                currentStepIdx++;
-                
-                let delay = 180;
-                if (step.percent >= 50) delay = 250;
-                if (step.percent === 100) delay = 400;
-
+                currentIdx++;
+                let delay = 160;
+                if (step.percent >= 80) delay = 220;
+                if (step.percent === 100) delay = 350;
                 setTimeout(runStep, delay);
             }
 
             runStep();
         }
 
-        function transitionToStep2() {
-            // Update Stepper Card UI
-            const stepNode1 = document.getElementById('step-node-1');
-            const stepNode2 = document.getElementById('step-node-2');
-            stepNode1.classList.remove('active');
-            stepNode1.classList.add('completed');
-            stepNode2.classList.add('active');
-
-            // Display intermediate Step 1 results
-            displayStep1Results();
-
-            const playBtn = document.getElementById('play-btn');
-            const stepBar = document.getElementById('step1-bar');
-
-            // Smoothly fade out bar, transition text, fade in
-            stepBar.classList.add('fade-out');
-
-            setTimeout(() => {
-                document.getElementById('step-bar-badge').textContent = "STEP 2";
-                document.getElementById('step1-text').textContent = "Run SGFC Syntax Checker";
-                
-                // Reset progress bar
-                document.getElementById('progress-fill').style.width = '0%';
-                document.getElementById('progress-text').textContent = '0%';
-
-                const logBox = document.getElementById('code-log-box');
-                const line1 = document.createElement('div');
-                line1.className = 'code-box-line';
-                line1.textContent = '- Step 1 SGFC Diagnostic complete!';
-                const line2 = document.createElement('div');
-                line2.className = 'code-box-line';
-                line2.textContent = '- Ready for Step 2: Run SGFC Syntax Checker.';
-                const line3 = document.createElement('div');
-                line3.className = 'code-box-line';
-                line3.textContent = '- Press PLAY or click "Run SGFC Syntax Checker" to start.';
-                logBox.appendChild(line1);
-                logBox.appendChild(line2);
-                logBox.appendChild(line3);
-                logBox.scrollTop = logBox.scrollHeight;
-
-                stepBar.classList.remove('fade-out');
-
-                // Re-enable click for next step
-                currentStep = 2;
-                diagnosticsRunning = false;
-                playBtn.classList.remove('running');
-                stepBar.classList.remove('running');
-            }, 300);
-        }
-
-        function runStep2Diagnostics() {
-            document.getElementById('step1-text').textContent = "Executing SGFC Syntax Checker...";
+        // ── Phase 1.2: Properties Validation (DT, RE) ──
+        function runPhase2PropertiesValidation() {
+            document.getElementById('step1-text').textContent = "Doing Properties Validation ...";
 
             const logBox = document.getElementById('code-log-box');
-            logBox.innerHTML = ''; // Clear previous step logs
-
             const fill = document.getElementById('progress-fill');
             const text = document.getElementById('progress-text');
 
-            // Construct SGFC WASM report streaming steps
-            const steps = [
-                { percent: 0, text: `[INIT] Launching SGFC syntax checker (WebAssembly)...`, type: 'info' },
-                { percent: 12, text: `[WASM] Initializing virtual filesystem and writing SGF buffer...`, type: 'info' },
-                { percent: 25, text: `[WASM] Executing SGFC main with options: -U (UTF-8)...`, type: 'info' }
-            ];
-
-            const reportLines = auditResult.report.split('\n').filter(line => line.trim().length > 0);
-            if (reportLines.length > 0) {
-                reportLines.forEach((line, index) => {
-                    const pct = 25 + Math.floor((index + 1) * (65 / reportLines.length));
-                    let type = 'text';
-                    if (line.toLowerCase().includes('error') || line.toLowerCase().includes('fatal')) type = 'error';
-                    else if (line.toLowerCase().includes('warning')) type = 'warning';
-                    steps.push({ percent: pct, text: line, type });
-                });
+            // Run our SGF property validator
+            let propErrors = [];
+            let propWarnings = [];
+            if (typeof SGFAuditor !== 'undefined' && SGFAuditor.validateSGFProperties) {
+                let result = SGFAuditor.validateSGFProperties(sgfContent);
+                propErrors = result.errors || [];
+                propWarnings = result.warnings || [];
             } else {
-                steps.push({ percent: 60, text: `[WASM] No violations flagged by SGFC core engine.`, type: 'text' });
+                propWarnings.push({ type: "properties", msg: "Properties validator not available (SGFAuditor.validateSGFProperties missing)." });
             }
 
-            steps.push({ percent: 92, text: `[WASM] Post-processing and cleaning up virtual FS buffers...`, type: 'info' });
+            // Merge into auditResult
+            propWarnings.forEach(w => {
+                auditResult.issues.push({ severity: 'warning', message: w.msg, position: null });
+            });
+            propErrors.forEach(e => {
+                auditResult.issues.push({ severity: 'error', message: e.msg, position: null });
+            });
 
-            const errorsCount = auditResult.issues.filter(i => i.severity === 'error').length;
-            const warningsCount = auditResult.issues.filter(i => i.severity === 'warning').length;
-            const finalType = auditResult.compliant ? 'info' : 'error';
-            const finalMessage = auditResult.compliant 
-                ? `[COMPLETE] SGFC analysis complete! Status: PASS. SGF is 100% compliant.`
-                : `[COMPLETE] SGFC analysis complete! Status: FAIL. Found ${errorsCount} violation(s).`;
-            
+            const steps = [
+                { percent: 30, text: `[1.2] Running Properties Validation — checking DT (Date) and RE (Result) formats...`, type: 'info' }
+            ];
+
+            if (propWarnings.length === 0 && propErrors.length === 0) {
+                steps.push({ percent: 70, text: `[1.2] All property values conform to SGF FF[4] specifications.`, type: 'text' });
+            } else {
+                propWarnings.forEach(w => {
+                    steps.push({ percent: 70, text: `[WARNING] ${w.msg}`, type: 'warning' });
+                });
+                propErrors.forEach(e => {
+                    steps.push({ percent: 70, text: `[ERROR] ${e.msg}`, type: 'error' });
+                });
+            }
+
+            const allErrors   = auditResult.issues.filter(i => i.severity === 'error').length;
+            const allWarnings = auditResult.issues.filter(i => i.severity === 'warning').length;
+            const pass = allErrors === 0;
+            const finalType = pass ? 'info' : 'error';
             steps.push({
                 percent: 100,
-                text: finalMessage,
+                text: pass
+                    ? `[COMPLETE] SGF Diagnostics Completed! — PASS (${allErrors} error(s), ${allWarnings} warning(s)).`
+                    : `[COMPLETE] SGF Diagnostics Completed! — FAIL (${allErrors} error(s), ${allWarnings} warning(s)).`,
                 type: finalType
             });
 
-            let currentStepIdx = 0;
+            let currentIdx = 0;
 
             function runStep() {
-                if (currentStepIdx >= steps.length) {
-                    finishStep2Diagnostics(errorsCount, warningsCount);
+                if (currentIdx >= steps.length) {
+                    finishDiagnostics();
                     return;
                 }
 
-                const step = steps[currentStepIdx];
+                const step = steps[currentIdx];
                 fill.style.width = `${step.percent}%`;
                 text.textContent = `${step.percent}%`;
 
@@ -1635,41 +1573,32 @@
                 if (step.type === 'error') line.classList.add('error-line');
                 else if (step.type === 'warning') line.classList.add('warn-line');
                 else if (step.type === 'info') line.classList.add('info-line');
-
                 line.textContent = step.text;
                 logBox.appendChild(line);
                 logBox.scrollTop = logBox.scrollHeight;
 
-                currentStepIdx++;
-                
-                let delay = 150;
-                if (step.percent >= 50) delay = 200;
+                currentIdx++;
+                let delay = 200;
                 if (step.percent === 100) delay = 400;
-
                 setTimeout(runStep, delay);
             }
 
             runStep();
         }
 
-        function finishStep2Diagnostics(errorsCount, warningsCount) {
-            // Update Stepper Card UI to Node 3 Active
-            const stepNode2 = document.getElementById('step-node-2');
-            const stepNode3 = document.getElementById('step-node-3');
-            stepNode2.classList.remove('active');
-            stepNode2.classList.add('completed');
-            stepNode3.classList.add('active');
+        // ── Finish: update stepper, show banner, enable results ──
+        function finishDiagnostics() {
+            const stepNode1 = document.getElementById('step-node-1');
+            stepNode1.classList.remove('active');
+            stepNode1.classList.add('completed');
 
-            document.getElementById('step1-text').textContent = "SGFC Diagnostics Completed!";
-            
+            document.getElementById('step1-text').textContent = "SGF Diagnostics Completed!";
+
             displayDetailedResults();
 
-            // Reset diagnostics states
             diagnosticsRunning = false;
-            const playBtn = document.getElementById('play-btn');
-            const stepBar = document.getElementById('step1-bar');
-            playBtn.classList.remove('running');
-            stepBar.classList.remove('running');
+            document.getElementById('play-btn').classList.remove('running');
+            document.getElementById('step1-bar').classList.remove('running');
         }
 
         // Populates detailed results cards and rolls them into view
@@ -1697,17 +1626,17 @@
                 rightBanner.className = 'right-status-banner pass visible';
                 rightIcon.textContent = '✓';
                 rightTitle.textContent = '100% Compliant';
-                rightDesc.innerHTML = `This SGF file is fully compliant with the SGF FF[4] standard for Go. <br><small>(Audited via official SGFC WebAssembly engine)</small>`;
+                rightDesc.innerHTML = `This SGF file is fully compliant with the SGF FF[4] standard for Go. <br><small>(Audited via SGFC WebAssembly engine + Properties Validation)</small>`;
             } else if (auditResult.compliant && warnings.length > 0) {
                 rightBanner.className = 'right-status-banner warning visible';
                 rightIcon.textContent = '⚠';
                 rightTitle.textContent = 'Compliant (Warnings)';
-                rightDesc.innerHTML = `The SGF is functionally compliant but has ${warnings.length} warning(s). <br><small>(Audited via official SGFC WebAssembly engine)</small>`;
+                rightDesc.innerHTML = `The SGF is functionally compliant but has ${warnings.length} warning(s). <br><small>(Audited via SGFC WebAssembly engine + Properties Validation)</small>`;
             } else {
                 rightBanner.className = 'right-status-banner fail visible';
                 rightIcon.textContent = '✗';
                 rightTitle.textContent = 'Non-Compliant';
-                rightDesc.innerHTML = `Found ${errors.length} error(s) and ${warnings.length} warning(s) violating SGF specifications. <br><small>(Audited via official SGFC WebAssembly engine)</small>`;
+                rightDesc.innerHTML = `Found ${errors.length} error(s) and ${warnings.length} warning(s) violating SGF specifications. <br><small>(Audited via SGFC WebAssembly engine + Properties Validation)</small>`;
             }
 
             // Toggle autofix download button
@@ -1891,53 +1820,6 @@
             activeFilter = severity;
 
             renderIssuesList();
-        }
-
-        function displayStep1Results() {
-            const errors = auditResult.issues.filter(i => i.severity === 'error');
-            const warnings = auditResult.issues.filter(i => i.severity === 'warning');
-
-            // Populate counts
-            document.getElementById('filter-all-count').textContent = auditResult.issues.length;
-            document.getElementById('filter-error-count').textContent = errors.length;
-            document.getElementById('filter-warning-count').textContent = warnings.length;
-
-            // Select Validation Issues tab & disable Raw Report tab
-            const btnIssues = document.getElementById('btn-issues-tab');
-            const btnReport = document.getElementById('btn-report-tab');
-            btnReport.disabled = true;
-            switchTab(btnIssues, 'issues-tab');
-
-            // Set placeholder content for Raw Report tab
-            document.getElementById('raw-report-display').textContent = "Raw SGFC Reference Report will be generated on Step 2 completion.";
-
-            // Populate right-side banner with Step 1 status
-            const rightBanner = document.getElementById('right-banner');
-            const rightIcon = document.getElementById('right-banner-icon');
-            const rightTitle = document.getElementById('right-banner-title');
-            const rightDesc = document.getElementById('right-banner-desc');
-
-            if (errors.length > 0) {
-                rightBanner.className = 'right-status-banner fail visible';
-                rightIcon.textContent = '✗';
-                rightTitle.textContent = 'Step 1 Fail';
-                rightDesc.innerHTML = `SGF structure violations found during parser check. Click Play to run SGFC reference validator.`;
-            } else if (warnings.length > 0) {
-                rightBanner.className = 'right-status-banner warning visible';
-                rightIcon.textContent = '⚠';
-                rightTitle.textContent = 'Step 1 Warnings';
-                rightDesc.innerHTML = `SGF structure is valid but has ${warnings.length} warning(s). Click Play to run SGFC reference validator.`;
-            } else {
-                rightBanner.className = 'right-status-banner pass visible';
-                rightIcon.textContent = '✓';
-                rightTitle.textContent = 'Step 1 Pass';
-                rightDesc.innerHTML = `SGF structure parsed successfully. Ready to execute SGFC Reference validator.`;
-            }
-
-            renderIssuesList();
-
-            // Slide results wrapper down smoothly
-            document.getElementById('results-wrapper').classList.add('visible');
         }
 
         function goBack() {

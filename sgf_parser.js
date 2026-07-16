@@ -725,12 +725,99 @@
         };
     }
 
+    // ── Properties Validation: DT (Date) & RE (Result) ──
+    function validateSGFProperties(sgfText) {
+        let errors = [];
+        let warnings = [];
+
+        if (!sgfText || !sgfText.trim()) {
+            warnings.push({ type: "properties", msg: "Empty SGF content — nothing to validate." });
+            return { errors, warnings };
+        }
+
+        // Extract root node properties via regex (first ';' after '(')
+        let rootMatch = sgfText.match(/\(\s*;([\s\S]*?)(?:\(|$)/);
+        if (!rootMatch) {
+            warnings.push({ type: "properties", msg: "Could not locate root node for properties validation." });
+            return { errors, warnings };
+        }
+        let rootNode = rootMatch[1];
+
+        // ── Helper: extract first value of a property identifier ──
+        function extractProp(source, ident) {
+            // Match e.g. DT[2024-01-15] — property ident followed by one or more [value]s
+            let re = new RegExp('\\b' + ident + '\\s*\\[([^\\]]*)\\]');
+            let m = source.match(re);
+            return m ? m[1] : null;
+        }
+
+        // ── Validate DT (Date) ──
+        let dtRaw = extractProp(rootNode, 'DT');
+        if (dtRaw === null) {
+            warnings.push({
+                type: "properties",
+                msg: "Missing Date property (DT). SGF files should include a DT property with the game date."
+            });
+        } else {
+            let dtVal = dtRaw.trim();
+            // Basic single-day: YYYY-MM-DD
+            let singleDay = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
+            // Multi-day same month:   YYYY-MM-DD,DD
+            let multiDaySameMonth = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]),(0[1-9]|[12]\d|3[01])$/;
+            // Multi-day same year:    YYYY-MM-DD,MM-DD
+            let multiDaySameYear = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]),(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
+            // Multi-day diff year:    YYYY-MM-DD,YYYY-MM-DD
+            let multiDayDiffYear = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]),\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
+
+            let dtOk = singleDay.test(dtVal)
+                    || multiDaySameMonth.test(dtVal)
+                    || multiDaySameYear.test(dtVal)
+                    || multiDayDiffYear.test(dtVal);
+
+            if (!dtOk) {
+                warnings.push({
+                    type: "properties",
+                    msg: `Invalid Date format (DT[${dtVal}]). Expected ISO format "YYYY-MM-DD" (optionally with multi-day extensions like "YYYY-MM-DD,DD", "YYYY-MM-DD,MM-DD", or "YYYY-MM-DD,YYYY-MM-DD").`
+                });
+            }
+        }
+
+        // ── Validate RE (Result) ──
+        let reRaw = extractProp(rootNode, 'RE');
+        if (reRaw === null) {
+            warnings.push({
+                type: "properties",
+                msg: "Missing Result property (RE). SGF files should include an RE property with the game result."
+            });
+        } else {
+            let reVal = reRaw.trim();
+            // Valid patterns:
+            //   0            (jigo / draw)
+            //   ?            (unknown)
+            //   B+score      e.g. B+2.5, B+0.5, B+64
+            //   W+score      e.g. W+6.5, W+0.5, W+12
+            //   B+R / W+R    (resignation)
+            //   B+T / W+T    (time)
+            //   B+F / W+F    (forfait)
+            let rePattern = /^(0|\?|[BW]\+(\d+(\.\d+)?|R|T|F))$/;
+            if (!rePattern.test(reVal)) {
+                warnings.push({
+                    type: "properties",
+                    msg: `Invalid Result format (RE[${reVal}]). Expected one of: "0" (jigo), "B+score"/"W+score" (e.g. "B+2.5", "W+64"), "B+R"/"W+R" (resign), "B+T"/"W+T" (time), "B+F"/"W+F" (forfait), or "?" (unknown). Use .5 not 1/2 for half-point results.`
+                });
+            }
+        }
+
+        return { errors, warnings };
+    }
+
     // Expose APIs
     global.SGFAuditor = {
         parseSGF,
         GoBoard,
         auditSGF,
-        detectPhases
+        detectPhases,
+        validateSGFProperties
     };
 
 })(typeof window !== 'undefined' ? window : global);
