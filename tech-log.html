@@ -36,6 +36,7 @@
             align-items: center;
             min-height: 100vh;
             box-sizing: border-box;
+            overflow-x: hidden; /* prevent disc crescent from creating scrollbar */
             -webkit-font-smoothing: antialiased;
         }
 
@@ -110,20 +111,20 @@
         /* Safe Lock Dial Navigation */
         .wheel-container {
             position: fixed;
-            left: -220px; /* dial center sits at left viewport edge */
+            /*
+             * Geometry (dial diameter = 440px, items at padding-left = 170px from center):
+             *   left: -355px  →  disc center at viewport x = -355+220 = -135px (off-screen)
+             *   items appear at  viewport x = -135 + 170 = 35px
+             *   disc rim appears at viewport x = -135 + 220 = 85px
+             * The browser's viewport edge naturally clips the inner disc; no clip-path needed.
+             * Text labels project freely to the right, fully visible.
+             */
+            left: -355px;
             top: calc(50% - 220px);
             width: 440px;
             height: 440px;
             z-index: 99;
             pointer-events: none;
-            /*
-             * Geometry: container x=220 = viewport x=0 (dial center)
-             *           container x=390 = viewport x=170 (where items appear, padding-left=170)
-             *           container x=440 = viewport x=220 (dial rim)
-             * We clip container from x=0 to x=360, leaving only the outermost
-             * 80px slice (viewport x=140..220) where items poke out of the arc.
-             */
-            clip-path: inset(0 0 0 360px);
         }
 
         .wheel-dial {
@@ -243,10 +244,11 @@
             box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
         }
 
-        /* Fixed pointer/needle — sits just left of where items appear */
+        /* Fixed pointer/needle — sits just left of where items emerge */
         .wheel-pointer {
             position: fixed;
-            left: 138px; /* just before the numbers emerge from the arc */
+            /* items appear at viewport x≈35px; pointer sits just before them */
+            left: 18px;
             top: 50%;
             transform: translateY(-50%);
             width: 20px;
@@ -277,7 +279,7 @@
             padding: 40px;
             box-shadow: var(--shadow-sm);
             box-sizing: border-box;
-            margin-left: 70px; /* only a slim sliver of dial is visible now */
+            margin-left: 220px; /* clear the item labels that project from the arc */
             transition: margin-left 0.3s ease, padding 0.3s ease;
         }
 
@@ -475,7 +477,7 @@
 <body>
     <header class="top-header">
         <a href="index.html" class="header-logo">← SGF Auditor</a>
-        <div class="header-version">v=0.0.029 (2026-07-16 19:35:00)</div>
+        <div class="header-version">v=0.0.030 (2026-07-16 19:43:00)</div>
     </header>    <!-- Floating Safe Dial Navigation -->
     <div class="wheel-pointer"></div>
     <div class="wheel-container" id="wheel-container">
