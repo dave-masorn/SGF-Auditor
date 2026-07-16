@@ -867,6 +867,213 @@
             background-color: var(--primary-hover);
         }
 
+        /* ── Issue Item Wrapper (row + action bar + edit panel) ── */
+        .issue-item-wrapper {
+            border-bottom: 1px solid var(--border-color);
+        }
+        .issue-item-wrapper:last-child { border-bottom: none; }
+        .issue-item-wrapper > .issue-row { border-bottom: none; }
+
+        /* 3-State Action Bar */
+        .issue-action-bar {
+            position: relative;
+            height: 44px;
+            overflow: hidden;
+        }
+        .issue-action-state {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            gap: 10px;
+            transform: translateY(100%);
+            opacity: 0;
+            transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.35s ease;
+            pointer-events: none;
+        }
+        .issue-action-state.active {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .issue-action-state.exit {
+            transform: translateY(-100%);
+            opacity: 0;
+            pointer-events: none;
+        }
+        .state-1 { background: #fbbf24; }
+        .state-2 { background: linear-gradient(90deg, #fcd34d, #86efac); }
+        .state-3 { background: #22c55e; }
+        .ias-num {
+            font-weight: 800;
+            font-size: 0.95rem;
+            color: rgba(0,0,0,0.6);
+            width: 18px;
+            flex-shrink: 0;
+        }
+        .ias-actions {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            align-items: center;
+        }
+        .ias-edit-btn {
+            background: rgba(255,255,255,0.55);
+            border: 1px solid rgba(0,0,0,0.15);
+            padding: 5px 13px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: #78350f;
+            font-family: "Geist", sans-serif;
+            transition: background 0.2s;
+        }
+        .ias-edit-btn:hover { background: rgba(255,255,255,0.8); }
+        .ias-fix-btn {
+            background: #15803d;
+            border: none;
+            padding: 5px 13px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: white;
+            font-family: "Geist", sans-serif;
+            transition: background 0.2s;
+        }
+        .ias-fix-btn:hover { background: #166534; }
+        .ias-progress-text {
+            flex-grow: 1;
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.88rem;
+            color: rgba(0,0,0,0.75);
+        }
+        .ias-icon {
+            font-size: 1rem;
+            flex-shrink: 0;
+            width: 26px;
+            height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.4);
+            font-weight: 700;
+        }
+        /* Inline edit panel */
+        .issue-edit-panel {
+            background: #f8fafc;
+            border-top: 1px solid var(--border-color);
+            padding: 14px 16px;
+        }
+        .issue-edit-textarea {
+            width: 100%;
+            height: 110px;
+            font-family: "Geist Mono", monospace;
+            font-size: 0.8rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 10px;
+            box-sizing: border-box;
+            resize: vertical;
+            color: #1e293b;
+            background: #fff;
+            margin-bottom: 10px;
+        }
+        .issue-edit-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+        .ias-apply-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: "Geist", sans-serif;
+        }
+        .ias-cancel-btn {
+            background: #f1f5f9;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+            padding: 6px 16px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: "Geist", sans-serif;
+        }
+
+        /* ══════════ RESPONSIVE ══════════ */
+        @media (max-width: 768px) {
+            .top-header { padding: 0 16px; }
+
+            .main-container { padding: 20px 12px; margin-top: 60px; }
+
+            .play-section-container {
+                flex-direction: column;
+                gap: 20px;
+                align-items: stretch;
+            }
+            .stepper-card {
+                width: 100%;
+                flex-direction: row;
+                justify-content: space-around;
+                gap: 0;
+                padding: 14px;
+            }
+            .stepper-line { display: none; }
+            .stepper-step {
+                flex-direction: column-reverse;
+                align-items: center;
+                gap: 6px;
+            }
+            .step-label { text-align: center; font-size: 0.7rem; }
+            .right-section-container { width: 100%; }
+            .play-button-container { order: -1; }
+
+            .stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+                margin-bottom: 24px;
+            }
+            .stat-card { padding: 14px 8px; }
+            .stat-value { font-size: 1.3rem; }
+
+            .diagnostic-bar {
+                height: 52px;
+                margin-bottom: 24px;
+            }
+            .diagnostic-bar-text { font-size: 0.95rem; }
+            .diagnostic-bar-step { font-size: 0.9rem; padding: 0 24px 0 16px; }
+
+            .main-card { padding: 18px 14px; }
+            .tab-btn { padding: 10px 14px; font-size: 0.85rem; }
+            .filter-bar { flex-wrap: wrap; }
+
+            .issue-row { flex-wrap: wrap; gap: 8px; }
+            .issue-pos { width: auto; }
+
+            .detailed-results-wrapper.visible { max-height: 3000px; }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .top-header { padding: 0 12px; }
+            .header-pill { display: none !important; }
+            .main-card { padding: 14px 10px; }
+            .issues-list { max-height: 600px; }
+            .filter-btn { padding: 6px 12px; font-size: 0.8rem; }
+        }
+
     </style>
 </head>
 <body>
@@ -877,14 +1084,14 @@
                 <span>You're currently auditing <span class="filename-pixel" id="header-filename">game.sgf</span> file.</span>
             </div>
         </div>
-        <div class="header-version">v=0.0.028 (2026-07-16 19:27:00)</div>
+        <div class="header-version">v=0.0.032 (2026-07-16 20:16:00)</div>
     </header>
 
     <div class="main-container" id="main-container" style="display: none;">
         <!-- Terminal background logs layer -->
         <div class="terminal-bg-container" id="code-log-box">
             <div class="code-box-line">- Ready to run SGF diagnostics...</div>
-            <div class="code-box-line">- Press PLAY or click "Run SGF FF[4] Diagnostic" to start.</div>
+            <div class="code-box-line">- Press PLAY or click "Run SGFC Diagnostic" to start.</div>
         </div>
 
         <!-- Play Button, Stepper Card and Status Banner Section -->
@@ -893,7 +1100,7 @@
             <div class="stepper-card">
                 <div class="stepper-line"></div>
                 <div class="stepper-step active" id="step-node-1">
-                    <div class="step-label">SGF FF[4]<br>Diagnostic</div>
+                    <div class="step-label">SGFC<br>Diagnostic</div>
                     <div class="step-indicator">
                         <span class="check-icon">✓</span>
                         <span class="step-number">1</span>
@@ -970,7 +1177,7 @@
         <!-- Diagnostic Action Bar -->
         <div class="diagnostic-bar" id="step1-bar" onclick="startDiagnostics()">
             <div class="diagnostic-bar-step" id="step-bar-badge">STEP 1</div>
-            <div class="diagnostic-bar-text" id="step1-text">Run SGF FF[4] Diagnostic</div>
+            <div class="diagnostic-bar-text" id="step1-text">Run SGFC Diagnostic</div>
             <div class="diagnostic-bar-icon-container">
                 <div class="diagnostic-bar-play-icon"></div>
             </div>
@@ -1235,7 +1442,7 @@
         }
 
         function runStep1Diagnostics() {
-            document.getElementById('step1-text').textContent = "Executing SGF FF[4] Diagnostic...";
+            document.getElementById('step1-text').textContent = "Executing SGFC Diagnostic...";
 
             const logBox = document.getElementById('code-log-box');
             logBox.innerHTML = ''; // Clear initial instruction strings
@@ -1247,9 +1454,9 @@
             const steps = [
                 { percent: 0, text: `[INIT] Loading SGF file...`, type: 'info' },
                 { percent: 12, text: `[INIT] File target: ${sgfFilename} (${sgfContent.length} bytes read)`, type: 'info' },
-                { percent: 25, text: `[PARSE] Initializing isomorphic SGF FF[4] parser...`, type: 'text' },
+                { percent: 25, text: `[PARSE] Initializing SGFC WebAssembly engine...`, type: 'text' },
                 { percent: 38, text: `[PARSE] Scanning game tree nodes: Found ${auditResult.stats.gameTrees} game tree(s) and ${auditResult.stats.nodes} node(s)...`, type: 'text' },
-                { percent: 52, text: `[VALIDATE] Commencing standard Go GM[1] FF[4] audit check...`, type: 'info' },
+                { percent: 52, text: `[VALIDATE] Commencing SGFC compliance check for Go GM[1] FF[4]...`, type: 'info' },
                 { percent: 68, text: `[VALIDATE] Verifying board dimensions: SZ[${auditResult.board.width}x${auditResult.board.height}] checked successfully`, type: 'text' },
                 { percent: 80, text: `[VALIDATE] Analyzing game move sequences: ${auditResult.stats.moves} moves, ${auditResult.stats.variations} variations...`, type: 'text' },
                 { percent: 92, text: `[VALIDATE] Auditing coordinate syntax and checking for property card exclusions...`, type: 'text' }
@@ -1345,7 +1552,7 @@
                 const logBox = document.getElementById('code-log-box');
                 const line1 = document.createElement('div');
                 line1.className = 'code-box-line';
-                line1.textContent = '- Step 1 SGF FF[4] Diagnostic complete!';
+                line1.textContent = '- Step 1 SGFC Diagnostic complete!';
                 const line2 = document.createElement('div');
                 line2.className = 'code-box-line';
                 line2.textContent = '- Ready for Step 2: Run SGFC Syntax Checker.';
@@ -1539,7 +1746,12 @@
                 return;
             }
 
-            filtered.forEach(issue => {
+            filtered.forEach((issue, idx) => {
+                // Outer wrapper (issue row + action bar + edit panel)
+                const wrapper = document.createElement('div');
+                wrapper.className = 'issue-item-wrapper';
+
+                // Issue row
                 const row = document.createElement('div');
                 row.className = `issue-row row-${issue.severity}`;
 
@@ -1549,11 +1761,9 @@
 
                 const pos = document.createElement('span');
                 pos.className = 'issue-pos';
-                if (issue.position) {
-                    pos.textContent = `Line ${issue.position.line}, Col ${issue.position.col}`;
-                } else {
-                    pos.textContent = 'General Scope';
-                }
+                pos.textContent = issue.position
+                    ? `Line ${issue.position.line}, Col ${issue.position.col}`
+                    : 'General Scope';
 
                 const msg = document.createElement('span');
                 msg.className = 'issue-msg';
@@ -1562,8 +1772,102 @@
                 row.appendChild(tag);
                 row.appendChild(pos);
                 row.appendChild(msg);
-                container.appendChild(row);
+                wrapper.appendChild(row);
+
+                // 3-State action bar
+                const actionBar = document.createElement('div');
+                actionBar.className = 'issue-action-bar';
+                actionBar.id = `action-bar-${idx}`;
+                actionBar.innerHTML = `
+                    <div class="issue-action-state state-1 active">
+                        <span class="ias-num">1</span>
+                        <div class="ias-actions">
+                            <button class="ias-edit-btn" onclick="editIssue(${idx})">Edit / FIY</button>
+                            <button class="ias-fix-btn" onclick="autoFixIssue(${idx})">Auto-Fix</button>
+                        </div>
+                        <div class="ias-icon">⚠</div>
+                    </div>
+                    <div class="issue-action-state state-2">
+                        <span class="ias-num">2</span>
+                        <div class="ias-progress-text">Auto-Fixing …</div>
+                        <div class="ias-icon">✓</div>
+                    </div>
+                    <div class="issue-action-state state-3">
+                        <span class="ias-num">3</span>
+                        <div class="ias-progress-text">Auto-Fixed</div>
+                        <div class="ias-icon">✓</div>
+                    </div>
+                `;
+                wrapper.appendChild(actionBar);
+
+                // Inline edit panel (hidden by default)
+                const editPanel = document.createElement('div');
+                editPanel.className = 'issue-edit-panel';
+                editPanel.id = `edit-panel-${idx}`;
+                editPanel.style.display = 'none';
+                editPanel.innerHTML = `
+                    <textarea class="issue-edit-textarea" id="edit-textarea-${idx}" placeholder="Edit the SGF content manually and click Apply to re-check..."></textarea>
+                    <div class="issue-edit-actions">
+                        <button class="ias-cancel-btn" onclick="closeEdit(${idx})">Cancel</button>
+                        <button class="ias-apply-btn" onclick="applyEdit(${idx})">Apply &amp; Re-check</button>
+                    </div>
+                `;
+                wrapper.appendChild(editPanel);
+
+                container.appendChild(wrapper);
             });
+        }
+
+        // Transition issue bar: State 1 → 2 → 3
+        function autoFixIssue(idx) {
+            const bar = document.getElementById(`action-bar-${idx}`);
+            if (!bar) return;
+            const s1 = bar.querySelector('.state-1');
+            const s2 = bar.querySelector('.state-2');
+            const s3 = bar.querySelector('.state-3');
+
+            // 1 → 2
+            s1.classList.remove('active');
+            s1.classList.add('exit');
+            s2.classList.add('active');
+
+            // 2 → 3 after processing delay
+            setTimeout(() => {
+                s2.classList.remove('active');
+                s2.classList.add('exit');
+                s3.classList.add('active');
+            }, 1400);
+        }
+
+        // Toggle inline SGF edit panel
+        function editIssue(idx) {
+            const panel = document.getElementById(`edit-panel-${idx}`);
+            if (!panel) return;
+            if (panel.style.display === 'none' || panel.style.display === '') {
+                const ta = document.getElementById(`edit-textarea-${idx}`);
+                if (ta) ta.value = sgfContent;
+                panel.style.display = 'block';
+            } else {
+                panel.style.display = 'none';
+            }
+        }
+
+        // Apply manual SGF edit and re-run WASM audit
+        function applyEdit(idx) {
+            const ta = document.getElementById(`edit-textarea-${idx}`);
+            if (!ta || !ta.value.trim()) return;
+            sgfContent = ta.value.trim();
+            sessionStorage.setItem('sgf_content', sgfContent);
+            document.getElementById(`edit-panel-${idx}`).style.display = 'none';
+            // Re-run background audit with updated content
+            wasmOutput = [];
+            runWasmAuditBg();
+            renderIssuesList();
+        }
+
+        function closeEdit(idx) {
+            const panel = document.getElementById(`edit-panel-${idx}`);
+            if (panel) panel.style.display = 'none';
         }
 
         // Tabs actions

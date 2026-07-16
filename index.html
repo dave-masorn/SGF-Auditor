@@ -240,12 +240,47 @@
             transform: scale(1.05);
             background-color: #1a1a1a;
         }
+
+        /* ══════════ RESPONSIVE ══════════ */
+        @media (max-width: 640px) {
+            body { padding: 80px 16px 40px 16px; }
+            h1 { font-size: 2rem; margin-bottom: 30px; }
+            .red-subheader { margin-top: -25px; margin-bottom: 30px; }
+            .upload-container {
+                flex-direction: column;
+                border-radius: 16px;
+            }
+            .drop-zone {
+                padding: 40px 20px;
+                font-size: 1.05rem;
+                min-height: 120px;
+            }
+            .browse-zone {
+                padding: 28px 20px;
+                min-height: 100px;
+                font-size: 1rem;
+            }
+            .folder-icon { width: 48px; height: 48px; }
+            .info-list { margin-bottom: 40px; }
+            .top-header { padding: 0 16px; }
+            .tech-log-btn {
+                position: static;
+                display: inline-block;
+                margin-bottom: 20px;
+                align-self: flex-start;
+            }
+        }
+
+        @media (max-width: 400px) {
+            h1 { font-size: 1.6rem; }
+            .drop-zone { font-size: 0.95rem; }
+        }
     </style>
 </head>
 <body>
     <header class="top-header">
         <span class="header-logo">SGF Auditor</span>
-        <div class="header-version">v=0.0.028 (2026-07-16 19:27:00)</div>
+        <div class="header-version">v=0.0.032 (2026-07-16 20:16:00)</div>
     </header>
 
     <h1>SGF Auditor</h1>
