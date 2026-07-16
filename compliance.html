@@ -1748,6 +1748,7 @@
         }
 
         // Transition issue bar: State 1 → 2 → 3
+        // Also performs the actual fix for known fixable issue types (e.g. unknown properties)
         function autoFixIssue(idx) {
             const bar = document.getElementById(`action-bar-${idx}`);
             if (!bar) return;
@@ -1760,11 +1761,54 @@
             s1.classList.add('exit');
             s2.classList.add('active');
 
-            // 2 → 3 after processing delay
+            // Determine what to fix from the issue message
+            const issue = auditResult.issues[idx];
+            let fixed = false;
+            if (issue && issue.message) {
+                // Unknown property: "unknown property <CXR> found"
+                const unknownPropMatch = issue.message.match(/unknown property\s+<([A-Z]+)>/i);
+                if (unknownPropMatch) {
+                    const propName = unknownPropMatch[1];
+                    // Strip all PROP[value] occurrences from the SGF content
+                    const propRegex = new RegExp(propName + '\\s*\\[[^\\]]*\\]', 'g');
+                    const before = sgfContent.length;
+                    sgfContent = sgfContent.replace(propRegex, '');
+                    if (sgfContent.length < before) {
+                        sessionStorage.setItem('sgf_content', sgfContent);
+                        fixed = true;
+                    }
+                }
+            }
+
+            // 2 → 3 after processing delay, then re-run audit if we actually changed the SGF
             setTimeout(() => {
                 s2.classList.remove('active');
                 s2.classList.add('exit');
+                s3.querySelector('.ias-progress-text').textContent = fixed ? 'Auto-Fixed' : 'No Fix Available';
                 s3.classList.add('active');
+
+                if (fixed) {
+                    // Re-run WASM background audit with the corrected SGF
+                    wasmOutput = [];
+                    runWasmAuditBg();
+                    // Re-run properties validation and merge results
+                    if (typeof SGFAuditor !== 'undefined' && SGFAuditor.validateSGFProperties) {
+                        let propResult = SGFAuditor.validateSGFProperties(sgfContent);
+                        (propResult.warnings || []).forEach(w => {
+                            auditResult.issues.push({ severity: 'warning', message: w.msg, position: null });
+                        });
+                        (propResult.errors || []).forEach(e => {
+                            auditResult.issues.push({ severity: 'error', message: e.msg, position: null });
+                        });
+                    }
+                    renderIssuesList();
+                    // Refresh banner counts
+                    const errs  = auditResult.issues.filter(i => i.severity === 'error').length;
+                    const warns = auditResult.issues.filter(i => i.severity === 'warning').length;
+                    document.getElementById('filter-all-count').textContent   = errs + warns;
+                    document.getElementById('filter-error-count').textContent = errs;
+                    document.getElementById('filter-warning-count').textContent = warns;
+                }
             }, 1400);
         }
 
