@@ -2450,10 +2450,11 @@
                     const isStrayArtifact  = /illegal char\(s\)\s+found/i.test(msg);
                     const isPhantomProp    = /without any values/i.test(msg);
                     const isTMFormat       = /illegal format/i.test(msg) && /<TM>/i.test(msg);
+                    const isTMNonStandard  = /non-standard time format/i.test(msg);
                     const isTMDup          = /already exists/i.test(msg) && /<TM>/i.test(msg);
                     const isTMPlaced       = /outside game-info/i.test(msg) && /<TM>/i.test(msg);
 
-                    if (isBracketError || isStrayArtifact || isPhantomProp || isTMFormat || isTMDup || isTMPlaced) {
+                    if (isBracketError || isStrayArtifact || isPhantomProp || isTMFormat || isTMNonStandard || isTMDup || isTMPlaced) {
                         if (typeof SGFAuditor !== 'undefined' && SGFAuditor.sanitizeSGFStream) {
                             try {
                                 var result = SGFAuditor.sanitizeSGFStream(sgfContent);

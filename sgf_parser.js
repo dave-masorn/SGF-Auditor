@@ -1016,6 +1016,19 @@
             }
         }
 
+        // ── Validate TM (Time Limit) ──
+        let tmRaw = extractProp(rootNode, 'TM');
+        if (tmRaw !== null) {
+            let tmVal = tmRaw.trim();
+            // FF[4] spec: TM is a real number (seconds)
+            if (!/^\d+(\.\d+)?$/.test(tmVal)) {
+                warnings.push({
+                    type: "properties",
+                    msg: `Non-standard Time format (TM[${tmVal}]). SGF FF[4] requires TM to be a real number in seconds. Use Auto-Fix to convert.`
+                });
+            }
+        }
+
         return { errors, warnings };
     }
 
