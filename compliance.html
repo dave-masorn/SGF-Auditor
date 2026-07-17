@@ -1268,6 +1268,37 @@
         .maximize-item.opportunity {
             background-color: #fff9db;
             color: #92400e;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .maximize-item.opportunity:hover {
+            background-color: #fef3c7;
+        }
+        .maximize-item.opportunity .mi-icon {
+            transition: transform 0.25s ease;
+            font-size: 0.65rem;
+        }
+        .maximize-item.opportunity.expanded .mi-icon {
+            transform: rotate(90deg);
+        }
+        .maximize-item .mi-detail {
+            width: 100%;
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transition: max-height 0.35s ease, opacity 0.3s ease, margin 0.3s ease;
+            margin-top: 0;
+            color: #78350f;
+            font-size: 0.78rem;
+            line-height: 1.5;
+            border-top: 0px solid transparent;
+        }
+        .maximize-item.opportunity.expanded .mi-detail {
+            max-height: 200px;
+            opacity: 1;
+            margin-top: 8px;
+            border-top: 1px solid rgba(146, 64, 14, 0.15);
+            padding-top: 8px;
         }
 
         .maximize-item .mi-icon {
@@ -1277,6 +1308,14 @@
         }
 
         .maximize-item .mi-text {
+            flex-grow: 1;
+        }
+
+        .maximize-item .mi-body {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px;
             flex-grow: 1;
         }
 
@@ -2254,10 +2293,22 @@
                     const item = document.createElement('div');
                     item.className = 'maximize-item opportunity';
                     item.innerHTML = `
-                        <span class="mi-icon">+</span>
-                        <span class="mi-text">${o.desc} <small style="opacity:0.7">(${o.id === '__branches__' ? 'tree' : o.id === '__nodeNames__' ? 'N' : o.id === '__rootComment__' ? 'C' : o.id})</small></span>
-                        <span class="mi-tag ${o.tag}">${o.tag}</span>
+                        <span class="mi-icon">\u25B6</span>
+                        <span class="mi-body">
+                            <span class="mi-text">${o.desc} <small style="opacity:0.7">(${o.id === '__branches__' ? 'tree' : o.id === '__nodeNames__' ? 'N' : o.id === '__rootComment__' ? 'C' : o.id})</small></span>
+                            <span class="mi-tag ${o.tag}">${o.tag}</span>
+                            <div class="mi-detail">${o.detail || 'No additional details available.'}</div>
+                        </span>
                     `;
+                    item.addEventListener('click', function() {
+                        const wasExpanded = this.classList.contains('expanded');
+                        document.querySelectorAll('.maximize-item.opportunity.expanded').forEach(el => {
+                            el.classList.remove('expanded');
+                        });
+                        if (!wasExpanded) {
+                            this.classList.add('expanded');
+                        }
+                    });
                     oppList.appendChild(item);
                 }
             }

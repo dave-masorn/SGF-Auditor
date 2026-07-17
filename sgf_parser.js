@@ -768,103 +768,103 @@
                 name: "Game Identity",
                 weight: 0.20,
                 features: [
-                    { id: "PB", desc: "Player Black name", tag: "recommended" },
-                    { id: "PW", desc: "Player White name", tag: "recommended" },
-                    { id: "BR", desc: "Black player rank", tag: "recommended" },
-                    { id: "WR", desc: "White player rank", tag: "recommended" },
-                    { id: "RE", desc: "Game result", tag: "mandatory" },
-                    { id: "DT", desc: "Game date", tag: "mandatory" },
-                    { id: "KM", desc: "Komi", tag: "recommended" },
-                    { id: "RU", desc: "Ruleset", tag: "recommended" },
-                    { id: "EV", desc: "Event / tournament", tag: "recommended" },
-                    { id: "TM", desc: "Time limit", tag: "recommended" }
+                    { id: "PB", desc: "Player Black name", tag: "recommended", detail: "Identifies the Black player. Required by SGF FF[4] for any complete game record — omitting it makes the game unattributed." },
+                    { id: "PW", desc: "Player White name", tag: "recommended", detail: "Identifies the White player. Required by SGF FF[4] for any complete game record." },
+                    { id: "BR", desc: "Black player rank", tag: "recommended", detail: "States Black's rank (e.g. 4p, 1d). Helps engines and databases contextualize the game's strength level." },
+                    { id: "WR", desc: "White player rank", tag: "recommended", detail: "States White's rank. Same purpose as BR for the White side." },
+                    { id: "RE", desc: "Game result", tag: "mandatory", detail: "The outcome of the game (e.g. B+R, W+2.5). Mandatory for records — without it the game has no conclusion." },
+                    { id: "DT", desc: "Game date", tag: "mandatory", detail: "ISO-formatted date (YYYY-MM-DD) of the game. Essential for chronological sorting and historical archives." },
+                    { id: "KM", desc: "Komi", tag: "recommended", detail: "Compensation points given to White for going second. Required to understand the scoring context of the result." },
+                    { id: "RU", desc: "Ruleset", tag: "recommended", detail: "Names the rules used (e.g. Japanese, Chinese, AGA). Different rules affect scoring, captures, and legal moves." },
+                    { id: "EV", desc: "Event / tournament", tag: "recommended", detail: "Names the tournament, league, or context (e.g. 'Oteai', 'Kifu Cup'). Helps organize and search game collections." },
+                    { id: "TM", desc: "Time limit", tag: "recommended", detail: "Total time allocated per player in seconds. SGF FF[4] requires a single Real number. Enables time-pressure analysis." }
                 ]
             },
             {
                 name: "Root Configuration",
                 weight: 0.10,
                 features: [
-                    { id: "AP", desc: "Application identifier", tag: "recommended" },
-                    { id: "CA", desc: "Charset (UTF-8)", tag: "recommended" },
-                    { id: "ST", desc: "Variation display style", tag: "optional" }
+                    { id: "AP", desc: "Application identifier", tag: "recommended", detail: "Names the software that created the SGF file (e.g. 'SGF Auditor'). Useful for debugging format-specific quirks." },
+                    { id: "CA", desc: "Charset (UTF-8)", tag: "recommended", detail: "Declares the character encoding. Non-ASCII names (CJK players) will corrupt without it." },
+                    { id: "ST", desc: "Variation display style", tag: "optional", detail: "Controls how variation branches are displayed (0=none, 1=up, 2=down, 3=both). Affects how SGF viewers render alternatives." }
                 ]
             },
             {
                 name: "Game Tree Structure",
                 weight: 0.15,
                 features: [
-                    { id: "__branches__", desc: "Variation branches (tree structure)", tag: "structural" },
-                    { id: "__nodeNames__", desc: "Node names (N) for navigation", tag: "recommended" },
-                    { id: "__rootComment__", desc: "Root-level game summary comment", tag: "recommended" }
+                    { id: "__branches__", desc: "Variation branches (tree structure)", tag: "structural", detail: "SGF's tree structure allows storing alternative move sequences (variations). Without branches, the game is a single linear line." },
+                    { id: "__nodeNames__", desc: "Node names (N) for navigation", tag: "recommended", detail: "The N property assigns a name to a node (e.g. 'Opening', 'Tsumego'). Enables quick navigation and referencing in viewers." },
+                    { id: "__rootComment__", desc: "Root-level game summary comment", tag: "recommended", detail: "A C property on the root node summarizing the game context. Serves as a metadata-rich header beyond the standard properties." }
                 ]
             },
             {
                 name: "Move Annotations",
                 weight: 0.15,
                 features: [
-                    { id: "C",  desc: "Comments on moves", tag: "recommended" },
-                    { id: "TE", desc: "Tesuji (good move) markers", tag: "optional" },
-                    { id: "BM", desc: "Bad move markers", tag: "optional" },
-                    { id: "IT", desc: "Interesting move markers", tag: "optional" },
-                    { id: "DO", desc: "Doubtful move markers", tag: "optional" },
-                    { id: "HO", desc: "Hotspot markers", tag: "optional" }
+                    { id: "C",  desc: "Comments on moves", tag: "recommended", detail: "Free-text commentary on a move. The primary way to add human-readable analysis and explanations to a game record." },
+                    { id: "TE", desc: "Tesuji (good move) markers", tag: "optional", detail: "Marks a move as a tesuji (skillful tactical move). TE[1] = good move. Used by annotators to highlight key plays." },
+                    { id: "BM", desc: "Bad move markers", tag: "optional", detail: "Marks a move as a bad play. BM[1] = bad move. Part of SGF's built-in annotation system for editorial review." },
+                    { id: "IT", desc: "Interesting move markers", tag: "optional", detail: "Marks a move as interesting — not clearly good or bad, but worth noting. IT[1] = interesting." },
+                    { id: "DO", desc: "Doubtful move markers", tag: "optional", detail: "Marks a move as doubtful — likely suboptimal but not outright bad. DO[1] = doubtful." },
+                    { id: "HO", desc: "Hotspot markers", tag: "optional", detail: "Marks a critical or pivotal move. HO[1] = hotspot. Often used to flag turning points in the game." }
                 ]
             },
             {
                 name: "Position Annotations",
                 weight: 0.10,
                 features: [
-                    { id: "DM", desc: "Even position marker", tag: "optional" },
-                    { id: "GB", desc: "Good for Black", tag: "optional" },
-                    { id: "GW", desc: "Good for White", tag: "optional" },
-                    { id: "UC", desc: "Unclear position", tag: "optional" },
-                    { id: "V",  desc: "Score estimate", tag: "optional" }
+                    { id: "DM", desc: "Even position marker", tag: "optional", detail: "Declares the position as even (balanced). DM[1] = clearly even, DM[2] = roughly even. Used in joseki/fuseki annotations." },
+                    { id: "GB", desc: "Good for Black", tag: "optional", detail: "Declares the position favors Black. GB[1] = clearly good, GB[2] = somewhat good. Part of SGF's positional evaluation system." },
+                    { id: "GW", desc: "Good for White", tag: "optional", detail: "Declares the position favors White. GW[1] = clearly good, GW[2] = somewhat good." },
+                    { id: "UC", desc: "Unclear position", tag: "optional", detail: "Marks the position as unclear — neither side has a clear advantage. UC[1] = unclear." },
+                    { id: "V",  desc: "Score estimate", tag: "optional", detail: "A numeric score estimate at this position (Real value). Positive = Black leads, negative = White leads. Useful for AI analysis output." }
                 ]
             },
             {
                 name: "Board Markup",
                 weight: 0.15,
                 features: [
-                    { id: "CR", desc: "Circle markers", tag: "optional" },
-                    { id: "TR", desc: "Triangle markers", tag: "optional" },
-                    { id: "SQ", desc: "Square markers", tag: "optional" },
-                    { id: "MA", desc: "Cross (X) markers", tag: "optional" },
-                    { id: "LB", desc: "Text labels on board", tag: "optional" },
-                    { id: "AR", desc: "Arrows between points", tag: "optional" },
-                    { id: "LN", desc: "Lines between points", tag: "optional" },
-                    { id: "DD", desc: "Dimmed points", tag: "optional" },
-                    { id: "SL", desc: "Selected points", tag: "optional" },
-                    { id: "TB", desc: "Black territory", tag: "optional" },
-                    { id: "TW", desc: "White territory", tag: "optional" }
+                    { id: "CR", desc: "Circle markers", tag: "optional", detail: "Draws circles on board points. Commonly highlights key stones or intersections in diagrams." },
+                    { id: "TR", desc: "Triangle markers", tag: "optional", detail: "Draws triangles on board points. Often marks important stones or areas of interest." },
+                    { id: "SQ", desc: "Square markers", tag: "optional", detail: "Draws squares on board points. Used to highlight specific intersections in analysis." },
+                    { id: "MA", desc: "Cross (X) markers", tag: "optional", detail: "Draws X marks on board points. Frequently used to mark dead stones or captured territories." },
+                    { id: "LB", desc: "Text labels on board", tag: "optional", detail: "Places text labels on board intersections (e.g. LB[dd:A][ee:1]). Essential for annotated diagrams and teaching materials." },
+                    { id: "AR", desc: "Arrows between points", tag: "optional", detail: "Draws arrows between two or more points. Used to show influence, direction of play, or move sequences." },
+                    { id: "LN", desc: "Lines between points", tag: "optional", detail: "Draws lines connecting points. Similar to arrows but without direction. Used for territory boundaries or connections." },
+                    { id: "DD", desc: "Dimmed points", tag: "optional", detail: "Dims (greys out) board points. Used to focus attention on specific areas by de-emphasizing others." },
+                    { id: "SL", desc: "Selected points", tag: "optional", detail: "Highlights selected points on the board. Used in tsumego to mark which stones are part of a problem." },
+                    { id: "TB", desc: "Black territory", tag: "optional", detail: "Marks points as Black territory. Used in scoring diagrams and endgame analysis." },
+                    { id: "TW", desc: "White territory", tag: "optional", detail: "Marks points as White territory. Used in scoring diagrams and endgame analysis." }
                 ]
             },
             {
                 name: "Timing",
                 weight: 0.05,
                 features: [
-                    { id: "BL", desc: "Black time remaining", tag: "optional" },
-                    { id: "WL", desc: "White time remaining", tag: "optional" },
-                    { id: "OB", desc: "Black byo-yomi stones", tag: "optional" },
-                    { id: "OW", desc: "White byo-yomi stones", tag: "optional" }
+                    { id: "BL", desc: "Black time remaining", tag: "optional", detail: "Records Black's remaining time in seconds at this move. Critical for time-pressure analysis and reconstructing the clock state." },
+                    { id: "WL", desc: "White time remaining", tag: "optional", detail: "Records White's remaining time in seconds at this move. Same purpose as BL for White." },
+                    { id: "OB", desc: "Black byo-yomi stones", tag: "optional", detail: "Number of byo-yomi periods or stones remaining for Black. Indicates how close Black is to timeout in byo-yomi." },
+                    { id: "OW", desc: "White byo-yomi stones", tag: "optional", detail: "Number of byo-yomi periods or stones remaining for White. Same purpose as OB for White." }
                 ]
             },
             {
                 name: "Miscellaneous",
                 weight: 0.05,
                 features: [
-                    { id: "FG", desc: "Figure / print diagram", tag: "optional" },
-                    { id: "PM", desc: "Print move number mode", tag: "optional" },
-                    { id: "VW", desc: "View (visible board area)", tag: "optional" },
-                    { id: "MN", desc: "Move number override", tag: "optional" }
+                    { id: "FG", desc: "Figure / print diagram", tag: "optional", detail: "Defines a figure (diagram) for printing. FG[1] includes the current move; FG[0] or omitting shows the position without it." },
+                    { id: "PM", desc: "Print move number mode", tag: "optional", detail: "Controls move numbering in printed diagrams. PM[1] = print all moves, PM[2] = print only last move." },
+                    { id: "VW", desc: "View (visible board area)", tag: "optional", detail: "Restricts the visible board area for tsumego or局部 problems. Only the specified intersections are shown." },
+                    { id: "MN", desc: "Move number override", tag: "optional", detail: "Overrides the automatic move number for a specific node. Useful when the linear numbering doesn't match the intended display." }
                 ]
             },
             {
                 name: "Setup (conditional)",
                 weight: 0.05,
                 features: [
-                    { id: "AB", desc: "Add Black stones (setup)", tag: "conditional" },
-                    { id: "AW", desc: "Add White stones (setup)", tag: "conditional" },
-                    { id: "PL", desc: "Player to move indicator", tag: "conditional" }
+                    { id: "AB", desc: "Add Black stones (setup)", tag: "conditional", detail: "Places Black stones on the board as an initial setup position. Used for tsumego, handicap games, and position replays." },
+                    { id: "AW", desc: "Add White stones (setup)", tag: "conditional", detail: "Places White stones on the board as an initial setup position. Same purpose as AB for the White side." },
+                    { id: "PL", desc: "Player to move indicator", tag: "conditional", detail: "Declares whose turn it is in a setup position (PL[B] or PL[W]). Required when the position doesn't follow from alternating moves." }
                 ]
             }
         ];
