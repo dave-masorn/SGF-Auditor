@@ -1404,8 +1404,11 @@
                     <div id="right-banner-desc" style="font-size: 0.8rem; line-height: 1.4; opacity: 0.9;">
                         This SGF file is fully compliant with the SGF FF[4] standard for Go.
                     </div>
+                    <button class="autofix-btn" id="fix-all-btn" style="display: none;" onclick="fixAllIssues()">
+                        Fix All Issues
+                    </button>
                     <button class="autofix-btn" id="autofix-download-btn" style="display: none;" onclick="downloadCorrectedSgf()">
-                        Auto-Fix & Download SGF
+                        Auto-Fix &amp; Download SGF
                     </button>
                 </div>
             </div>
@@ -1533,6 +1536,7 @@
         let wasmModule = null;
         let wasmOutput = [];
         let sgfContent = '';
+        let originalSgfContent = '';
         let sgfFilename = '';
         let isWasmLoaded = false;
         let diagnosticsRunning = false;
@@ -1541,6 +1545,7 @@
 
         window.onload = function() {
             sgfContent = sessionStorage.getItem('sgf_content');
+            originalSgfContent = sessionStorage.getItem('sgf_original') || sgfContent;
             sgfFilename = sessionStorage.getItem('sgf_filename') || 'game.sgf';
 
             if (!sgfContent) {
@@ -1553,12 +1558,11 @@
             document.getElementById('header-pill-card').style.display = 'flex';
             document.getElementById('header-filename').textContent = sgfFilename;
 
-            // Immediately run checker in the background to fetch stats and validation results
+            // Load SGFC WASM engine only — do NOT run audit yet.
+            // Audit runs when user clicks "Run Diagnostic" (play button).
             loadSGFC((success) => {
                 isWasmLoaded = success;
-                if (success) {
-                    runWasmAuditBg();
-                } else {
+                if (!success) {
                     showImmediateFatalError(new Error("SGFC WebAssembly engine failed to load."));
                 }
             });
@@ -1698,6 +1702,97 @@
             }
         }
 
+        // Read-only WASM audit — runs SGFC WITHOUT -c flag so no output file is generated.
+        // This prevents SGFC from auto-correcting values. Our own sanitizer handles fixes.
+        function runWasmAuditReadOnly(callback) {
+            wasmOutput = [];
+            try {
+                wasmModule.FS.writeFile('/input.sgf', sgfContent);
+                try {
+                    // Run WITHOUT -c (no output file) and WITHOUT -U (no auto-correction)
+                    wasmModule.callMain(['/input.sgf']);
+                } catch (e) {
+                    // Normal exit exception
+                }
+
+                const report = wasmOutput.join('\n');
+                const issues = [];
+                let hasErrors = false;
+
+                wasmOutput.forEach(line => {
+                    const match = line.match(/^\s*Line:(\d+)\s+Col:(\d+)\s+-\s+([^\s:]+)(?:\s+\d+)?(?:\s*\(critical\))?:\s*(.*)$/i);
+                    if (match) {
+                        const lineNum = parseInt(match[1], 10);
+                        const colNum = parseInt(match[2], 10);
+                        let severity = match[3].toLowerCase();
+                        if (severity.startsWith('fatal') || severity.startsWith('critical')) severity = 'error';
+                        const message = match[4];
+
+                        if (severity === 'error') hasErrors = true;
+
+                        issues.push({
+                            severity: severity === 'error' ? 'error' : 'warning',
+                            message,
+                            position: { line: lineNum, col: colNum }
+                        });
+                    } else {
+                        const genMatch = line.match(/^\s*(Error|Warning|Fatal\s+error)\s+\d+(?:\s*\(critical\))?:\s*(.*)$/i);
+                        if (genMatch) {
+                            let severity = genMatch[1].toLowerCase();
+                            if (severity.startsWith('fatal') || severity.startsWith('critical')) severity = 'error';
+                            const message = genMatch[2];
+
+                            if (severity === 'error') hasErrors = true;
+
+                            issues.push({
+                                severity: severity === 'error' ? 'error' : 'warning',
+                                message,
+                                position: null
+                            });
+                        }
+                    }
+                });
+
+                const nodesMatch = report.match(/Nodes:\s+(\d+)/i);
+                const propsMatch = report.match(/Properties:\s+(\d+)/i);
+                const treesMatch = report.match(/Game trees:\s+(\d+)/i);
+                const variationsMatch = report.match(/Variations:\s+(\d+)/i);
+                const boardMatch = report.match(/Board size:\s+(\d+x\d+)/i);
+                const moveCount = (sgfContent.match(/[BW]\[/g) || []).length;
+
+                const stats = {
+                    nodes: nodesMatch ? parseInt(nodesMatch[1], 10) : 0,
+                    properties: propsMatch ? parseInt(propsMatch[1], 10) : 0,
+                    gameTrees: treesMatch ? parseInt(treesMatch[1], 10) : 1,
+                    variations: variationsMatch ? parseInt(variationsMatch[1], 10) : 0,
+                    moves: moveCount
+                };
+
+                let boardSize = { width: 19, height: 19 };
+                if (boardMatch) {
+                    const parts = boardMatch[1].split('x');
+                    boardSize.width = parseInt(parts[0], 10);
+                    boardSize.height = parseInt(parts[1], 10);
+                }
+
+                auditResult = {
+                    compliant: !hasErrors,
+                    issues,
+                    stats,
+                    board: boardSize,
+                    report,
+                    isWasm: true
+                };
+
+                correctedSgfContent = null;
+                populateImmediateStats(auditResult);
+                if (callback) callback();
+            } catch (err) {
+                console.error("WASM read-only audit failed:", err);
+                showImmediateFatalError(err);
+            }
+        }
+
         // Populate card values immediately on load
         function populateImmediateStats(result) {
             document.getElementById('stat-trees').textContent = result.stats.gameTrees;
@@ -1727,8 +1822,9 @@
 
         // ── Combined diagnostic: 1.1 Syntax Checker → 1.2 Properties Validation → Completed ──
         function startDiagnostics() {
-            if (diagnosticsRunning || !auditResult) return;
+            if (diagnosticsRunning) return;
             diagnosticsRunning = true;
+            currentStep = 1;
 
             // Reset progress bar
             document.getElementById('progress-fill').style.width = '0%';
@@ -1739,10 +1835,13 @@
             playBtn.classList.add('running');
             stepBar.classList.add('running');
 
-            if (currentStep === 1) {
+            // Run WASM audit in READ-ONLY mode (no output file, no auto-correction)
+            if (isWasmLoaded) {
+                runWasmAuditReadOnly(() => {
+                    runPhase1SyntaxChecker();
+                });
+            } else {
                 runPhase1SyntaxChecker();
-            } else if (currentStep === 2) {
-                runStep2Maximization();
             }
         }
 
@@ -2177,11 +2276,14 @@
                 rightDesc.innerHTML = `Found ${errors.length} error(s) and ${warnings.length} warning(s) violating SGF specifications. <br><small>(Audited via SGFC WebAssembly engine + Properties Validation)</small>`;
             }
 
-            // Toggle autofix download button
+            // Toggle Fix All button (visible when errors exist)
+            const fixAllBtn = document.getElementById('fix-all-btn');
             const autofixBtn = document.getElementById('autofix-download-btn');
-            if (correctedSgfContent && (errors.length > 0 || warnings.length > 0)) {
-                autofixBtn.style.display = 'block';
+            if (errors.length > 0 || warnings.length > 0) {
+                fixAllBtn.style.display = 'block';
+                autofixBtn.style.display = 'none';
             } else {
+                fixAllBtn.style.display = 'none';
                 autofixBtn.style.display = 'none';
             }
 
@@ -2299,6 +2401,12 @@
             s1.classList.add('exit');
             s2.classList.add('active');
 
+            // Preserve original on first fix
+            if (!originalSgfContent || originalSgfContent !== sessionStorage.getItem('sgf_original')) {
+                originalSgfContent = sgfContent;
+                sessionStorage.setItem('sgf_original', originalSgfContent);
+            }
+
             const issue = auditResult.issues[idx];
             let fixed = false;
             if (issue && issue.message) {
@@ -2367,27 +2475,107 @@
                         wrapper.appendChild(fixedRow);
                     }
 
-                    // Re-run WASM background audit with the corrected SGF
+                    // Re-run read-only audit with the corrected SGF
                     wasmOutput = [];
-                    runWasmAuditBg();
-                    // Re-run properties validation and merge results
-                    if (typeof SGFAuditor !== 'undefined' && SGFAuditor.validateSGFProperties) {
-                        let propResult = SGFAuditor.validateSGFProperties(sgfContent);
-                        (propResult.warnings || []).forEach(w => {
-                            auditResult.issues.push({ severity: 'warning', message: w.msg, position: null });
-                        });
-                        (propResult.errors || []).forEach(e => {
-                            auditResult.issues.push({ severity: 'error', message: e.msg, position: null });
-                        });
-                    }
-                    // Refresh banner counts
-                    const errs  = auditResult.issues.filter(i => i.severity === 'error').length;
-                    const warns = auditResult.issues.filter(i => i.severity === 'warning').length;
-                    document.getElementById('filter-all-count').textContent   = errs + warns;
-                    document.getElementById('filter-error-count').textContent = errs;
-                    document.getElementById('filter-warning-count').textContent = warns;
+                    runWasmAuditReadOnly(() => {
+                        // Re-run properties validation and merge results
+                        if (typeof SGFAuditor !== 'undefined' && SGFAuditor.validateSGFProperties) {
+                            let propResult = SGFAuditor.validateSGFProperties(sgfContent);
+                            (propResult.warnings || []).forEach(w => {
+                                auditResult.issues.push({ severity: 'warning', message: w.msg, position: null });
+                            });
+                            (propResult.errors || []).forEach(e => {
+                                auditResult.issues.push({ severity: 'error', message: e.msg, position: null });
+                            });
+                        }
+                        // Refresh banner counts
+                        const errs  = auditResult.issues.filter(i => i.severity === 'error').length;
+                        const warns = auditResult.issues.filter(i => i.severity === 'warning').length;
+                        document.getElementById('filter-all-count').textContent   = errs + warns;
+                        document.getElementById('filter-error-count').textContent = errs;
+                        document.getElementById('filter-warning-count').textContent = warns;
+                    });
                 }
             }, 1400);
+        }
+
+        // ── Fix All Issues: run the full sanitizer on the working copy ──
+        function fixAllIssues() {
+            if (typeof SGFAuditor === 'undefined' || !SGFAuditor.sanitizeSGFStream) {
+                alert('Sanitizer not loaded.');
+                return;
+            }
+
+            // Ensure original is preserved on first fix
+            if (!originalSgfContent || originalSgfContent !== sessionStorage.getItem('sgf_original')) {
+                originalSgfContent = sgfContent;
+                sessionStorage.setItem('sgf_original', originalSgfContent);
+            }
+
+            try {
+                var result = SGFAuditor.sanitizeSGFStream(sgfContent);
+                if (result.archive && result.archive.length > 0) {
+                    sgfContent = result.fixed;
+                    sessionStorage.setItem('sgf_content', sgfContent);
+
+                    // Mark all fixable issues as fixed in the UI
+                    const wrappers = document.querySelectorAll('.issue-item-wrapper');
+                    wrappers.forEach((wrapper, idx) => {
+                        const bar = wrapper.querySelector('.issue-action-bar');
+                        if (bar) {
+                            const s1 = bar.querySelector('.state-1');
+                            const s3 = bar.querySelector('.state-3');
+                            if (s1) s1.classList.remove('active');
+                            if (s3) {
+                                s3.querySelector('.ias-progress-text').textContent = 'Auto-Fixed';
+                                s3.classList.add('active');
+                            }
+                        }
+                        // Add green FIXED indicator
+                        const existingFixed = wrapper.querySelector('.fixed-indicator');
+                        if (!existingFixed) {
+                            const fixedRow = document.createElement('div');
+                            fixedRow.className = 'fixed-indicator';
+                            fixedRow.innerHTML = `
+                                <span class="fixed-tag">FIXED</span>
+                                <span class="fixed-detail">${result.archive.join(' &nbsp;|&nbsp; ')}</span>
+                            `;
+                            wrapper.appendChild(fixedRow);
+                        }
+                    });
+
+                    // Re-run audit with corrected content
+                    wasmOutput = [];
+                    runWasmAuditReadOnly(() => {
+                        if (typeof SGFAuditor !== 'undefined' && SGFAuditor.validateSGFProperties) {
+                            let propResult = SGFAuditor.validateSGFProperties(sgfContent);
+                            (propResult.warnings || []).forEach(w => {
+                                auditResult.issues.push({ severity: 'warning', message: w.msg, position: null });
+                            });
+                            (propResult.errors || []).forEach(e => {
+                                auditResult.issues.push({ severity: 'error', message: e.msg, position: null });
+                            });
+                        }
+                        // Refresh counts
+                        const errs  = auditResult.issues.filter(i => i.severity === 'error').length;
+                        const warns = auditResult.issues.filter(i => i.severity === 'warning').length;
+                        document.getElementById('filter-all-count').textContent   = errs + warns;
+                        document.getElementById('filter-error-count').textContent = errs;
+                        document.getElementById('filter-warning-count').textContent = warns;
+
+                        // Hide Fix All, show Download
+                        document.getElementById('fix-all-btn').style.display = 'none';
+                        const dlBtn = document.getElementById('autofix-download-btn');
+                        dlBtn.style.display = 'block';
+                        dlBtn.textContent = 'Download Corrected SGF';
+                    });
+                } else {
+                    alert('No fixable issues found by the sanitizer.');
+                }
+            } catch (e) {
+                console.error('fixAllIssues error:', e);
+                alert('Error during auto-fix: ' + e.message);
+            }
         }
 
         // Toggle inline SGF edit panel
@@ -2403,17 +2591,23 @@
             }
         }
 
-        // Apply manual SGF edit and re-run WASM audit
+        // Apply manual SGF edit and re-run audit
         function applyEdit(idx) {
             const ta = document.getElementById(`edit-textarea-${idx}`);
             if (!ta || !ta.value.trim()) return;
+            // Preserve original on first edit
+            if (!originalSgfContent || originalSgfContent !== sessionStorage.getItem('sgf_original')) {
+                originalSgfContent = sgfContent;
+                sessionStorage.setItem('sgf_original', originalSgfContent);
+            }
             sgfContent = ta.value.trim();
             sessionStorage.setItem('sgf_content', sgfContent);
             document.getElementById(`edit-panel-${idx}`).style.display = 'none';
-            // Re-run background audit with updated content
+            // Re-run read-only audit with updated content
             wasmOutput = [];
-            runWasmAuditBg();
-            renderIssuesList();
+            runWasmAuditReadOnly(() => {
+                renderIssuesList();
+            });
         }
 
         function closeEdit(idx) {
@@ -2448,27 +2642,14 @@
             window.location.href = 'index.html';
         }
 
-        // Helper to download auto-fixed SGF content
+        // Helper to download corrected SGF content — uses the working copy (sgfContent)
         function downloadCorrectedSgf() {
-            if (!correctedSgfContent) {
-                alert("No corrected SGF content is available.");
+            if (!sgfContent) {
+                alert("No SGF content is available to download.");
                 return;
             }
 
-            // Apply full stream sanitizer (brackets, stray artifacts, TM normalization, etc.)
-            let downloadContent = correctedSgfContent;
-            if (typeof SGFAuditor !== 'undefined' && SGFAuditor.sanitizeSGFStream) {
-                try {
-                    var fixResult = SGFAuditor.sanitizeSGFStream(downloadContent);
-                    if (fixResult.archive && fixResult.archive.length > 0) {
-                        downloadContent = fixResult.fixed;
-                    }
-                } catch (e) {
-                    console.error('sanitizeSGFStream error:', e);
-                }
-            }
-
-            const blob = new Blob([downloadContent], { type: 'application/x-go-sgf' });
+            const blob = new Blob([sgfContent], { type: 'application/x-go-sgf' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             

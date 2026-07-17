@@ -365,8 +365,24 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 const text = e.target.result;
+
+                // Validate this is a Go game (GM[1])
+                const gmMatch = text.match(/\bGM\s*\[(\d+)\]/);
+                if (gmMatch && gmMatch[1] !== '1') {
+                    const gameTypes = { '2': 'Reversi/Othello', '3': 'Gomoku', '4': 'Renju', '5': 'Hex', '6': 'Go9x9', '7': 'Go13x13', '8': 'Go15x15' };
+                    const gameName = gameTypes[gmMatch[1]] || 'Non-Go game';
+                    if (!confirm('This file appears to be ' + gameName + ' (GM[' + gmMatch[1] + ']), not Go (GM[1]).\n\nThe SGF Auditor is optimized for Go games. Continue anyway?')) {
+                        return;
+                    }
+                } else if (!gmMatch) {
+                    if (!confirm('No game type (GM[1]) found in this SGF file.\n\nThe SGF Auditor is optimized for Go games. Continue anyway?')) {
+                        return;
+                    }
+                }
+
                 // Store SGF details in sessionStorage
                 sessionStorage.setItem('sgf_content', text);
+                sessionStorage.setItem('sgf_original', text);
                 sessionStorage.setItem('sgf_filename', file.name);
                 // Redirect to compliance page
                 window.location.href = 'compliance.html';
