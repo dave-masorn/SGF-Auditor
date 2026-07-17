@@ -1252,20 +1252,8 @@
             }
         }
 
-        // Append archive block at end of file
-        if (archive.length > 0) {
-            var archiveBlock = '\n;C[########## Archive of Changes ##########\n';
-            for (var k = 0; k < archive.length; k++) {
-                archiveBlock += archive[k] + '\n';
-            }
-            archiveBlock += ']';
-            var lastClose = fixed.lastIndexOf(')');
-            if (lastClose > 0) {
-                fixed = fixed.substring(0, lastClose) + archiveBlock + '\n' + fixed.substring(lastClose);
-            } else {
-                fixed += archiveBlock;
-            }
-        }
+        // NOTE: Archive is NOT appended to the SGF file — it causes SGFC parse errors.
+        // Archive data is returned separately for UI display via fixedIssuesMap.
 
         return { fixed: fixed, archive: archive };
     }
@@ -1366,22 +1354,7 @@
             }
         }
 
-        // Append archive block at end of file (before closing paren)
-        if (archive.length > 0) {
-            var archiveBlock = '\n;C[########## Archive of Changes ##########\n';
-            for (var k = 0; k < archive.length; k++) {
-                archiveBlock += archive[k] + '\n';
-            }
-            archiveBlock += ']';
-
-            // Insert before the last closing paren
-            var lastClose = fixed.lastIndexOf(')');
-            if (lastClose > 0) {
-                fixed = fixed.substring(0, lastClose) + archiveBlock + '\n' + fixed.substring(lastClose);
-            } else {
-                fixed += archiveBlock;
-            }
-        }
+        // NOTE: Archive is NOT appended to the SGF file — it causes SGFC parse errors.
 
         return { fixed: fixed, archive: archive };
     }
