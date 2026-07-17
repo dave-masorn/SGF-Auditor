@@ -1133,19 +1133,19 @@
             fixed = fixed.substring(0, insertPos) + inject + fixed.substring(insertPos);
         }
 
-        // Inject BL on first B move, WL on first W move
+        // Inject BL on first B move, WL on first W move (after the closing ] of the move value)
         if (parsed.black !== null) {
-            var bMove = fixed.match(/;B\[/);
+            var bMove = fixed.match(/;B\[[^\]]*\]/);
             if (bMove) {
-                var bPos = bMove.index + bMove[0].length;
-                fixed = fixed.substring(0, bPos) + 'BL[' + parsed.black + ']' + fixed.substring(bPos);
+                var bEnd = bMove.index + bMove[0].length;
+                fixed = fixed.substring(0, bEnd) + 'BL[' + parsed.black + ']' + fixed.substring(bEnd);
             }
         }
         if (parsed.white !== null) {
-            var wMove = fixed.match(/;W\[/);
+            var wMove = fixed.match(/;W\[[^\]]*\]/);
             if (wMove) {
-                var wPos = wMove.index + wMove[0].length;
-                fixed = fixed.substring(0, wPos) + 'WL[' + parsed.white + ']' + fixed.substring(wPos);
+                var wEnd = wMove.index + wMove[0].length;
+                fixed = fixed.substring(0, wEnd) + 'WL[' + parsed.white + ']' + fixed.substring(wEnd);
             }
         }
 
@@ -1375,12 +1375,12 @@
                     }
                 }
 
-                // Inject BL on first B move, WL on first W move
+                // Inject BL on first B move, WL on first W move (after closing ] of move value)
                 if (parsed.black !== null) {
-                    var bMove = fixed.match(/;B\[/);
+                    var bMove = fixed.match(/;B\[[^\]]*\]/);
                     if (bMove) {
-                        var bPos = bMove.index + bMove[0].length;
-                        fixed = fixed.substring(0, bPos) + 'BL[' + parsed.black + ']' + fixed.substring(bPos);
+                        var bEnd = bMove.index + bMove[0].length;
+                        fixed = fixed.substring(0, bEnd) + 'BL[' + parsed.black + ']' + fixed.substring(bEnd);
                         archive.push(
                             '<span class="step-label">Why:</span> Engines track remaining time via BL (Black clock) on move nodes. Without it, Black\'s actual time (' + parsed.black + 's) would be lost after normalization.' +
                             '<br><span class="step-label">Fix:</span> Injected BL[' + parsed.black + '] on first Black move so the engine starts with the correct clock.'
@@ -1388,10 +1388,10 @@
                     }
                 }
                 if (parsed.white !== null) {
-                    var wMove = fixed.match(/;W\[/);
+                    var wMove = fixed.match(/;W\[[^\]]*\]/);
                     if (wMove) {
-                        var wPos = wMove.index + wMove[0].length;
-                        fixed = fixed.substring(0, wPos) + 'WL[' + parsed.white + ']' + fixed.substring(wPos);
+                        var wEnd = wMove.index + wMove[0].length;
+                        fixed = fixed.substring(0, wEnd) + 'WL[' + parsed.white + ']' + fixed.substring(wEnd);
                         archive.push(
                             '<span class="step-label">Why:</span> Same as BL above \u2014 engines need WL (White clock) on move nodes to track remaining time. White\'s actual time (' + parsed.white + 's) must be preserved.' +
                             '<br><span class="step-label">Fix:</span> Injected WL[' + parsed.white + '] on first White move so the engine starts with the correct clock.'
@@ -1452,23 +1452,23 @@
                     }
                 }
 
-                // BL on first B move
+                // BL on first B move (after closing ] of move value)
                 if (parsed.black !== null) {
-                    var bMove = fixed.match(/;B\[/);
+                    var bMove = fixed.match(/;B\[[^\]]*\]/);
                     if (bMove) {
-                        var bPos = bMove.index + bMove[0].length;
-                        fixed = fixed.substring(0, bPos) + 'BL[' + parsed.black + ']' + fixed.substring(bPos);
+                        var bEnd = bMove.index + bMove[0].length;
+                        fixed = fixed.substring(0, bEnd) + 'BL[' + parsed.black + ']' + fixed.substring(bEnd);
                         changeNum++;
                         archive.push('[' + String(changeNum).padStart(3, '0') + '] \u2014 Injected BL[' + parsed.black + '] on first B move');
                     }
                 }
 
-                // WL on first W move
+                // WL on first W move (after closing ] of move value)
                 if (parsed.white !== null) {
-                    var wMove = fixed.match(/;W\[/);
+                    var wMove = fixed.match(/;W\[[^\]]*\]/);
                     if (wMove) {
-                        var wPos = wMove.index + wMove[0].length;
-                        fixed = fixed.substring(0, wPos) + 'WL[' + parsed.white + ']' + fixed.substring(wPos);
+                        var wEnd = wMove.index + wMove[0].length;
+                        fixed = fixed.substring(0, wEnd) + 'WL[' + parsed.white + ']' + fixed.substring(wEnd);
                         changeNum++;
                         archive.push('[' + String(changeNum).padStart(3, '0') + '] \u2014 Injected WL[' + parsed.white + '] on first W move');
                     }
