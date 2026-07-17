@@ -1715,10 +1715,6 @@
                     // Normal exit exception
                 }
 
-                // Filter out SGFC auto-correction messages (e.g. "illegal <TM> value corrected")
-                // These are informational — SGFC normalizes values during parsing but does NOT modify our file
-                wasmOutput = wasmOutput.filter(line => !/corrected/i.test(line));
-
                 const report = wasmOutput.join('\n');
                 const issues = [];
                 let hasErrors = false;
@@ -1731,9 +1727,6 @@
                         let severity = match[3].toLowerCase();
                         if (severity.startsWith('fatal') || severity.startsWith('critical')) severity = 'error';
                         const message = match[4];
-
-                        // Skip SGFC auto-correction messages — these are informational, not real errors
-                        if (/corrected/i.test(message)) return;
 
                         if (severity === 'error') hasErrors = true;
 
@@ -1748,9 +1741,6 @@
                             let severity = genMatch[1].toLowerCase();
                             if (severity.startsWith('fatal') || severity.startsWith('critical')) severity = 'error';
                             const message = genMatch[2];
-
-                            // Skip SGFC auto-correction messages
-                            if (/corrected/i.test(message)) return;
 
                             if (severity === 'error') hasErrors = true;
 
