@@ -890,14 +890,19 @@
         /* Fixed indicator row */
         .fixed-indicator {
             display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 20px;
+            flex-direction: column;
+            gap: 8px;
+            padding: 12px 20px;
             background-color: rgba(34, 197, 94, 0.08);
             border-top: 1px solid rgba(34, 197, 94, 0.25);
             font-size: 0.85rem;
             line-height: 1.5;
             animation: fadeIn 0.4s ease-out;
+        }
+        .fixed-indicator .fixed-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         .fixed-indicator .fixed-tag {
             background: #dcfce7;
@@ -915,6 +920,25 @@
             font-family: "Geist Mono", monospace;
             font-size: 0.82rem;
             word-break: break-all;
+        }
+        .fixed-indicator .fixed-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 2px;
+            padding-left: 4px;
+            border-left: 2px solid rgba(34, 197, 94, 0.3);
+            margin-left: 2px;
+        }
+        .fixed-indicator .fixed-step {
+            color: #166534;
+            font-family: "Geist Mono", monospace;
+            font-size: 0.8rem;
+            line-height: 1.6;
+        }
+        .fixed-indicator .fixed-step .step-label {
+            font-weight: 700;
+            color: #15803d;
         }
         .fixed-indicator .fixed-arrow {
             color: #16a34a;
@@ -2428,7 +2452,10 @@
                     if (sgfContent.length < before) {
                         sessionStorage.setItem('sgf_content', sgfContent);
                         fixed = true;
-                        fixedIssuesMap[idx] = ['Removed all instances of <' + propName + '>'];
+                        fixedIssuesMap[idx] = [
+                            '<span class="step-label">Why:</span> The property \\' + propName + '\\' is not defined in any SGF specification (FF[1]\u2013FF[4]). Unknown properties are ignored by compliant parsers but may cause unexpected behavior in strict validators.' +
+                            '<br><span class="step-label">Fix:</span> Stripped all instances of \\' + propName + '\\[...] from the file.'
+                        ];
                     }
                 }
 
@@ -2474,9 +2501,14 @@
                     if (wrapper && fixedIssuesMap[idx]) {
                         const fixedRow = document.createElement('div');
                         fixedRow.className = 'fixed-indicator';
+                        const steps = fixedIssuesMap[idx].map(function(step) {
+                            return '<div class="fixed-step">' + step + '</div>';
+                        }).join('');
                         fixedRow.innerHTML = `
-                            <span class="fixed-tag">FIXED</span>
-                            <span class="fixed-detail">${fixedIssuesMap[idx].join(' &nbsp;|&nbsp; ')}</span>
+                            <div class="fixed-header">
+                                <span class="fixed-tag">FIXED</span>
+                            </div>
+                            <div class="fixed-steps">${steps}</div>
                         `;
                         wrapper.appendChild(fixedRow);
                     }
@@ -2542,9 +2574,14 @@
                         if (!existingFixed) {
                             const fixedRow = document.createElement('div');
                             fixedRow.className = 'fixed-indicator';
+                            const fixSteps = result.archive.map(function(step) {
+                                return '<div class="fixed-step">' + step + '</div>';
+                            }).join('');
                             fixedRow.innerHTML = `
-                                <span class="fixed-tag">FIXED</span>
-                                <span class="fixed-detail">${result.archive.join(' &nbsp;|&nbsp; ')}</span>
+                                <div class="fixed-header">
+                                    <span class="fixed-tag">FIXED</span>
+                                </div>
+                                <div class="fixed-steps">${fixSteps}</div>
                             `;
                             wrapper.appendChild(fixedRow);
                         }

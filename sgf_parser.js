@@ -1088,79 +1088,69 @@
         }
         if (tmInstances.length === 0) return { fixed: sgfText, changes: 0, tmValues: [] };
 
-        // Parse each TM value to find a compliant seconds value
-        function parseTMValue(val) {
-            if (/^\d+(\.\d+)?$/.test(val)) return parseFloat(val);
-            // Chinese format: 黑: MM:SS 白: HH:MM:SS
-            var blackSec = null, whiteSec = null;
-            var segs = val.match(/([黑白])\s*[:：]?\s*(\d+[:：]\d+(?:[:：]\d+)?)/g);
-            if (segs) {
-                for (var k = 0; k < segs.length; k++) {
-                    var cm = segs[k].match(/([黑白])/);
-                    var tm2 = segs[k].match(/(\d+)[：:](\d+)(?:[：:](\d+))?/);
-                    if (!cm || !tm2) continue;
-                    var sec = 0;
-                    if (tm2[3] !== undefined) sec = parseFloat(tm2[1])*3600 + parseFloat(tm2[2])*60 + parseFloat(tm2[3]);
-                    else sec = parseFloat(tm2[1])*60 + parseFloat(tm2[2]);
-                    if (cm[1] === '\u9ED1') blackSec = sec;
-                    else if (cm[1] === '\u767D') whiteSec = sec;
-                }
-            }
-            // Minute markers: 黑:60分
-            var minSegs = val.match(/([黑白])\s*[:：]?\s*(\d+)\s*分/g);
-            if (minSegs) {
-                for (var n = 0; n < minSegs.length; n++) {
-                    var mm = minSegs[n].match(/([黑白])/);
-                    var mv = minSegs[n].match(/(\d+)\s*分/);
-                    if (mm && mv) {
-                        var s = parseFloat(mv[1]) * 60;
-                        if (mm[1] === '\u9ED1') blackSec = s;
-                        else if (mm[1] === '\u767D') whiteSec = s;
-                    }
-                }
-            }
-            var times = [];
-            if (blackSec !== null) times.push(blackSec);
-            if (whiteSec !== null) times.push(whiteSec);
-            return times.length > 0 ? Math.max.apply(null, times) : 0;
-        }
-
-        // Find the first non-empty TM value and parse it
-        var bestSeconds = 0;
+        // Find the first TM with actual data
+        var parsed = null;
         var bestRaw = '';
         for (var i = 0; i < tmInstances.length; i++) {
-            var parsed = parseTMValue(tmInstances[i].value);
-            if (parsed > 0) {
-                bestSeconds = parsed;
+            var val = tmInstances[i].value;
+            if (/^\d+(\.\d+)?$/.test(val)) {
+                parsed = { black: parseFloat(val), white: parseFloat(val), baseline: parseFloat(val) };
+                bestRaw = tmInstances[i].full;
+                break;
+            }
+            var p = parseAsymmetricTM(val);
+            if (p.baseline > 0) {
+                parsed = p;
                 bestRaw = tmInstances[i].full;
                 break;
             }
         }
+        if (!parsed) return { fixed: sgfText, changes: 0, tmValues: [] };
 
-        var compliantTM = 'TM[' + bestSeconds + ']';
         var fixed = sgfText;
         var changes = 0;
 
         // Remove ALL TM properties from the entire string
         fixed = fixed.replace(/TM\s*\[[^\]]+\]\s*/g, function(match) { changes++; return ''; });
+        if (changes === 0) return { fixed: fixed, changes: 0, tmValues: [] };
 
-        // Find root node and inject compliant TM after FF[x]
+        // Build compliant TM (baseline = min of both)
+        var compliantTM = 'TM[' + parsed.baseline + ']';
+
+        // Build OT metadata if asymmetric
+        var otProp = '';
+        if (parsed.black !== parsed.white) {
+            var otText = 'Asymmetric initial limits - Black: ' + parsed.black + 's, White: ' + parsed.white + 's';
+            otProp = 'OT[' + otText + ']';
+        }
+
+        // Find root node and inject TM (and OT if present) after FF[x] or after ;
         var rootMatch = fixed.match(/\(\s*;FF\s*\[(\d+)\]/);
         if (!rootMatch) rootMatch = fixed.match(/\(\s*;/);
         if (rootMatch) {
             var insertPos = rootMatch.index + rootMatch[0].length;
-            fixed = fixed.substring(0, insertPos) + compliantTM + fixed.substring(insertPos);
+            var inject = compliantTM + otProp;
+            fixed = fixed.substring(0, insertPos) + inject + fixed.substring(insertPos);
         }
 
-        // Migrate original TM strings into root comment (escape ] so C doesn't close early)
-        var clockData = tmInstances.map(function(t) { return t.full; }).join(' | ');
-        var clockDataEscaped = clockData.replace(/]/g, '\\]');
-        rootMatch = fixed.match(/\(\s*;/);
-        if (rootMatch) {
-            var afterRoot = rootMatch.index + rootMatch[0].length;
-            var clockComment = '\nC[System Clock Metadata: ' + clockDataEscaped + ']';
-            fixed = fixed.substring(0, afterRoot) + clockComment + fixed.substring(afterRoot);
+        // Inject BL on first B move, WL on first W move
+        if (parsed.black !== null) {
+            var bMove = fixed.match(/;B\[/);
+            if (bMove) {
+                var bPos = bMove.index + bMove[0].length;
+                fixed = fixed.substring(0, bPos) + 'BL[' + parsed.black + ']' + fixed.substring(bPos);
+            }
         }
+        if (parsed.white !== null) {
+            var wMove = fixed.match(/;W\[/);
+            if (wMove) {
+                var wPos = wMove.index + wMove[0].length;
+                fixed = fixed.substring(0, wPos) + 'WL[' + parsed.white + ']' + fixed.substring(wPos);
+            }
+        }
+
+        // Remove old C[System Clock Metadata:...] if present
+        fixed = fixed.replace(/\s*C\[System Clock Metadata:[^\]]*\]/g, '');
 
         return { fixed: fixed, changes: changes, tmValues: tmInstances.map(function(t) { return t.full; }) };
     }
@@ -1203,7 +1193,10 @@
         var r1 = fixEscapedBrackets(fixed);
         if (r1.changes > 0) {
             changeNum++;
-            archive.push('[' + String(changeNum).padStart(3, '0') + '] \u2014 Escaped ' + r1.changes + ' unescaped bracket(s) inside text properties (C/N)');
+            archive.push(
+                '<span class="step-label">Why:</span> SGF text properties (C, N) use square brackets as delimiters. Unescaped \']\' inside them prematurely closes the property, corrupting the rest of the file.' +
+                '<br><span class="step-label">Fix:</span> Escaped ' + r1.changes + ' unescaped bracket(s) inside C/N properties with \'\\]\' so parsers treat them as literal text.'
+            );
             fixed = r1.fixed;
         }
 
@@ -1211,7 +1204,10 @@
         var r2 = fixStrayNonASCII(fixed);
         if (r2.changes > 0) {
             changeNum++;
-            archive.push('[' + String(changeNum).padStart(3, '0') + '] \u2014 Removed ' + r2.changes + ' stray artifact(s) (bullets, smart quotes, arrows) outside brackets');
+            archive.push(
+                '<span class="step-label">Why:</span> Characters like bullets (\u2022), smart quotes (\u201C\u201D), and stray \']\' outside property brackets are not valid SGF tokens. They cause SGFC "illegal char" errors.' +
+                '<br><span class="step-label">Fix:</span> Removed ' + r2.changes + ' stray non-ASCII artifact(s) that were outside any property bracket.'
+            );
             fixed = r2.fixed;
         }
 
@@ -1219,7 +1215,10 @@
         var r3 = fixStrayArtifacts(fixed);
         if (r3.changes > 0) {
             changeNum++;
-            archive.push('[' + String(changeNum).padStart(3, '0') + '] \u2014 Cleaned ' + r3.changes + ' stray interface character(s) outside property brackets');
+            archive.push(
+                '<span class="step-label">Why:</span> Interface characters (e.g. copied from Chinese Go server UIs) leaked into the SGF raw text outside property brackets. These are invisible to the game record but trigger parse errors.' +
+                '<br><span class="step-label">Fix:</span> Cleaned ' + r3.changes + ' stray interface character(s) from outside property brackets.'
+            );
             fixed = r3.fixed;
         }
 
@@ -1227,7 +1226,10 @@
         var r3b = fixStrayPropertyNames(fixed);
         if (r3b.changes > 0) {
             changeNum++;
-            archive.push('[' + String(changeNum).padStart(3, '0') + '] \u2014 Removed ' + r3b.changes + ' stray property identifier(s) without values');
+            archive.push(
+                '<span class="step-label">Why:</span> Words like "From" (from server UI copy-paste) appeared as bare text in the move sequence without a property bracket. SGFC treats them as phantom property identifiers and flags "without any values" errors.' +
+                '<br><span class="step-label">Fix:</span> Removed ' + r3b.changes + ' stray property identifier(s) that had no corresponding [value].'
+            );
             fixed = r3b.fixed;
         }
 
@@ -1235,7 +1237,17 @@
         var r4 = fixDuplicateTM(fixed);
         if (r4.changes > 0) {
             changeNum++;
-            archive.push('[' + String(changeNum).padStart(3, '0') + '] \u2014 Consolidated ' + r4.changes + ' duplicate/misplaced TM propert\u2026(s) to root node as TM[' + (r4.tmValues.length > 0 ? parseSecondsFromTM(r4.tmValues[0]) : 0) + ']');
+            var tmParsed = parseAsymmetricTM(r4.tmValues[0] || '0');
+            var tmDetail = 'TM[' + tmParsed.baseline + ']';
+            if (tmParsed.black !== tmParsed.white) {
+                tmDetail += ' (baseline = min of Black ' + tmParsed.black + 's, White ' + tmParsed.white + 's)';
+            }
+            archive.push(
+                '<span class="step-label">Why:</span> SGF FF[4] requires exactly one TM property in the root node. Chinese Go servers inject per-player clock strings (e.g. "TM[\u9ED1: 06:06 \u767D: 05:07]") which are not valid \u2014 TM must be a single Real number in seconds. Duplicate or misplaced TM properties break parsers.' +
+                '<br><span class="step-label">Fix:</span> Consolidated ' + r4.changes + ' TM propert' + (r4.changes > 1 ? 'ies' : 'y') + ' to root node as ' + tmDetail + '.' +
+                (tmParsed.black !== tmParsed.white ?
+                    '<br>Additionally injected BL[' + tmParsed.black + '] on first Black move and WL[' + tmParsed.white + '] on first White move to preserve the asymmetric clock allocation. Added OT property with original clock metadata.' : '')
+            );
             fixed = r4.fixed;
         }
 
@@ -1243,9 +1255,8 @@
         if (r4.changes === 0) {
             var r5 = autoFixTMFormat(fixed);
             if (r5.changes > 0) {
-                changeNum++;
                 for (var c = 0; c < r5.archive.length; c++) {
-                    changeNum = changeNum + c;
+                    changeNum++;
                     archive.push('[' + String(changeNum).padStart(3, '0') + '] ' + r5.archive[c]);
                 }
                 fixed = r5.fixed;
@@ -1256,6 +1267,41 @@
         // Archive data is returned separately for UI display via fixedIssuesMap.
 
         return { fixed: fixed, archive: archive };
+    }
+
+    // ── Helper: parse asymmetric Chinese clock → {black, white, baseline} ──
+    function parseAsymmetricTM(rawValue) {
+        var blackSec = null, whiteSec = null;
+        var segs = rawValue.match(/([黑白])\s*[:：]?\s*(\d+[:：]\d+(?:[:：]\d+)?)/g);
+        if (segs) {
+            for (var i = 0; i < segs.length; i++) {
+                var cm = segs[i].match(/([黑白])/);
+                var tm = segs[i].match(/(\d+)[：:](\d+)(?:[：:](\d+))?/);
+                if (!cm || !tm) continue;
+                var sec = 0;
+                if (tm[3] !== undefined) sec = parseFloat(tm[1])*3600 + parseFloat(tm[2])*60 + parseFloat(tm[3]);
+                else sec = parseFloat(tm[1])*60 + parseFloat(tm[2]);
+                if (cm[1] === '\u9ED1') blackSec = sec;
+                else if (cm[1] === '\u767D') whiteSec = sec;
+            }
+        }
+        var minSegs = rawValue.match(/([黑白])\s*[:：]?\s*(\d+)\s*分/g);
+        if (minSegs) {
+            for (var j = 0; j < minSegs.length; j++) {
+                var mm = minSegs[j].match(/([黑白])/);
+                var mv = minSegs[j].match(/(\d+)\s*分/);
+                if (mm && mv) {
+                    var s = parseFloat(mv[1]) * 60;
+                    if (mm[1] === '\u9ED1') blackSec = s;
+                    else if (mm[1] === '\u767D') whiteSec = s;
+                }
+            }
+        }
+        var times = [];
+        if (blackSec !== null) times.push(blackSec);
+        if (whiteSec !== null) times.push(whiteSec);
+        var baseline = times.length > 0 ? Math.min.apply(null, times) : 0;
+        return { black: blackSec, white: whiteSec, baseline: baseline };
     }
 
     // Helper: parse TM value to seconds (reused)
@@ -1304,11 +1350,64 @@
         if (tmMatch) {
             var rawValue = tmMatch[1].trim();
             if (!/^\d+(\.\d+)?$/.test(rawValue)) {
-                var seconds = parseSecondsFromTM(rawValue);
-                var compliantTM = 'TM[' + seconds + ']';
-                archive.push('From "' + tmMatch[0] + '" \u2192 "' + compliantTM + '"');
+                var parsed = parseAsymmetricTM(rawValue);
+
+                var compliantTM = 'TM[' + parsed.baseline + ']';
+                archive.push(
+                    '<span class="step-label">Why:</span> SGF FF[4] requires TM to be a single Real value (seconds). The value "' + rawValue + '" is a per-player clock string from a Chinese Go server \u2014 not a valid TM format.' +
+                    '<br><span class="step-label">Fix:</span> Converted to ' + compliantTM + ' (baseline = min of both players).'
+                );
                 fixed = fixed.replace(tmMatch[0], compliantTM);
                 changes++;
+
+                // Inject OT if asymmetric
+                if (parsed.black !== parsed.white) {
+                    var otText = 'Asymmetric initial limits - Black: ' + parsed.black + 's, White: ' + parsed.white + 's';
+                    var rootMatch = fixed.match(/\(\s*;FF\s*\[\d+\]/);
+                    if (!rootMatch) rootMatch = fixed.match(/\(\s*;/);
+                    if (rootMatch) {
+                        var insertPos = rootMatch.index + rootMatch[0].length;
+                        fixed = fixed.substring(0, insertPos) + 'OT[' + otText + ']' + fixed.substring(insertPos);
+                        archive.push(
+                            '<span class="step-label">Why:</span> The original clock had asymmetric values (Black ' + parsed.black + 's, White ' + parsed.white + 's). TM can only hold one number. The difference must be preserved elsewhere.' +
+                            '<br><span class="step-label">Fix:</span> Injected OT[' + otText + '] into root node to preserve the asymmetry metadata.'
+                        );
+                    }
+                }
+
+                // Inject BL on first B move, WL on first W move
+                if (parsed.black !== null) {
+                    var bMove = fixed.match(/;B\[/);
+                    if (bMove) {
+                        var bPos = bMove.index + bMove[0].length;
+                        fixed = fixed.substring(0, bPos) + 'BL[' + parsed.black + ']' + fixed.substring(bPos);
+                        archive.push(
+                            '<span class="step-label">Why:</span> Engines track remaining time via BL (Black clock) on move nodes. Without it, Black\'s actual time (' + parsed.black + 's) would be lost after normalization.' +
+                            '<br><span class="step-label">Fix:</span> Injected BL[' + parsed.black + '] on first Black move so the engine starts with the correct clock.'
+                        );
+                    }
+                }
+                if (parsed.white !== null) {
+                    var wMove = fixed.match(/;W\[/);
+                    if (wMove) {
+                        var wPos = wMove.index + wMove[0].length;
+                        fixed = fixed.substring(0, wPos) + 'WL[' + parsed.white + ']' + fixed.substring(wPos);
+                        archive.push(
+                            '<span class="step-label">Why:</span> Same as BL above \u2014 engines need WL (White clock) on move nodes to track remaining time. White\'s actual time (' + parsed.white + 's) must be preserved.' +
+                            '<br><span class="step-label">Fix:</span> Injected WL[' + parsed.white + '] on first White move so the engine starts with the correct clock.'
+                        );
+                    }
+                }
+
+                // Remove old C[System Clock Metadata:...] if present
+                var oldComment = fixed.match(/\s*C\[System Clock Metadata:[^\]]*\]/);
+                if (oldComment) {
+                    fixed = fixed.replace(oldComment[0], '');
+                    archive.push(
+                        '<span class="step-label">Why:</span> A previous fix had dumped raw clock data into a C (comment) property. This is no longer needed since clock data is now properly stored in OT/BL/WL.' +
+                        '<br><span class="step-label">Fix:</span> Removed legacy C[System Clock Metadata] comment.'
+                    );
+                }
             }
         }
 
@@ -1325,7 +1424,7 @@
         let archive = [];
         let changeNum = 0;
 
-        // ── Fix TM: non-standard Chinese time format → real seconds ──
+        // ── Fix TM: non-standard Chinese time format → FF[4] compliant ──
         var tmMatch = fixed.match(/TM\s*\[([^\]]+)\]/);
         if (tmMatch) {
             var rawValue = tmMatch[1].trim();
@@ -1333,23 +1432,46 @@
             if (/^\d+(\.\d+)?$/.test(rawValue)) {
                 // do nothing
             } else {
-                var seconds = parseSecondsFromTM(rawValue);
-                var compliantTM = 'TM[' + seconds + ']';
+                var parsed = parseAsymmetricTM(rawValue);
 
-                // Archive the change
+                // TM → baseline (min of both)
+                var compliantTM = 'TM[' + parsed.baseline + ']';
                 changeNum++;
-                var archiveEntry = '[' + String(changeNum).padStart(3, '0') + '] \u2014 From "' + tmMatch[0] + '" \u2192 "' + compliantTM + '"';
-                archive.push(archiveEntry);
-
-                // Replace TM in SGF
+                archive.push('[' + String(changeNum).padStart(3, '0') + '] \u2014 From "' + tmMatch[0] + '" \u2192 "' + compliantTM + '"');
                 fixed = fixed.replace(tmMatch[0], compliantTM);
 
-                // Migrate raw clock data into root node's C property (escape ] so C doesn't close early)
-                var clockDataEscaped = rawValue.replace(/]/g, '\\]');
-                var rootMatch = fixed.match(/\(\s*;/);
-                if (rootMatch) {
-                    var afterRoot = rootMatch.index + rootMatch[0].length;
-                    fixed = fixed.substring(0, afterRoot) + 'C[System Clock Metadata: ' + clockDataEscaped + ']' + fixed.substring(afterRoot);
+                // OT → asymmetry metadata (if values differ)
+                if (parsed.black !== parsed.white) {
+                    var otText = 'Asymmetric initial limits - Black: ' + parsed.black + 's, White: ' + parsed.white + 's';
+                    var rootMatch = fixed.match(/\(\s*;/);
+                    if (rootMatch) {
+                        var afterRoot = rootMatch.index + rootMatch[0].length;
+                        fixed = fixed.substring(0, afterRoot) + 'OT[' + otText + ']' + fixed.substring(afterRoot);
+                        changeNum++;
+                        archive.push('[' + String(changeNum).padStart(3, '0') + '] \u2014 Injected OT[' + otText + '] into root node');
+                    }
+                }
+
+                // BL on first B move
+                if (parsed.black !== null) {
+                    var bMove = fixed.match(/;B\[/);
+                    if (bMove) {
+                        var bPos = bMove.index + bMove[0].length;
+                        fixed = fixed.substring(0, bPos) + 'BL[' + parsed.black + ']' + fixed.substring(bPos);
+                        changeNum++;
+                        archive.push('[' + String(changeNum).padStart(3, '0') + '] \u2014 Injected BL[' + parsed.black + '] on first B move');
+                    }
+                }
+
+                // WL on first W move
+                if (parsed.white !== null) {
+                    var wMove = fixed.match(/;W\[/);
+                    if (wMove) {
+                        var wPos = wMove.index + wMove[0].length;
+                        fixed = fixed.substring(0, wPos) + 'WL[' + parsed.white + ']' + fixed.substring(wPos);
+                        changeNum++;
+                        archive.push('[' + String(changeNum).padStart(3, '0') + '] \u2014 Injected WL[' + parsed.white + '] on first W move');
+                    }
                 }
             }
         }
