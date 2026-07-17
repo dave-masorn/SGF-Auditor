@@ -733,7 +733,7 @@
 
         // Helper: check if a property exists anywhere in the SGF
         function hasProp(id) {
-            return new RegExp('\\b' + id + '\\s*\\[', 'test', 'sgfText');
+            return new RegExp('\\b' + id + '\\s*\\[').test(sgfText);
         }
         // Helper: count occurrences of a property
         function countProp(id) {
