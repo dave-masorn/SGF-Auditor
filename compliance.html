@@ -2275,6 +2275,22 @@
                         fixed = true;
                     }
                 }
+
+                // TM illegal format: normalize non-standard time values
+                if (!fixed && issue.message && /TM\[.*\]/.test(issue.message) && /illegal format/i.test(issue.message)) {
+                    if (typeof SGFAuditor !== 'undefined' && SGFAuditor.autoFixSGFProperties) {
+                        try {
+                            var fixResult = SGFAuditor.autoFixSGFProperties(sgfContent);
+                            if (fixResult.archive && fixResult.archive.length > 0) {
+                                sgfContent = fixResult.fixed;
+                                sessionStorage.setItem('sgf_content', sgfContent);
+                                fixed = true;
+                            }
+                        } catch (e) {
+                            console.error('autoFixSGFProperties error:', e);
+                        }
+                    }
+                }
             }
 
             // 2 → 3 after processing delay, then re-run audit if we actually changed the SGF
@@ -2373,7 +2389,21 @@
                 alert("No corrected SGF content is available.");
                 return;
             }
-            const blob = new Blob([correctedSgfContent], { type: 'application/x-go-sgf' });
+
+            // Apply property-level auto-fixes (TM normalization, etc.)
+            let downloadContent = correctedSgfContent;
+            if (typeof SGFAuditor !== 'undefined' && SGFAuditor.autoFixSGFProperties) {
+                try {
+                    var fixResult = SGFAuditor.autoFixSGFProperties(downloadContent);
+                    if (fixResult.archive && fixResult.archive.length > 0) {
+                        downloadContent = fixResult.fixed;
+                    }
+                } catch (e) {
+                    console.error('autoFixSGFProperties error:', e);
+                }
+            }
+
+            const blob = new Blob([downloadContent], { type: 'application/x-go-sgf' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             

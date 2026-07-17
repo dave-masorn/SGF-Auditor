@@ -1019,6 +1019,136 @@
         return { errors, warnings };
     }
 
+    // ── Auto-Fix: Normalize non-standard TM values & archive changes ──
+    function autoFixSGFProperties(sgfText) {
+        if (!sgfText || !sgfText.trim()) {
+            return { fixed: sgfText, archive: [] };
+        }
+
+        let fixed = sgfText;
+        let archive = [];
+        let changeNum = 0;
+
+        // ── Fix TM: non-standard Chinese time format → real seconds ──
+        var tmMatch = fixed.match(/TM\s*\[([^\]]+)\]/);
+        if (tmMatch) {
+            var rawValue = tmMatch[1].trim();
+            // Already compliant: a number (int or float)
+            if (/^\d+(\.\d+)?$/.test(rawValue)) {
+                // do nothing
+            } else {
+                var blackSec = null;
+                var whiteSec = null;
+
+                // Pattern: 黑: MM:SS or 黑:HH:MM:SS (with optional full-width colons)
+                var timeSegments = rawValue.match(/([黑白])\s*[:：]?\s*(\d+[:：]\d+(?:[:：]\d+)?)/g);
+                if (timeSegments) {
+                    for (var i = 0; i < timeSegments.length; i++) {
+                        var seg = timeSegments[i];
+                        var colorMatch = seg.match(/([黑白])/);
+                        var timeMatch = seg.match(/(\d+)[：:](\d+)(?:[：:](\d+))?/);
+                        if (!colorMatch || !timeMatch) continue;
+                        var h = 0, m = 0, s = 0;
+                        if (timeMatch[3] !== undefined) {
+                            h = parseFloat(timeMatch[1]);
+                            m = parseFloat(timeMatch[2]);
+                            s = parseFloat(timeMatch[3]);
+                        } else {
+                            m = parseFloat(timeMatch[1]);
+                            s = parseFloat(timeMatch[2]);
+                        }
+                        var totalSeconds = h * 3600 + m * 60 + s;
+                        if (colorMatch[1] === '黑') blackSec = totalSeconds;
+                        else if (colorMatch[1] === '白') whiteSec = totalSeconds;
+                    }
+                }
+
+                // Pattern: 黑:60分 白:90分 (minute markers)
+                var minuteSegments = rawValue.match(/([黑白])\s*[:：]?\s*(\d+)\s*分/g);
+                if (minuteSegments) {
+                    for (var j = 0; j < minuteSegments.length; j++) {
+                        var mSeg = minuteSegments[j];
+                        var mColor = mSeg.match(/([黑白])/);
+                        var mMin = mSeg.match(/(\d+)\s*分/);
+                        if (!mColor || !mMin) continue;
+                        var totalMin = parseFloat(mMin[1]) * 60;
+                        if (mColor[1] === '黑') blackSec = totalMin;
+                        else if (mColor[1] === '白') whiteSec = totalMin;
+                    }
+                }
+
+                // Fallback: if only one bare time found without color tag
+                if (blackSec === null && whiteSec === null) {
+                    var bareTime = rawValue.match(/(\d+)[：:](\d+)(?:[：:](\d+))?/);
+                    if (bareTime) {
+                        var bh = 0, bm = 0, bs = 0;
+                        if (bareTime[3] !== undefined) {
+                            bh = parseFloat(bareTime[1]);
+                            bm = parseFloat(bareTime[2]);
+                            bs = parseFloat(bareTime[3]);
+                        } else {
+                            bm = parseFloat(bareTime[1]);
+                            bs = parseFloat(bareTime[2]);
+                        }
+                        blackSec = bh * 3600 + bm * 60 + bs;
+                    }
+                }
+
+                // Calculate compliant value: max of all parsed times
+                var timesFound = [];
+                if (blackSec !== null) timesFound.push(blackSec);
+                if (whiteSec !== null) timesFound.push(whiteSec);
+                var compliantSeconds = timesFound.length > 0 ? Math.max.apply(null, timesFound) : 0;
+                var compliantTM = 'TM[' + compliantSeconds + ']';
+
+                // Archive the change
+                changeNum++;
+                var archiveEntry = '[' + String(changeNum).padStart(3, '0') + '] \u2014 From "' + tmMatch[0] + '" \u2192 "' + compliantTM + '"';
+                archive.push(archiveEntry);
+
+                // Replace TM in SGF
+                fixed = fixed.replace(tmMatch[0], compliantTM);
+
+                // Migrate raw clock data into root node's C property
+                var clockNote = '[System Clock Metadata: ' + rawValue + ']';
+                var rootMatch = fixed.match(/\(\s*;/);
+                if (rootMatch) {
+                    // Check if root already has a C[...] property
+                    var rootSlice = fixed.substring(rootMatch.index, rootMatch.index + 2000);
+                    var cMatch = rootSlice.match(/\bC\[/);
+                    if (cMatch) {
+                        // Inject after C[
+                        var insertPos = rootMatch.index + cMatch.index + 2;
+                        fixed = fixed.substring(0, insertPos) + ' ' + clockNote + ' ' + fixed.substring(insertPos);
+                    } else {
+                        // Insert C[...] right after the root node marker
+                        var insertAfter = rootMatch.index + rootMatch[0].length;
+                        fixed = fixed.substring(0, insertAfter) + 'C[' + clockNote + ']' + fixed.substring(insertAfter);
+                    }
+                }
+            }
+        }
+
+        // Append archive block at end of file (before closing paren)
+        if (archive.length > 0) {
+            var archiveBlock = '\n;C[########## Archived of Changed ##########\n';
+            for (var k = 0; k < archive.length; k++) {
+                archiveBlock += archive[k] + '\n';
+            }
+            archiveBlock += ']';
+
+            // Insert before the last closing paren
+            var lastClose = fixed.lastIndexOf(')');
+            if (lastClose > 0) {
+                fixed = fixed.substring(0, lastClose) + archiveBlock + '\n' + fixed.substring(lastClose);
+            } else {
+                fixed += archiveBlock;
+            }
+        }
+
+        return { fixed: fixed, archive: archive };
+    }
+
     // Expose APIs
     global.SGFAuditor = {
         parseSGF,
@@ -1026,7 +1156,8 @@
         auditSGF,
         detectPhases,
         validateSGFProperties,
-        maximizeSGF
+        maximizeSGF,
+        autoFixSGFProperties
     };
 
 })(typeof window !== 'undefined' ? window : global);
