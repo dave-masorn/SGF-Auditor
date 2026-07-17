@@ -1824,24 +1824,30 @@
         function startDiagnostics() {
             if (diagnosticsRunning) return;
             diagnosticsRunning = true;
-            currentStep = 1;
 
             // Reset progress bar
             document.getElementById('progress-fill').style.width = '0%';
             document.getElementById('progress-text').textContent = '0%';
 
             const playBtn = document.getElementById('play-btn');
-            const stepBar = document.getElementById('step1-bar');
             playBtn.classList.add('running');
-            stepBar.classList.add('running');
 
-            // Run WASM audit in READ-ONLY mode (no output file, no auto-correction)
-            if (isWasmLoaded) {
-                runWasmAuditReadOnly(() => {
+            if (currentStep === 1) {
+                const stepBar = document.getElementById('step1-bar');
+                stepBar.classList.add('running');
+
+                // Step 1: Run WASM audit in READ-ONLY mode (no output file, no auto-correction)
+                if (isWasmLoaded) {
+                    runWasmAuditReadOnly(() => {
+                        runPhase1SyntaxChecker();
+                    });
+                } else {
                     runPhase1SyntaxChecker();
-                });
-            } else {
-                runPhase1SyntaxChecker();
+                }
+            } else if (currentStep === 2) {
+                const stepBar = document.getElementById('step1-bar');
+                if (stepBar) stepBar.classList.add('running');
+                runStep2Maximization();
             }
         }
 
