@@ -1408,35 +1408,6 @@
             <div class="progress-bar-text" id="progress-text" style="display: none;">0%</div>
         </div>
 
-        <!-- Detailed Results Card (slide down on completion) -->
-        <div class="detailed-results-wrapper" id="results-wrapper">
-
-            <!-- Detailed Tabs Card -->
-            <div class="main-card">
-                <div class="tabs-header">
-                    <button class="tab-btn active" id="btn-issues-tab" onclick="switchTab(this, 'issues-tab')">Validation Issues</button>
-                    <button class="tab-btn" id="btn-report-tab" onclick="switchTab(this, 'report-tab')">Raw Report</button>
-                </div>
-
-                <!-- Tab 1: Issues -->
-                <div class="tab-content active" id="issues-tab">
-                    <div class="filter-bar">
-                        <button class="filter-btn active" onclick="filterIssues(this, 'all')">All (<span id="filter-all-count">0</span>)</button>
-                        <button class="filter-btn" onclick="filterIssues(this, 'error')">Errors (<span id="filter-error-count">0</span>)</button>
-                        <button class="filter-btn" onclick="filterIssues(this, 'warning')">Warnings (<span id="filter-warning-count">0</span>)</button>
-                    </div>
-                    <div class="issues-list" id="issues-list-container">
-                        <!-- Issue rows populated dynamically -->
-                    </div>
-                </div>
-
-                <!-- Tab 2: Raw Report -->
-                <div class="tab-content" id="report-tab">
-                    <pre class="terminal-report" id="raw-report-display">SGFC Reference Report will be shown after diagnostics complete.</pre>
-                </div>
-            </div>
-        </div>
-
         <!-- FF[4] Maximization Results Card (reveals after Step 2) -->
         <div class="detailed-results-wrapper" id="maximize-wrapper">
             <div class="maximize-card">
@@ -1468,6 +1439,35 @@
                         <div class="maximize-col-header improve">+ Opportunities <span id="opportunity-count"></span></div>
                         <div class="maximize-list" id="opportunities-list"></div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Results Card (slide down on completion) -->
+        <div class="detailed-results-wrapper" id="results-wrapper">
+
+            <!-- Detailed Tabs Card -->
+            <div class="main-card">
+                <div class="tabs-header">
+                    <button class="tab-btn active" id="btn-issues-tab" onclick="switchTab(this, 'issues-tab')">Validation Issues</button>
+                    <button class="tab-btn" id="btn-report-tab" onclick="switchTab(this, 'report-tab')">Raw Report</button>
+                </div>
+
+                <!-- Tab 1: Issues -->
+                <div class="tab-content active" id="issues-tab">
+                    <div class="filter-bar">
+                        <button class="filter-btn active" onclick="filterIssues(this, 'all')">All (<span id="filter-all-count">0</span>)</button>
+                        <button class="filter-btn" onclick="filterIssues(this, 'error')">Errors (<span id="filter-error-count">0</span>)</button>
+                        <button class="filter-btn" onclick="filterIssues(this, 'warning')">Warnings (<span id="filter-warning-count">0</span>)</button>
+                    </div>
+                    <div class="issues-list" id="issues-list-container">
+                        <!-- Issue rows populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Tab 2: Raw Report -->
+                <div class="tab-content" id="report-tab">
+                    <pre class="terminal-report" id="raw-report-display">SGFC Reference Report will be shown after diagnostics complete.</pre>
                 </div>
             </div>
         </div>
