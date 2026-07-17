@@ -1019,6 +1019,314 @@
         return { errors, warnings };
     }
 
+    // ── Auto-Fix: Stream Sanitizer — bracket escaping, stray artifact cleanup, TM consolidation ──
+
+    // Fix 1: Escape unescaped closing brackets inside C[...] and N[...] text properties
+    function fixEscapedBrackets(sgfText) {
+        if (!sgfText) return { fixed: sgfText, changes: 0 };
+        var changes = 0;
+        // Match C[...] or N[...] with content, using DOTALL for multi-line
+        var fixed = sgfText.replace(/([CN])\s*\[(.*?)\]/g, function(match, prop, content) {
+            // Count unescaped ] in content
+            var unescaped = content.replace(/\\\]/g, '').length - content.replace(/\\\]/g, '').replace(/\]/g, '').length;
+            if (unescaped > 0) {
+                changes++;
+                var escaped = content.replace(/(?<!\\)\]/g, '\\]');
+                return prop + '[' + escaped + ']';
+            }
+            return match;
+        });
+        return { fixed: fixed, changes: changes };
+    }
+
+    // Fix 2: Strip stray non-SGF artifacts (bullets, smart quotes, arrows, etc.) leaked outside brackets
+    function fixStrayArtifacts(sgfText) {
+        if (!sgfText) return { fixed: sgfText, changes: 0 };
+        // Characters that are illegal outside SGF bracket context
+        var strayPattern = /[\u2022\u25CF\u25CB\u2023\u2043\u2219\u203C\u203D\u2756\u2766\u2767\u2619\u275B\u275C\u275D\u275E\u2018\u2019\u201C\u201D\u2033\u2036\u00AB\u00BB\u2190\u2191\u2192\u2193\u2194\u2195\u21A6\u21A8\u21AB\u21AC\u21AD\u21B0\u21B1\u21B2\u21B3\u21B6\u21B7\u21BA\u21BB\u21BC\u21BD\u21BE\u21BF\u21C0\u21C1\u21C2\u21C3\u21C4\u21C5\u21C6\u21C7\u21C8\u21C9\u21CA\u21CB\u21CC\u21CD\u21CE\u21CF\u21D0\u21D1\u21D2\u21D3\u21D4\u21D5\u21D6\u21D7\u21D8\u21D9\u21DA\u21DB\u21DC\u21DD\u21DE\u21DF\u21E0\u21E1\u21E2\u21E3\u21E4\u21E5\u21E6\u21E7\u21E8\u21E9\u21EA\u21EB\u21EC\u21ED\u21EE\u21EF\u21F0\u21F1\u21F2\u21F3\u21F4\u21F5\u21F6\u21F7\u21F8\u21F9\u21FA\u21FB\u21FC\u21FD\u21FE\u21FF\u27F0\u27F1\u27F2\u27F3\u27F4\u27F5\u27F6\u27F7\u27F8\u27F9\u27FA\u27FB\u27FC\u27FD\u27FE\u27FF\u2900\u2901\u2902\u2903\u2904\u2905\u2906\u2907\u2908\u2909\u290A\u290B\u290C\u290D\u290E\u290F\u2910\u2911\u2912\u2913\u2914\u2915\u2916\u2917\u2918\u2919\u291A\u291B\u291C\u291D\u291E\u291F\u2920\u2921\u2922\u2923\u2924\u2925\u2926\u2927\u2928\u2929\u292A\u292B\u292C\u292D\u292E\u292F\u2930\u2931\u2932\u2933\u2934\u2935\u2936\u2937\u2938\u2939\u293A\u293B\u293C\u293D\u293E\u293F\u2940\u2941\u2942\u2943\u2944\u2945\u2946\u2947\u2948\u2949\u294A\u294B\u294C\u294D\u294E\u294F\u2950\u2951\u2952\u2953\u2954\u2955\u2956\u2957\u2958\u2959\u295A\u295B\u295C\u295D\u295E\u295F\u2960\u2961\u2962\u2963\u2964\u2965\u2966\u2967\u2968\u2969\u296A\u296B\u296C\u296D\u296E\u296F\u2970\u2971\u2972\u2973\u2974\u2975\u2976\u2977\u2978\u2979\u297A\u297B\u297C\u297D\u297E\u297F\u2B05\u2B06\u2B07\u2B50\u2B55\u3030\u303D\u3297\u3299\uFE0F\u200D\u20E3\u2694\u2695\u2696\u2697\u2699\u269B\u269C\u26A0\u26A1\u26AA\u26AB\u26B0\u26B1\u26BD\u26BE\u26C4\u26C5\u26CE\u26D4\u26EA\u26F2\u26F3\u26F5\u26FA\u26FD\u2702\u2708\u2709\u270A\u270B\u270C\u270F\u2712\u2714\u2716\u271D\u2721\u2728\u2733\u2734\u2744\u2747\u274C\u274E\u2753\u2754\u2755\u2757\u2763\u2764\u2795\u2796\u2797\u27A1\u27B0\u2934\u2935\u2B05\u2B06\u2B07\u3030\u303D]|["\u201C\u201D\u2018\u2019]/g;
+        // Only strip these if they appear OUTSIDE of [ ] brackets (i.e., not inside property values)
+        // Split by bracket pairs and only clean non-bracket sections
+        var parts = sgfText.split(/(\[[^\]]*\])/);
+        var changes = 0;
+        for (var i = 0; i < parts.length; i++) {
+            // Even indices are OUTSIDE brackets, odd indices are INSIDE brackets
+            if (i % 2 === 0) {
+                var cleaned = parts[i].replace(strayPattern, function(m) { changes++; return ''; });
+                if (cleaned !== parts[i]) parts[i] = cleaned;
+            }
+        }
+        return { fixed: parts.join(''), changes: changes };
+    }
+
+    // Fix 3: Remove stray non-ASCII chars that are not inside brackets
+    function fixStrayNonASCII(sgfText) {
+        if (!sgfText) return { fixed: sgfText, changes: 0 };
+        var changes = 0;
+        var parts = sgfText.split(/(\[[^\]]*\])/);
+        for (var i = 0; i < parts.length; i++) {
+            if (i % 2 === 0) {
+                // Outside brackets: remove stray bullet/arrow characters (only the char itself, not consuming the line)
+                var cleaned = parts[i].replace(/[•\u2022\u25CF\u21A6\u21A2\u27A2\u27B2\u29CF\u29D0]/g, function(m) { changes++; return ''; });
+                // Also remove smart/curly quotes and typographic artifacts outside brackets
+                cleaned = cleaned.replace(/[\u201C\u201D\u2018\u2019\u00AB\u00BB]/g, function(m) { changes++; return ''; });
+                // Remove stray ] that appear outside property brackets (illegal in SGF)
+                cleaned = cleaned.replace(/\]/g, function(m) { changes++; return ''; });
+                if (cleaned !== parts[i]) parts[i] = cleaned;
+            }
+        }
+        return { fixed: parts.join(''), changes: changes };
+    }
+
+    // Fix 4: Remove down-line TM properties and consolidate to root node
+    function fixDuplicateTM(sgfText) {
+        if (!sgfText) return { fixed: sgfText, changes: 0, tmValues: [] };
+        var tmInstances = [];
+        var re = /TM\s*\[([^\]]+)\]/g;
+        var m;
+        while ((m = re.exec(sgfText)) !== null) {
+            tmInstances.push({ full: m[0], value: m[1].trim(), index: m.index });
+        }
+        if (tmInstances.length === 0) return { fixed: sgfText, changes: 0, tmValues: [] };
+
+        // Parse each TM value to find a compliant seconds value
+        function parseTMValue(val) {
+            if (/^\d+(\.\d+)?$/.test(val)) return parseFloat(val);
+            // Chinese format: 黑: MM:SS 白: HH:MM:SS
+            var blackSec = null, whiteSec = null;
+            var segs = val.match(/([黑白])\s*[:：]?\s*(\d+[:：]\d+(?:[:：]\d+)?)/g);
+            if (segs) {
+                for (var k = 0; k < segs.length; k++) {
+                    var cm = segs[k].match(/([黑白])/);
+                    var tm2 = segs[k].match(/(\d+)[：:](\d+)(?:[：:](\d+))?/);
+                    if (!cm || !tm2) continue;
+                    var sec = 0;
+                    if (tm2[3] !== undefined) sec = parseFloat(tm2[1])*3600 + parseFloat(tm2[2])*60 + parseFloat(tm2[3]);
+                    else sec = parseFloat(tm2[1])*60 + parseFloat(tm2[2]);
+                    if (cm[1] === '\u9ED1') blackSec = sec;
+                    else if (cm[1] === '\u767D') whiteSec = sec;
+                }
+            }
+            // Minute markers: 黑:60分
+            var minSegs = val.match(/([黑白])\s*[:：]?\s*(\d+)\s*分/g);
+            if (minSegs) {
+                for (var n = 0; n < minSegs.length; n++) {
+                    var mm = minSegs[n].match(/([黑白])/);
+                    var mv = minSegs[n].match(/(\d+)\s*分/);
+                    if (mm && mv) {
+                        var s = parseFloat(mv[1]) * 60;
+                        if (mm[1] === '\u9ED1') blackSec = s;
+                        else if (mm[1] === '\u767D') whiteSec = s;
+                    }
+                }
+            }
+            var times = [];
+            if (blackSec !== null) times.push(blackSec);
+            if (whiteSec !== null) times.push(whiteSec);
+            return times.length > 0 ? Math.max.apply(null, times) : 0;
+        }
+
+        // Find the first non-empty TM value and parse it
+        var bestSeconds = 0;
+        var bestRaw = '';
+        for (var i = 0; i < tmInstances.length; i++) {
+            var parsed = parseTMValue(tmInstances[i].value);
+            if (parsed > 0) {
+                bestSeconds = parsed;
+                bestRaw = tmInstances[i].full;
+                break;
+            }
+        }
+
+        var compliantTM = 'TM[' + bestSeconds + ']';
+        var fixed = sgfText;
+        var changes = 0;
+
+        // Remove ALL TM properties from the entire string
+        fixed = fixed.replace(/TM\s*\[[^\]]+\]\s*/g, function(match) { changes++; return ''; });
+
+        // Find root node and inject compliant TM after FF[x]
+        var rootMatch = fixed.match(/\(\s*;FF\s*\[(\d+)\]/);
+        if (!rootMatch) rootMatch = fixed.match(/\(\s*;/);
+        if (rootMatch) {
+            var insertPos = rootMatch.index + rootMatch[0].length;
+            fixed = fixed.substring(0, insertPos) + compliantTM + fixed.substring(insertPos);
+        }
+
+        // Migrate original TM strings into root comment (escape ] so C doesn't close early)
+        var clockData = tmInstances.map(function(t) { return t.full; }).join(' | ');
+        var clockDataEscaped = clockData.replace(/]/g, '\\]');
+        rootMatch = fixed.match(/\(\s*;/);
+        if (rootMatch) {
+            var afterRoot = rootMatch.index + rootMatch[0].length;
+            var clockComment = '\nC[System Clock Metadata: ' + clockDataEscaped + ']';
+            fixed = fixed.substring(0, afterRoot) + clockComment + fixed.substring(afterRoot);
+        }
+
+        return { fixed: fixed, changes: changes, tmValues: tmInstances.map(function(t) { return t.full; }) };
+    }
+
+    // Fix 5: Remove stray property identifiers without values (e.g. "From" leaked from UI into move sequence)
+    function fixStrayPropertyNames(sgfText) {
+        if (!sgfText) return { fixed: sgfText, changes: 0 };
+        var changes = 0;
+        var parts = sgfText.split(/(\[[^\]]*\])/);
+        for (var i = 0; i < parts.length; i++) {
+            if (i % 2 === 0) {
+                // Outside brackets: remove standalone 2-5 uppercase letter identifiers NOT followed by [
+                // e.g. "From;B[qc]" → ";B[qc]" but don't touch ;B, ;W, ( ; etc.
+                var cleaned = parts[i].replace(/\b([A-Z][a-z]{1,4})\b(?!\s*\[)/g, function(match, p1) {
+                    // Only strip if it looks like a leaked word, not a valid SGF token
+                    if (/^(From|Black|White|Move|Game|Time|Player|Result|Score|Board|Color|Handicap|Komi|Rules|Date|Event|Comment|Next|Previous|Pass|Resign|Capture|Atari|Liberty|Territory|Life|Death|Seki|Ko|Snapback|Ladder|Net|Shoulder|Contact|Jump|Diagonal|Knight|Enclosure|Corner|Side|Center|Edge|Line|Point|Star|Hoshi|Tengen|Joseki|Fuseki|Yose)$/.test(match)) {
+                        changes++;
+                        return '';
+                    }
+                    return match;
+                });
+                if (cleaned !== parts[i]) parts[i] = cleaned;
+            }
+        }
+        return { fixed: parts.join(''), changes: changes };
+    }
+
+    // Fix 6: Remove empty/worthless property-without-value errors (like <From> from leaked text)
+    // This is handled by artifact cleanup — once stray text is removed, the phantom properties vanish
+
+    // ── Comprehensive Sanitizer: runs all fixes in sequence ──
+    function sanitizeSGFStream(sgfText) {
+        if (!sgfText || !sgfText.trim()) return { fixed: sgfText, archive: [] };
+
+        var fixed = sgfText;
+        var archive = [];
+        var changeNum = 0;
+
+        // Step 1: Escape unescaped brackets in text properties
+        var r1 = fixEscapedBrackets(fixed);
+        if (r1.changes > 0) {
+            changeNum++;
+            archive.push('[' + String(changeNum).padStart(3, '0') + '] \u2014 Escaped ' + r1.changes + ' unescaped bracket(s) inside text properties (C/N)');
+            fixed = r1.fixed;
+        }
+
+        // Step 2: Strip stray non-ASCII artifacts outside brackets
+        var r2 = fixStrayNonASCII(fixed);
+        if (r2.changes > 0) {
+            changeNum++;
+            archive.push('[' + String(changeNum).padStart(3, '0') + '] \u2014 Removed ' + r2.changes + ' stray artifact(s) (bullets, smart quotes, arrows) outside brackets');
+            fixed = r2.fixed;
+        }
+
+        // Step 3: Strip other stray interface characters
+        var r3 = fixStrayArtifacts(fixed);
+        if (r3.changes > 0) {
+            changeNum++;
+            archive.push('[' + String(changeNum).padStart(3, '0') + '] \u2014 Cleaned ' + r3.changes + ' stray interface character(s) outside property brackets');
+            fixed = r3.fixed;
+        }
+
+        // Step 3b: Strip stray property names without values (leaked UI words like "From")
+        var r3b = fixStrayPropertyNames(fixed);
+        if (r3b.changes > 0) {
+            changeNum++;
+            archive.push('[' + String(changeNum).padStart(3, '0') + '] \u2014 Removed ' + r3b.changes + ' stray property identifier(s) without values');
+            fixed = r3b.fixed;
+        }
+
+        // Step 4: Consolidate duplicate/misplaced TM to root node
+        var r4 = fixDuplicateTM(fixed);
+        if (r4.changes > 0) {
+            changeNum++;
+            archive.push('[' + String(changeNum).padStart(3, '0') + '] \u2014 Consolidated ' + r4.changes + ' duplicate/misplaced TM propert\u2026(s) to root node as TM[' + (r4.tmValues.length > 0 ? parseSecondsFromTM(r4.tmValues[0]) : 0) + ']');
+            fixed = r4.fixed;
+        }
+
+        // Step 5: Fix non-standard TM format (only if step 4 didn't already handle TM)
+        if (r4.changes === 0) {
+            var r5 = autoFixTMFormat(fixed);
+            if (r5.changes > 0) {
+                changeNum++;
+                for (var c = 0; c < r5.archive.length; c++) {
+                    changeNum = changeNum + c;
+                    archive.push('[' + String(changeNum).padStart(3, '0') + '] ' + r5.archive[c]);
+                }
+                fixed = r5.fixed;
+            }
+        }
+
+        // Append archive block at end of file
+        if (archive.length > 0) {
+            var archiveBlock = '\n;C[########## Archive of Changes ##########\n';
+            for (var k = 0; k < archive.length; k++) {
+                archiveBlock += archive[k] + '\n';
+            }
+            archiveBlock += ']';
+            var lastClose = fixed.lastIndexOf(')');
+            if (lastClose > 0) {
+                fixed = fixed.substring(0, lastClose) + archiveBlock + '\n' + fixed.substring(lastClose);
+            } else {
+                fixed += archiveBlock;
+            }
+        }
+
+        return { fixed: fixed, archive: archive };
+    }
+
+    // Helper: parse TM value to seconds (reused)
+    function parseSecondsFromTM(rawValue) {
+        if (/^\d+(\.\d+)?$/.test(rawValue)) return parseFloat(rawValue);
+        var blackSec = null, whiteSec = null;
+        var segs = rawValue.match(/([黑白])\s*[:：]?\s*(\d+[:：]\d+(?:[:：]\d+)?)/g);
+        if (segs) {
+            for (var i = 0; i < segs.length; i++) {
+                var cm = segs[i].match(/([黑白])/);
+                var tm = segs[i].match(/(\d+)[：:](\d+)(?:[：:](\d+))?/);
+                if (!cm || !tm) continue;
+                var sec = 0;
+                if (tm[3] !== undefined) sec = parseFloat(tm[1])*3600 + parseFloat(tm[2])*60 + parseFloat(tm[3]);
+                else sec = parseFloat(tm[1])*60 + parseFloat(tm[2]);
+                if (cm[1] === '\u9ED1') blackSec = sec;
+                else if (cm[1] === '\u767D') whiteSec = sec;
+            }
+        }
+        var minSegs = rawValue.match(/([黑白])\s*[:：]?\s*(\d+)\s*分/g);
+        if (minSegs) {
+            for (var j = 0; j < minSegs.length; j++) {
+                var mm = minSegs[j].match(/([黑白])/);
+                var mv = minSegs[j].match(/(\d+)\s*分/);
+                if (mm && mv) {
+                    var s = parseFloat(mv[1]) * 60;
+                    if (mm[1] === '\u9ED1') blackSec = s;
+                    else if (mm[1] === '\u767D') whiteSec = s;
+                }
+            }
+        }
+        var times = [];
+        if (blackSec !== null) times.push(blackSec);
+        if (whiteSec !== null) times.push(whiteSec);
+        return times.length > 0 ? Math.max.apply(null, times) : 0;
+    }
+
+    // ── Auto-Fix: Normalize non-standard TM format only (standalone per-issue fix) ──
+    function autoFixTMFormat(sgfText) {
+        if (!sgfText) return { fixed: sgfText, changes: 0, archive: [] };
+        var fixed = sgfText;
+        var archive = [];
+        var changes = 0;
+
+        var tmMatch = fixed.match(/TM\s*\[([^\]]+)\]/);
+        if (tmMatch) {
+            var rawValue = tmMatch[1].trim();
+            if (!/^\d+(\.\d+)?$/.test(rawValue)) {
+                var seconds = parseSecondsFromTM(rawValue);
+                var compliantTM = 'TM[' + seconds + ']';
+                archive.push('From "' + tmMatch[0] + '" \u2192 "' + compliantTM + '"');
+                fixed = fixed.replace(tmMatch[0], compliantTM);
+                changes++;
+            }
+        }
+
+        return { fixed: fixed, changes: changes, archive: archive };
+    }
+
     // ── Auto-Fix: Normalize non-standard TM values & archive changes ──
     function autoFixSGFProperties(sgfText) {
         if (!sgfText || !sgfText.trim()) {
@@ -1037,69 +1345,8 @@
             if (/^\d+(\.\d+)?$/.test(rawValue)) {
                 // do nothing
             } else {
-                var blackSec = null;
-                var whiteSec = null;
-
-                // Pattern: 黑: MM:SS or 黑:HH:MM:SS (with optional full-width colons)
-                var timeSegments = rawValue.match(/([黑白])\s*[:：]?\s*(\d+[:：]\d+(?:[:：]\d+)?)/g);
-                if (timeSegments) {
-                    for (var i = 0; i < timeSegments.length; i++) {
-                        var seg = timeSegments[i];
-                        var colorMatch = seg.match(/([黑白])/);
-                        var timeMatch = seg.match(/(\d+)[：:](\d+)(?:[：:](\d+))?/);
-                        if (!colorMatch || !timeMatch) continue;
-                        var h = 0, m = 0, s = 0;
-                        if (timeMatch[3] !== undefined) {
-                            h = parseFloat(timeMatch[1]);
-                            m = parseFloat(timeMatch[2]);
-                            s = parseFloat(timeMatch[3]);
-                        } else {
-                            m = parseFloat(timeMatch[1]);
-                            s = parseFloat(timeMatch[2]);
-                        }
-                        var totalSeconds = h * 3600 + m * 60 + s;
-                        if (colorMatch[1] === '黑') blackSec = totalSeconds;
-                        else if (colorMatch[1] === '白') whiteSec = totalSeconds;
-                    }
-                }
-
-                // Pattern: 黑:60分 白:90分 (minute markers)
-                var minuteSegments = rawValue.match(/([黑白])\s*[:：]?\s*(\d+)\s*分/g);
-                if (minuteSegments) {
-                    for (var j = 0; j < minuteSegments.length; j++) {
-                        var mSeg = minuteSegments[j];
-                        var mColor = mSeg.match(/([黑白])/);
-                        var mMin = mSeg.match(/(\d+)\s*分/);
-                        if (!mColor || !mMin) continue;
-                        var totalMin = parseFloat(mMin[1]) * 60;
-                        if (mColor[1] === '黑') blackSec = totalMin;
-                        else if (mColor[1] === '白') whiteSec = totalMin;
-                    }
-                }
-
-                // Fallback: if only one bare time found without color tag
-                if (blackSec === null && whiteSec === null) {
-                    var bareTime = rawValue.match(/(\d+)[：:](\d+)(?:[：:](\d+))?/);
-                    if (bareTime) {
-                        var bh = 0, bm = 0, bs = 0;
-                        if (bareTime[3] !== undefined) {
-                            bh = parseFloat(bareTime[1]);
-                            bm = parseFloat(bareTime[2]);
-                            bs = parseFloat(bareTime[3]);
-                        } else {
-                            bm = parseFloat(bareTime[1]);
-                            bs = parseFloat(bareTime[2]);
-                        }
-                        blackSec = bh * 3600 + bm * 60 + bs;
-                    }
-                }
-
-                // Calculate compliant value: max of all parsed times
-                var timesFound = [];
-                if (blackSec !== null) timesFound.push(blackSec);
-                if (whiteSec !== null) timesFound.push(whiteSec);
-                var compliantSeconds = timesFound.length > 0 ? Math.max.apply(null, timesFound) : 0;
-                var compliantTM = 'TM[' + compliantSeconds + ']';
+                var seconds = parseSecondsFromTM(rawValue);
+                var compliantTM = 'TM[' + seconds + ']';
 
                 // Archive the change
                 changeNum++;
@@ -1109,29 +1356,19 @@
                 // Replace TM in SGF
                 fixed = fixed.replace(tmMatch[0], compliantTM);
 
-                // Migrate raw clock data into root node's C property
-                var clockNote = '[System Clock Metadata: ' + rawValue + ']';
+                // Migrate raw clock data into root node's C property (escape ] so C doesn't close early)
+                var clockDataEscaped = rawValue.replace(/]/g, '\\]');
                 var rootMatch = fixed.match(/\(\s*;/);
                 if (rootMatch) {
-                    // Check if root already has a C[...] property
-                    var rootSlice = fixed.substring(rootMatch.index, rootMatch.index + 2000);
-                    var cMatch = rootSlice.match(/\bC\[/);
-                    if (cMatch) {
-                        // Inject after C[
-                        var insertPos = rootMatch.index + cMatch.index + 2;
-                        fixed = fixed.substring(0, insertPos) + ' ' + clockNote + ' ' + fixed.substring(insertPos);
-                    } else {
-                        // Insert C[...] right after the root node marker
-                        var insertAfter = rootMatch.index + rootMatch[0].length;
-                        fixed = fixed.substring(0, insertAfter) + 'C[' + clockNote + ']' + fixed.substring(insertAfter);
-                    }
+                    var afterRoot = rootMatch.index + rootMatch[0].length;
+                    fixed = fixed.substring(0, afterRoot) + 'C[System Clock Metadata: ' + clockDataEscaped + ']' + fixed.substring(afterRoot);
                 }
             }
         }
 
         // Append archive block at end of file (before closing paren)
         if (archive.length > 0) {
-            var archiveBlock = '\n;C[########## Archived of Changed ##########\n';
+            var archiveBlock = '\n;C[########## Archive of Changes ##########\n';
             for (var k = 0; k < archive.length; k++) {
                 archiveBlock += archive[k] + '\n';
             }
@@ -1157,7 +1394,14 @@
         detectPhases,
         validateSGFProperties,
         maximizeSGF,
-        autoFixSGFProperties
+        autoFixSGFProperties,
+        sanitizeSGFStream,
+        fixEscapedBrackets,
+        fixStrayArtifacts,
+        fixStrayNonASCII,
+        fixStrayPropertyNames,
+        fixDuplicateTM,
+        autoFixTMFormat
     };
 
 })(typeof window !== 'undefined' ? window : global);

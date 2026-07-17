@@ -2286,7 +2286,7 @@
         }
 
         // Transition issue bar: State 1 → 2 → 3
-        // Also performs the actual fix for known fixable issue types (e.g. unknown properties)
+        // Also performs the actual fix for known fixable issue types
         function autoFixIssue(idx) {
             const bar = document.getElementById(`action-bar-${idx}`);
             if (!bar) return;
@@ -2299,15 +2299,15 @@
             s1.classList.add('exit');
             s2.classList.add('active');
 
-            // Determine what to fix from the issue message
             const issue = auditResult.issues[idx];
             let fixed = false;
             if (issue && issue.message) {
-                // Unknown property: "unknown property <CXR> found"
-                const unknownPropMatch = issue.message.match(/unknown property\s+<([A-Z]+)>/i);
-                if (unknownPropMatch) {
+                const msg = issue.message;
+
+                // ── Category 1: Unknown property → strip it ──
+                const unknownPropMatch = msg.match(/unknown property\s+<([A-Z]+)>/i);
+                if (unknownPropMatch && !fixed) {
                     const propName = unknownPropMatch[1];
-                    // Strip all PROP[value] occurrences from the SGF content
                     const propRegex = new RegExp(propName + '\\s*\\[[^\\]]*\\]', 'g');
                     const before = sgfContent.length;
                     sgfContent = sgfContent.replace(propRegex, '');
@@ -2318,19 +2318,30 @@
                     }
                 }
 
-                // TM illegal format: normalize non-standard time values
-                if (!fixed && issue.message && /illegal format/i.test(issue.message) && /<TM>/i.test(issue.message)) {
-                    if (typeof SGFAuditor !== 'undefined' && SGFAuditor.autoFixSGFProperties) {
-                        try {
-                            var fixResult = SGFAuditor.autoFixSGFProperties(sgfContent);
-                            if (fixResult.archive && fixResult.archive.length > 0) {
-                                sgfContent = fixResult.fixed;
-                                sessionStorage.setItem('sgf_content', sgfContent);
-                                fixed = true;
-                                fixedIssuesMap[idx] = fixResult.archive;
+                // ── Category 2: Brackets / Stray artifacts / Phantom properties / TM errors → full sanitizer ──
+                // These errors are interconnected: stray text causes phantom props, which causes bracket errors.
+                // Running the full sanitizer resolves ALL of them at once.
+                if (!fixed) {
+                    const isBracketError   = /illegal char\(s\)\s+found/i.test(msg) && /"?\]"?/.test(msg);
+                    const isStrayArtifact  = /illegal char\(s\)\s+found/i.test(msg);
+                    const isPhantomProp    = /without any values/i.test(msg);
+                    const isTMFormat       = /illegal format/i.test(msg) && /<TM>/i.test(msg);
+                    const isTMDup          = /already exists/i.test(msg) && /<TM>/i.test(msg);
+                    const isTMPlaced       = /outside game-info/i.test(msg) && /<TM>/i.test(msg);
+
+                    if (isBracketError || isStrayArtifact || isPhantomProp || isTMFormat || isTMDup || isTMPlaced) {
+                        if (typeof SGFAuditor !== 'undefined' && SGFAuditor.sanitizeSGFStream) {
+                            try {
+                                var result = SGFAuditor.sanitizeSGFStream(sgfContent);
+                                if (result.archive && result.archive.length > 0) {
+                                    sgfContent = result.fixed;
+                                    sessionStorage.setItem('sgf_content', sgfContent);
+                                    fixed = true;
+                                    fixedIssuesMap[idx] = result.archive;
+                                }
+                            } catch (e) {
+                                console.error('sanitizeSGFStream error:', e);
                             }
-                        } catch (e) {
-                            console.error('autoFixSGFProperties error:', e);
                         }
                     }
                 }
@@ -2444,16 +2455,16 @@
                 return;
             }
 
-            // Apply property-level auto-fixes (TM normalization, etc.)
+            // Apply full stream sanitizer (brackets, stray artifacts, TM normalization, etc.)
             let downloadContent = correctedSgfContent;
-            if (typeof SGFAuditor !== 'undefined' && SGFAuditor.autoFixSGFProperties) {
+            if (typeof SGFAuditor !== 'undefined' && SGFAuditor.sanitizeSGFStream) {
                 try {
-                    var fixResult = SGFAuditor.autoFixSGFProperties(downloadContent);
+                    var fixResult = SGFAuditor.sanitizeSGFStream(downloadContent);
                     if (fixResult.archive && fixResult.archive.length > 0) {
                         downloadContent = fixResult.fixed;
                     }
                 } catch (e) {
-                    console.error('autoFixSGFProperties error:', e);
+                    console.error('sanitizeSGFStream error:', e);
                 }
             }
 
