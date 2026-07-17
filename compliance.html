@@ -1935,7 +1935,11 @@
             // Run the maximization audit
             let maxResult = { score: 0, categories: [], strengths: [], opportunities: [] };
             if (typeof SGFAuditor !== 'undefined' && SGFAuditor.maximizeSGF) {
-                maxResult = SGFAuditor.maximizeSGF(sgfContent);
+                try {
+                    maxResult = SGFAuditor.maximizeSGF(sgfContent);
+                } catch (e) {
+                    console.error('maximizeSGF error:', e);
+                }
             }
 
             const steps = [
@@ -2083,7 +2087,9 @@
             }
 
             // Slide the maximize card into view
-            document.getElementById('maximize-wrapper').classList.add('visible');
+            const mw = document.getElementById('maximize-wrapper');
+            mw.classList.add('visible');
+            setTimeout(() => { mw.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
         }
 
         // Populates detailed results cards and rolls them into view
