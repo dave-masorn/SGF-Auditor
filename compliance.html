@@ -590,17 +590,21 @@
         .detailed-results-wrapper {
             width: 100%;
             max-height: 0;
-            opacity: 0;
             overflow: hidden;
-            transition: max-height 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease-out;
+            opacity: 0;
+            transform: translateY(-12px);
+            transition: max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+                        opacity 0.5s ease-out,
+                        transform 0.5s ease-out;
             position: relative;
             z-index: 2;
         }
 
         .detailed-results-wrapper.visible {
-            max-height: 2000px;
+            max-height: 5000px;
+            overflow: hidden;
             opacity: 1;
-            overflow: visible;
+            transform: translateY(0);
         }
 
         #maximize-wrapper.visible {
@@ -1293,7 +1297,7 @@
             .issue-row { flex-wrap: wrap; gap: 8px; }
             .issue-pos { width: auto; }
 
-            .detailed-results-wrapper.visible { max-height: 3000px; }
+            .detailed-results-wrapper.visible { max-height: 8000px; }
         }
 
         @media (max-width: 480px) {
