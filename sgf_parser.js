@@ -725,6 +725,214 @@
         };
     }
 
+    // ── FF[4] Maximization Audit ──
+    function maximizeSGF(sgfText) {
+        if (!sgfText || !sgfText.trim()) {
+            return { score: 0, categories: [], strengths: [], opportunities: [] };
+        }
+
+        // Helper: check if a property exists anywhere in the SGF
+        function hasProp(id) {
+            return new RegExp('\\b' + id + '\\s*\\[', 'test', 'sgfText');
+        }
+        // Helper: count occurrences of a property
+        function countProp(id) {
+            let m = sgfText.match(new RegExp('\\b' + id + '\\s*\\[', 'g'));
+            return m ? m.length : 0;
+        }
+        // Helper: check if there are multiple game trees (variations at top level)
+        function hasMultipleTrees() {
+            let depth = 0;
+            for (let i = 0; i < sgfText.length; i++) {
+                if (sgfText[i] === '(') depth++;
+            }
+            return depth > 1;
+        }
+        // Helper: check if there are variation branches (child game trees inside a tree)
+        function hasBranches() {
+            // Count '(' that are NOT the very first opening paren
+            let foundFirst = false;
+            let treeCount = 0;
+            for (let i = 0; i < sgfText.length; i++) {
+                if (sgfText[i] === '(') {
+                    if (!foundFirst) { foundFirst = true; }
+                    else { treeCount++; }
+                }
+            }
+            return treeCount > 0;
+        }
+
+        // ── Category definitions ──
+        const categories = [
+            {
+                name: "Game Identity",
+                weight: 0.20,
+                features: [
+                    { id: "PB", desc: "Player Black name", tag: "recommended" },
+                    { id: "PW", desc: "Player White name", tag: "recommended" },
+                    { id: "BR", desc: "Black player rank", tag: "recommended" },
+                    { id: "WR", desc: "White player rank", tag: "recommended" },
+                    { id: "RE", desc: "Game result", tag: "mandatory" },
+                    { id: "DT", desc: "Game date", tag: "mandatory" },
+                    { id: "KM", desc: "Komi", tag: "recommended" },
+                    { id: "RU", desc: "Ruleset", tag: "recommended" },
+                    { id: "EV", desc: "Event / tournament", tag: "recommended" },
+                    { id: "TM", desc: "Time limit", tag: "recommended" }
+                ]
+            },
+            {
+                name: "Root Configuration",
+                weight: 0.10,
+                features: [
+                    { id: "AP", desc: "Application identifier", tag: "recommended" },
+                    { id: "CA", desc: "Charset (UTF-8)", tag: "recommended" },
+                    { id: "ST", desc: "Variation display style", tag: "optional" }
+                ]
+            },
+            {
+                name: "Game Tree Structure",
+                weight: 0.15,
+                features: [
+                    { id: "__branches__", desc: "Variation branches (tree structure)", tag: "structural" },
+                    { id: "__nodeNames__", desc: "Node names (N) for navigation", tag: "recommended" },
+                    { id: "__rootComment__", desc: "Root-level game summary comment", tag: "recommended" }
+                ]
+            },
+            {
+                name: "Move Annotations",
+                weight: 0.15,
+                features: [
+                    { id: "C",  desc: "Comments on moves", tag: "recommended" },
+                    { id: "TE", desc: "Tesuji (good move) markers", tag: "optional" },
+                    { id: "BM", desc: "Bad move markers", tag: "optional" },
+                    { id: "IT", desc: "Interesting move markers", tag: "optional" },
+                    { id: "DO", desc: "Doubtful move markers", tag: "optional" },
+                    { id: "HO", desc: "Hotspot markers", tag: "optional" }
+                ]
+            },
+            {
+                name: "Position Annotations",
+                weight: 0.10,
+                features: [
+                    { id: "DM", desc: "Even position marker", tag: "optional" },
+                    { id: "GB", desc: "Good for Black", tag: "optional" },
+                    { id: "GW", desc: "Good for White", tag: "optional" },
+                    { id: "UC", desc: "Unclear position", tag: "optional" },
+                    { id: "V",  desc: "Score estimate", tag: "optional" }
+                ]
+            },
+            {
+                name: "Board Markup",
+                weight: 0.15,
+                features: [
+                    { id: "CR", desc: "Circle markers", tag: "optional" },
+                    { id: "TR", desc: "Triangle markers", tag: "optional" },
+                    { id: "SQ", desc: "Square markers", tag: "optional" },
+                    { id: "MA", desc: "Cross (X) markers", tag: "optional" },
+                    { id: "LB", desc: "Text labels on board", tag: "optional" },
+                    { id: "AR", desc: "Arrows between points", tag: "optional" },
+                    { id: "LN", desc: "Lines between points", tag: "optional" },
+                    { id: "DD", desc: "Dimmed points", tag: "optional" },
+                    { id: "SL", desc: "Selected points", tag: "optional" },
+                    { id: "TB", desc: "Black territory", tag: "optional" },
+                    { id: "TW", desc: "White territory", tag: "optional" }
+                ]
+            },
+            {
+                name: "Timing",
+                weight: 0.05,
+                features: [
+                    { id: "BL", desc: "Black time remaining", tag: "optional" },
+                    { id: "WL", desc: "White time remaining", tag: "optional" },
+                    { id: "OB", desc: "Black byo-yomi stones", tag: "optional" },
+                    { id: "OW", desc: "White byo-yomi stones", tag: "optional" }
+                ]
+            },
+            {
+                name: "Miscellaneous",
+                weight: 0.05,
+                features: [
+                    { id: "FG", desc: "Figure / print diagram", tag: "optional" },
+                    { id: "PM", desc: "Print move number mode", tag: "optional" },
+                    { id: "VW", desc: "View (visible board area)", tag: "optional" },
+                    { id: "MN", desc: "Move number override", tag: "optional" }
+                ]
+            },
+            {
+                name: "Setup (conditional)",
+                weight: 0.05,
+                features: [
+                    { id: "AB", desc: "Add Black stones (setup)", tag: "conditional" },
+                    { id: "AW", desc: "Add White stones (setup)", tag: "conditional" },
+                    { id: "PL", desc: "Player to move indicator", tag: "conditional" }
+                ]
+            }
+        ];
+
+        // ── Evaluate each category ──
+        let totalScore = 0;
+        let catResults = [];
+        let strengths = [];
+        let opportunities = [];
+
+        for (let cat of categories) {
+            let found = 0;
+            let total = cat.features.length;
+            let catStrengths = [];
+            let catOpps = [];
+
+            for (let feat of cat.features) {
+                let present = false;
+
+                if (feat.id === '__branches__') {
+                    present = hasBranches();
+                } else if (feat.id === '__nodeNames__') {
+                    present = hasProp('N');
+                } else if (feat.id === '__rootComment__') {
+                    // Root comment: C property in the first node (root)
+                    let rootMatch = sgfText.match(/\(\s*;([\s\S]*?)(?:\(|$)/);
+                    present = rootMatch ? /\bC\s*\[/.test(rootMatch[1]) : false;
+                } else {
+                    present = hasProp(feat.id);
+                }
+
+                if (present) {
+                    found++;
+                    catStrengths.push(feat);
+                } else {
+                    catOpps.push(feat);
+                }
+            }
+
+            let catScore = total > 0 ? Math.round((found / total) * 100) : 0;
+            totalScore += catScore * cat.weight;
+
+            catResults.push({
+                name: cat.name,
+                weight: cat.weight,
+                score: catScore,
+                found,
+                total
+            });
+
+            strengths.push(...catStrengths.map(f => ({
+                ...f, category: cat.name
+            })));
+            opportunities.push(...catOpps.map(f => ({
+                ...f, category: cat.name
+            })));
+        }
+
+        totalScore = Math.round(totalScore);
+
+        return {
+            score: totalScore,
+            categories: catResults,
+            strengths,
+            opportunities
+        };
+    }
+
     // ── Properties Validation: DT (Date) & RE (Result) ──
     function validateSGFProperties(sgfText) {
         let errors = [];
@@ -817,7 +1025,8 @@
         GoBoard,
         auditSGF,
         detectPhases,
-        validateSGFProperties
+        validateSGFProperties,
+        maximizeSGF
     };
 
 })(typeof window !== 'undefined' ? window : global);

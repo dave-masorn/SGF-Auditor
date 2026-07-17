@@ -1,0 +1,3686 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.10" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>SGF File Format FF[4] - Go Specification</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">SGF File Format FF[4] - Go Specification</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#sgf-file-format-ff4" id="toc-sgf-file-format-ff4"><span
+class="toc-section-number">1</span> SGF File Format FF[4]</a></li>
+<li><a href="#contents" id="toc-contents"><span
+class="toc-section-number">2</span> Contents</a></li>
+<li><a href="#sgf-basics" id="toc-sgf-basics"><span
+class="toc-section-number">3</span> 1. SGF basics</a></li>
+<li><a href="#basic-ebnf-definition"
+id="toc-basic-ebnf-definition"><span class="toc-section-number">4</span>
+2. Basic (EBNF) Definition</a>
+<ul>
+<li><a href="#ebnf-definition" id="toc-ebnf-definition"><span
+class="toc-section-number">4.1</span> 2.1. EBNF Definition</a></li>
+<li><a href="#some-remarks-about-properties"
+id="toc-some-remarks-about-properties"><span
+class="toc-section-number">4.2</span> 2.2. Some remarks about
+properties</a>
+<ul>
+<li><a href="#property-types-currently-five"
+id="toc-property-types-currently-five"><span
+class="toc-section-number">4.2.1</span> 2.2.1. Property Types (currently
+five):</a></li>
+<li><a href="#property-attributes-currently-only-one"
+id="toc-property-attributes-currently-only-one"><span
+class="toc-section-number">4.2.2</span> 2.2.2. Property attributes
+(currently only one)</a></li>
+<li><a href="#how-to-handle-unknownfaulty-properties"
+id="toc-how-to-handle-unknownfaulty-properties"><span
+class="toc-section-number">4.2.3</span> 2.2.3. How to handle
+unknown/faulty properties</a></li>
+<li><a href="#private-properties" id="toc-private-properties"><span
+class="toc-section-number">4.2.4</span> 2.2.4. Private
+Properties</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#property-value-types" id="toc-property-value-types"><span
+class="toc-section-number">5</span> 3. Property Value Types</a>
+<ul>
+<li><a href="#double" id="toc-double"><span
+class="toc-section-number">5.1</span> 3.1. Double</a></li>
+<li><a href="#text" id="toc-text"><span
+class="toc-section-number">5.2</span> 3.2. Text</a>
+<ul>
+<li><a href="#example" id="toc-example"><span
+class="toc-section-number">5.2.1</span> 3.2.1. Example:</a></li>
+</ul></li>
+<li><a href="#simpletext" id="toc-simpletext"><span
+class="toc-section-number">5.3</span> 3.3. SimpleText</a></li>
+<li><a href="#stone" id="toc-stone"><span
+class="toc-section-number">5.4</span> 3.4. Stone</a></li>
+<li><a href="#move-point" id="toc-move-point"><span
+class="toc-section-number">5.5</span> 3.5. Move / Point</a>
+<ul>
+<li><a href="#compressed-point-lists"
+id="toc-compressed-point-lists"><span
+class="toc-section-number">5.5.1</span> 3.5.1. Compressed point
+lists</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#contents-1" id="toc-contents-1"><span
+class="toc-section-number">6</span> Contents</a></li>
+<li><a href="#sgf-properties-ff4" id="toc-sgf-properties-ff4"><span
+class="toc-section-number">7</span> SGF Properties (FF[4])</a>
+<ul>
+<li><a href="#move-properties" id="toc-move-properties"><span
+class="toc-section-number">7.1</span> Move properties</a></li>
+<li><a href="#setup-properties" id="toc-setup-properties"><span
+class="toc-section-number">7.2</span> Setup properties</a>
+<ul>
+<li><a href="#restrictions" id="toc-restrictions"><span
+class="toc-section-number">7.2.1</span> Restrictions</a></li>
+</ul></li>
+<li><a href="#node-annotation-properties"
+id="toc-node-annotation-properties"><span
+class="toc-section-number">7.3</span> Node annotation
+properties</a></li>
+<li><a href="#move-annotation-properties"
+id="toc-move-annotation-properties"><span
+class="toc-section-number">7.4</span> Move annotation properties</a>
+<ul>
+<li><a href="#restrictions-1" id="toc-restrictions-1"><span
+class="toc-section-number">7.4.1</span> Restrictions</a></li>
+</ul></li>
+<li><a href="#markup-properties" id="toc-markup-properties"><span
+class="toc-section-number">7.5</span> Markup properties</a>
+<ul>
+<li><a href="#restrictions-2" id="toc-restrictions-2"><span
+class="toc-section-number">7.5.1</span> Restrictions</a></li>
+</ul></li>
+<li><a href="#root-properties" id="toc-root-properties"><span
+class="toc-section-number">7.6</span> Root properties</a></li>
+<li><a href="#game-info-properties" id="toc-game-info-properties"><span
+class="toc-section-number">7.7</span> Game info properties</a></li>
+<li><a href="#timing-properties" id="toc-timing-properties"><span
+class="toc-section-number">7.8</span> Timing properties</a></li>
+<li><a href="#miscellaneous-properties"
+id="toc-miscellaneous-properties"><span
+class="toc-section-number">7.9</span> Miscellaneous properties</a></li>
+</ul></li>
+<li><a href="#variations" id="toc-variations"><span
+class="toc-section-number">8</span> Variations</a>
+<ul>
+<li><a href="#common-pitfalls" id="toc-common-pitfalls"><span
+class="toc-section-number">8.1</span> Common pitfalls:</a></li>
+</ul></li>
+<li><a href="#go-gm1" id="toc-go-gm1"><span
+class="toc-section-number">9</span> Go (GM[1])</a>
+<ul>
+<li><a href="#move-point-stone-type"
+id="toc-move-point-stone-type"><span
+class="toc-section-number">9.1</span> Move, Point &amp; Stone type</a>
+<ul>
+<li><a href="#how-to-execute-a-move"
+id="toc-how-to-execute-a-move"><span
+class="toc-section-number">9.1.1</span> How to execute a move</a></li>
+</ul></li>
+<li><a href="#properties" id="toc-properties"><span
+class="toc-section-number">9.2</span> Properties</a></li>
+</ul></li>
+<li><a href="#ff4-property-index" id="toc-ff4-property-index"><span
+class="toc-section-number">10</span> FF[4] property index</a></li>
+<li><a href="#ff4-property-index-1" id="toc-ff4-property-index-1"><span
+class="toc-section-number">11</span> FF[4] property index</a>
+<ul>
+<li><a href="#general-properties" id="toc-general-properties"><span
+class="toc-section-number">11.1</span> General properties</a></li>
+<li><a href="#go-gm1-specific-properties"
+id="toc-go-gm1-specific-properties"><span
+class="toc-section-number">11.2</span> Go (GM[1]) specific
+properties</a></li>
+<li><a href="#lines-of-action-gm9-specific-properties"
+id="toc-lines-of-action-gm9-specific-properties"><span
+class="toc-section-number">11.3</span> Lines of Action (GM[9]) specific
+properties</a></li>
+</ul></li>
+<li><a href="#property-index-of-ff1-ff4"
+id="toc-property-index-of-ff1-ff4"><span
+class="toc-section-number">12</span> Property index of
+FF[1]-FF[4]</a></li>
+<li><a href="#dimmed-stones-and-view"
+id="toc-dimmed-stones-and-view"><span
+class="toc-section-number">13</span> Dimmed Stones and View</a>
+<ul>
+<li><a href="#picture-of-node-0" id="toc-picture-of-node-0"><span
+class="toc-section-number">13.1</span> Picture of node 0</a></li>
+<li><a href="#picture-of-node-1" id="toc-picture-of-node-1"><span
+class="toc-section-number">13.2</span> Picture of node 1</a></li>
+</ul></li>
+<li><a href="#sgf-ff4-history" id="toc-sgf-ff4-history"><span
+class="toc-section-number">14</span> SGF FF[4] History</a>
+<ul>
+<li><a href="#section" id="toc-section"><span
+class="toc-section-number">14.0.1</span> 2021-12-01</a></li>
+<li><a href="#section-1" id="toc-section-1"><span
+class="toc-section-number">14.0.2</span> 2007 - 2016</a></li>
+<li><a href="#section-2" id="toc-section-2"><span
+class="toc-section-number">14.0.3</span> 2006-08-06</a></li>
+<li><a href="#section-3" id="toc-section-3"><span
+class="toc-section-number">14.0.4</span> 2006-06-25</a></li>
+<li><a href="#section-4" id="toc-section-4"><span
+class="toc-section-number">14.0.5</span> 2006-05-13</a></li>
+<li><a href="#section-5" id="toc-section-5"><span
+class="toc-section-number">14.0.6</span> 2002-2005</a></li>
+<li><a href="#section-6" id="toc-section-6"><span
+class="toc-section-number">14.0.7</span> 2001-08-12</a></li>
+<li><a href="#section-7" id="toc-section-7"><span
+class="toc-section-number">14.0.8</span> 2001-01-21</a></li>
+<li><a href="#section-8" id="toc-section-8"><span
+class="toc-section-number">14.0.9</span> 2000-10-18</a></li>
+<li><a href="#section-9" id="toc-section-9"><span
+class="toc-section-number">14.0.10</span> 2000-01-15</a></li>
+<li><a href="#section-10" id="toc-section-10"><span
+class="toc-section-number">14.0.11</span> 2000-01-04</a></li>
+<li><a href="#section-11" id="toc-section-11"><span
+class="toc-section-number">14.0.12</span> 1999-12-17</a></li>
+<li><a href="#section-12" id="toc-section-12"><span
+class="toc-section-number">14.0.13</span> 1999-01-07</a></li>
+</ul></li>
+<li><a href="#from-ff3-to-ff4" id="toc-from-ff3-to-ff4"><span
+class="toc-section-number">15</span> From FF[3] to FF[4]</a>
+<ul>
+<li><a href="#general" id="toc-general"><span
+class="toc-section-number">15.1</span> General</a></li>
+<li><a href="#properties-no-longer-part-of-ff4"
+id="toc-properties-no-longer-part-of-ff4"><span
+class="toc-section-number">15.2</span> Properties no longer part of
+FF[4]</a></li>
+<li><a href="#new-properties" id="toc-new-properties"><span
+class="toc-section-number">15.3</span> New properties</a></li>
+<li><a href="#changed-properties" id="toc-changed-properties"><span
+class="toc-section-number">15.4</span> Changed properties</a></li>
+</ul></li>
+<li><a href="#compatibility-of-ff4" id="toc-compatibility-of-ff4"><span
+class="toc-section-number">16</span> Compatibility of FF[4]</a>
+<ul>
+<li><a href="#general-types" id="toc-general-types"><span
+class="toc-section-number">16.1</span> General &amp; Types</a></li>
+<li><a href="#properties-1" id="toc-properties-1"><span
+class="toc-section-number">16.2</span> Properties</a></li>
+</ul></li>
+<li><a href="#converting-old-sgf-files-to-ff4"
+id="toc-converting-old-sgf-files-to-ff4"><span
+class="toc-section-number">17</span> Converting old SGF files to
+FF[4]</a>
+<ul>
+<li><a href="#converting-properties"
+id="toc-converting-properties"><span
+class="toc-section-number">17.1</span> Converting properties</a></li>
+<li><a href="#other-conversion-issues"
+id="toc-other-conversion-issues"><span
+class="toc-section-number">17.2</span> Other conversion issues</a>
+<ul>
+<li><a href="#property-identifiers" id="toc-property-identifiers"><span
+class="toc-section-number">17.2.1</span> Property identifiers</a></li>
+<li><a href="#property-types-move-setup"
+id="toc-property-types-move-setup"><span
+class="toc-section-number">17.2.2</span> Property types move &amp;
+setup</a></li>
+<li><a href="#illegal-errornous-files"
+id="toc-illegal-errornous-files"><span
+class="toc-section-number">17.2.3</span> Illegal &amp; errornous
+files</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#sgf-user-guide" id="toc-sgf-user-guide"><span
+class="toc-section-number">18</span> SGF User Guide</a></li>
+<li><a href="#what-is-sgf" id="toc-what-is-sgf"><span
+class="toc-section-number">19</span> 1. What is SGF?</a>
+<ul>
+<li><a href="#versions" id="toc-versions"><span
+class="toc-section-number">19.1</span> Versions</a></li>
+<li><a href="#what-does-an-sgf-file-look-like"
+id="toc-what-does-an-sgf-file-look-like"><span
+class="toc-section-number">19.2</span> What does an SGF file look
+like?</a></li>
+<li><a href="#sgf-applications" id="toc-sgf-applications"><span
+class="toc-section-number">19.3</span> SGF applications</a></li>
+</ul></li>
+<li><a href="#general-concepts" id="toc-general-concepts"><span
+class="toc-section-number">20</span> 2. General Concepts</a></li>
+<li><a href="#make-a-move-vs.-place-a-stone"
+id="toc-make-a-move-vs.-place-a-stone"><span
+class="toc-section-number">21</span> 3. `Make a Move’ vs. `Place a
+Stone’</a>
+<ul>
+<li><a href="#restrictions-3" id="toc-restrictions-3"><span
+class="toc-section-number">21.1</span> Restrictions</a></li>
+</ul></li>
+<li><a href="#style" id="toc-style"><span
+class="toc-section-number">22</span> 4. Style</a></li>
+<li><a href="#variations-1" id="toc-variations-1"><span
+class="toc-section-number">23</span> 5. Variations</a></li>
+<li><a href="#board-markup" id="toc-board-markup"><span
+class="toc-section-number">24</span> 6. Board markup</a></li>
+<li><a href="#comments-and-annotations"
+id="toc-comments-and-annotations"><span
+class="toc-section-number">25</span> 7. Comments and
+annotations</a></li>
+<li><a href="#game-information" id="toc-game-information"><span
+class="toc-section-number">26</span> 8. Game Information</a>
+<ul>
+<li><a href="#why-should-you-use-game-information"
+id="toc-why-should-you-use-game-information"><span
+class="toc-section-number">26.1</span> Why should you use game
+information?</a></li>
+<li><a href="#list-of-game-information-properties"
+id="toc-list-of-game-information-properties"><span
+class="toc-section-number">26.2</span> List of game information
+properties</a></li>
+</ul></li>
+<li><a href="#general-sgf-ff4-example-file"
+id="toc-general-sgf-ff4-example-file"><span
+class="toc-section-number">27</span> 1. General SGF FF[4] Example
+File</a>
+<ul>
+<li><a href="#purpose" id="toc-purpose"><span
+class="toc-section-number">27.1</span> Purpose</a></li>
+<li><a href="#general-comments" id="toc-general-comments"><span
+class="toc-section-number">27.2</span> General comments</a></li>
+<li><a href="#download-example-sgf-file"
+id="toc-download-example-sgf-file"><span
+class="toc-section-number">27.3</span> Download example SGF
+file</a></li>
+<li><a href="#gametree-1-properties"
+id="toc-gametree-1-properties"><span
+class="toc-section-number">27.4</span> Gametree 1: properties</a>
+<ul>
+<li><a href="#variation-a-moves-comments-annotations"
+id="toc-variation-a-moves-comments-annotations"><span
+class="toc-section-number">27.4.1</span> Variation A: (Moves, comments,
+annotations)</a></li>
+<li><a href="#variation-b-setup" id="toc-variation-b-setup"><span
+class="toc-section-number">27.4.2</span> Variation B: (Setup)</a></li>
+<li><a href="#variation-c-markup" id="toc-variation-c-markup"><span
+class="toc-section-number">27.4.3</span> Variation C: (Markup)</a></li>
+<li><a href="#variation-d-style-text-type"
+id="toc-variation-d-style-text-type"><span
+class="toc-section-number">27.4.4</span> Variation D: (Style &amp; text
+type)</a></li>
+<li><a href="#variation-e-time-limits-captures-move-numbers"
+id="toc-variation-e-time-limits-captures-move-numbers"><span
+class="toc-section-number">27.4.5</span> Variation E: (Time limits,
+captures &amp; move numbers)</a></li>
+</ul></li>
+<li><a href="#gametree-2-game-info" id="toc-gametree-2-game-info"><span
+class="toc-section-number">27.5</span> Gametree 2: Game-info</a></li>
+</ul></li>
+<li><a href="#print-example-files" id="toc-print-example-files"><span
+class="toc-section-number">28</span> 2. Print Example Files</a></li>
+</ul>
+</nav>
+<table>
+<tbody>
+</tbody>
+</table>
+<h1 data-number="1" id="sgf-file-format-ff4"><span
+class="header-section-number">1</span> SGF File Format FF[4]</h1>
+<p><strong>This is the official specification of the SGF FF[4]
+standard.</strong></p>
+<p>SGF is the abbreviation of ‘Smart Game Format’. The file format is
+designed to store game records of board games for two players. It’s a
+text only, tree based format. Therefore games stored in this format can
+easily be emailed, posted or processed with text-based tools.</p>
+<p>The main purposes of SGF are to store records of played games and to
+provide features for storing annotated and analyzed games (e.g. board
+markup, variations).</p>
+<p>Last updated: 2021-12-01</p>
+<p>See <a href="https://red-bean.com/sgf/history.html">history</a> for
+changes.</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>For users</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://red-bean.com/sgf/user_guide/index.html">Users
+guide</a></td>
+<td>An user<br>orientated introduction to SGF files</td>
+</tr>
+<tr>
+<td>Tools and more</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://red-bean.com/sgf/sgfc/index.html">SGFC</a></td>
+<td>SGF Syntax Checker &amp; Converter</td>
+</tr>
+<tr>
+<td><a href="https://red-bean.com/sgf/examples/">Example file</a></td>
+<td>An example SGF file plus pictures to show the basic and
+sophisticated<br>features of SGF</td>
+</tr>
+<tr>
+<td>For developers</td>
+<td>SGF Specification</td>
+</tr>
+<tr>
+<td>Basics</td>
+<td>- <a href="https://red-bean.com/sgf/sgf4.html">Basic definition and
+types</a><br>- Additional <a
+href="https://red-bean.com/sgf/var.html">examples for
+variations</a>.<br> <br>- Game specific definitions and types<br> - <a
+href="https://red-bean.com/sgf/go.html">Go (GM[1])</a><br> - <a
+href="https://red-bean.com/sgf/backgammon.html">Backgammon
+(GM[6])</a><br> - <a href="https://red-bean.com/sgf/loa.html">Lines of
+Action (GM[9])</a><br> - <a href="https://red-bean.com/sgf/hex.html">Hex
+(GM[11])</a><br> - <a
+href="https://red-bean.com/sgf/amazons.html">Amazons (GM[18])</a><br> -
+<a href="https://red-bean.com/sgf/octi.html">Octi (GM[19])</a><br> - <a
+href="https://red-bean.com/sgf/gess.html">Gess (GM[20])</a><br> - <a
+href="https://red-bean.com/sgf/twixt.html">Twixt (GM[21])</a></td>
+</tr>
+<tr>
+<td>Properties</td>
+<td>- <a href="https://red-bean.com/sgf/properties.html">General
+properties</a><br>- Game specific properties:<br> - <a
+href="https://red-bean.com/sgf/go.html#properties">Go (GM[1])</a><br> -
+<a href="https://red-bean.com/sgf/backgammon.html#properties">Backgammon
+(GM[6])</a><br> - <a
+href="https://red-bean.com/sgf/loa.html#properties">Lines of Action
+(GM[9])</a><br> - <a
+href="https://red-bean.com/sgf/hex.html#properties">Hex
+(GM[11])</a><br>- <a href="https://red-bean.com/sgf/proplist.html">Short
+index of all properties</a> (alphabetical)<br> <br>- <a
+href="https://red-bean.com/sgf/proplist_t.html">Short index of all
+properties</a><br> (sorted by property type &amp; game)</td>
+</tr>
+<tr>
+<td></td>
+<td>Specification Supplements</td>
+</tr>
+<tr>
+<td><a
+href="https://red-bean.com/sgf/drafts/sgf-uti-draft-2013-05-05.html">UTI-Specification</a></td>
+<td>For Apple systems: a proposal for a Uniform Type Identifier (UTI)
+for SGF files (draft)</td>
+</tr>
+<tr>
+<td><a href="https://red-bean.com/sgf/changes.html">Changes to
+FF[3]</a></td>
+<td>To get a quick overview of what’s new in FF[4] have a look at
+the<br>changes from FF[3].</td>
+</tr>
+<tr>
+<td><a
+href="https://red-bean.com/sgf/compatibility.html">Compatibility</a></td>
+<td>Compatibility issues</td>
+</tr>
+<tr>
+<td><a
+href="https://red-bean.com/sgf/converting.html">Converting</a></td>
+<td>Converting old files to FF[4]</td>
+</tr>
+<tr>
+<td><a href="https://red-bean.com/sgf/proplist_ff.html">Index of
+properties</a></td>
+<td>Index of all FF[1]-FF[4] properties (alphabetical)</td>
+</tr>
+<tr>
+<td>Translations</td>
+<td>There were translations in the past, currently all links are
+broken.<br> Following (outdated) copies are available from
+archive.org:<br> <br>- <a
+href="https://web.archive.org/web/20191224010704/http://zuolin.tech/sgf/">Chinese
+version</a> by Fang Yuan.<br>- <a
+href="https://web.archive.org/web/20130115020851/http://rusgolib.iponweb.net/SGF/">Russian
+version</a> by Pavel Strybuk.<br>- <a
+href="https://web.archive.org/web/20021231014231fw_/http://vof.jp/SGFnote/SGFUserGuide.html">Japanese
+version</a> by Teruo Namatame.</td>
+</tr>
+<tr>
+<td></td>
+<td>Old specifications</td>
+</tr>
+<tr>
+<td><a href="https://red-bean.com/sgf/ff1_3/ff1.html">FF[1]</a></td>
+<td>Specification of FF[1] by Anders Kierulf</td>
+</tr>
+<tr>
+<td><a href="https://red-bean.com/sgf/ff1_3/ff3.html">FF[3]</a></td>
+<td>Specification of FF[3] by Martin Müller</td>
+</tr>
+<tr>
+<td><a href="https://red-bean.com/sgf/ff1_3/style.html">Style
+guide</a></td>
+<td>Style guide by Martin Müller (old but still valid)</td>
+</tr>
+<tr>
+<td></td>
+<td>Obsolete or outdated information</td>
+</tr>
+<tr>
+<td><a href="https://red-bean.com/sgf/discussion/">List archive</a></td>
+<td>Archive of the original email list from 1996 to 1997</td>
+</tr>
+<tr>
+<td><a href="https://red-bean.com/sgf/ff5/ff5.htm">FF[5]</a></td>
+<td>Ideas for FF5 from around 2003 (obsolete)</td>
+</tr>
+<tr>
+<td><a href="https://red-bean.com/sgf/xml/">XGF</a></td>
+<td>proposal for an XML format to replace SGF from around 2003
+(obsolete)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note:</strong> Many Go (WeiQi) terms are used throughout the
+specification, e.g. point is used instead of field or square.</p>
+<p><strong>Note:</strong> Please pay attention to the difference of
+<em>mandatory</em> (has to be, must not, …) and <em>recommended</em>
+(suggested, should have, shouldn’t …). Mandatory topics HAVE TO be done
+exactly this way, otherwise it’s illegal. Recommended topics should but
+don’t have to be followed. If the application doesn’t obey those
+suggestions then the ‘only’ consequence is bad style.</p>
+<hr />
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<tbody>
+<tr>
+<td>Arno Hollosi<br><a
+href="mailto:ahollosi@xmp.net">ahollosi@xmp.net</a></td>
+<td>Hosted at<br><a href="http://www.red-bean.com/"><img
+src="https://red-bean.com/sgf/images/bean-sm.jpg" alt="[bean]" /> Red
+Bean</a><br>Virtual solutions for virtual people</td>
+</tr>
+</tbody>
+</table>
+<h1 data-number="2" id="contents"><span
+class="header-section-number">2</span> Contents</h1>
+<ul>
+<li><a href="https://red-bean.com/sgf/sgf4.html#1">SGF basics</a></li>
+<li><a href="https://red-bean.com/sgf/sgf4.html#2">Basic (EBNF)
+definition</a>
+<ul>
+<li><a href="https://red-bean.com/sgf/sgf4.html#ebnf-def">EBNF
+definition</a></li>
+<li><a href="https://red-bean.com/sgf/sgf4.html#2.2">Some remarks about
+properties</a>
+<ul>
+<li><a href="https://red-bean.com/sgf/sgf4.html#2.2.1">Property
+types</a></li>
+<li><a href="https://red-bean.com/sgf/sgf4.html#2.2.2">Property
+attributes</a></li>
+<li><a href="https://red-bean.com/sgf/sgf4.html#2.2.3">How to handle
+unknown/faulty properties</a></li>
+<li><a href="https://red-bean.com/sgf/sgf4.html#2.2.4">Private
+Properties</a></li>
+</ul></li>
+</ul></li>
+<li><a href="https://red-bean.com/sgf/sgf4.html#types">Property Value
+Types</a>
+<ul>
+<li><a href="https://red-bean.com/sgf/sgf4.html#double">Double</a></li>
+<li><a href="https://red-bean.com/sgf/sgf4.html#text">Text</a></li>
+<li><a
+href="https://red-bean.com/sgf/sgf4.html#simpletext">SimpleText</a></li>
+<li><a href="https://red-bean.com/sgf/sgf4.html#stone">Stone</a></li>
+<li><a href="https://red-bean.com/sgf/sgf4.html#move/pos">Move /
+Point</a>
+<ul>
+<li><a href="https://red-bean.com/sgf/sgf4.html#3.5.1">Compressed point
+lists</a></li>
+</ul></li>
+</ul></li>
+</ul>
+<hr />
+<h1 data-number="3" id="sgf-basics"><span
+class="header-section-number">3</span> 1. SGF basics</h1>
+<p>SGF is a text-only format (not a binary format).</p>
+<p>It contains game trees, with all their nodes and properties, and
+nothing more. Thus the file format reflects the regular internal
+structure of a tree of property lists. There are no exceptions; if a
+game needs to store some information on file with the document, a
+(game-specific) property must be defined for that purpose.</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<tbody>
+<tr>
+<td>Example for tree structure</td>
+<td>Tree as seen by the user.<br>The first line is the main line of
+play,<br> the other lines are variations.</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>There are <a href="https://red-bean.com/sgf/var.html">more
+examples</a> available.</p>
+<p><strong>Node numbering:</strong></p>
+<p>When numbering nodes starting with zero is suggested. Nodes should be
+numbered in the way they are stored in the file.</p>
+<p>Example (of file above): root=0, a=1, b=2, c=3, d=4, e=5, f=6, g=7,
+h=8, i=9 and j=10.</p>
+<p>SGF uses the US ASCII char-set for all its property identifiers and
+property values, except SimpleText &amp; Text. For SimpleText &amp; Text
+the charset is defined using the <a
+href="https://red-bean.com/sgf/properties.html#CA">CA</a> property.</p>
+<hr />
+<h1 data-number="4" id="basic-ebnf-definition"><span
+class="header-section-number">4</span> 2. Basic (EBNF) Definition</h1>
+<p>The conventions of EBNF are discussed in literature, and on WWW in
+the <a
+href="http://www.instantweb.com/foldoc/foldoc.cgi?Backus-Naur+Form">Computing
+Dictionary</a>.</p>
+<p>A quick summary:</p>
+<pre><code>  &quot;...&quot; : terminal symbols
+  [...] : option: occurs at most once
+  {...} : repetition: any number of times, including zero
+  (...) : grouping
+    |   : exclusive or
+ italics: parameter explained at some other place</code></pre>
+<h2 data-number="4.1" id="ebnf-definition"><span
+class="header-section-number">4.1</span> 2.1. EBNF Definition</h2>
+<pre><code>  Collection = GameTree { GameTree }
+  GameTree   = &quot;(&quot; Sequence { GameTree } &quot;)&quot;
+  Sequence   = Node { Node }
+  Node       = &quot;;&quot; { Property }
+  Property   = PropIdent PropValue { PropValue }
+  PropIdent  = UcLetter { UcLetter }
+  PropValue  = &quot;[&quot; CValueType &quot;]&quot;
+  CValueType = (ValueType | Compose)
+  ValueType  = (None | Number | Real | Double | Color | SimpleText |
+        Text | Point  | Move | Stone)</code></pre>
+<p>White space (space, tab, carriage return, line feed, vertical tab and
+so on) may appear anywhere between PropValues, Properties, Nodes,
+Sequences and GameTrees.</p>
+<p>There are two types of property lists: ‘list of’ and ‘elist of’.</p>
+<pre><code>&#39;list of&#39;:    PropValue { PropValue }
+&#39;elist of&#39;:   ((PropValue { PropValue }) | None)
+              In other words elist is list or &quot;[]&quot;.</code></pre>
+<h2 data-number="4.2" id="some-remarks-about-properties"><span
+class="header-section-number">4.2</span> 2.2. Some remarks about
+properties</h2>
+<p>Property-identifiers are defined as keywords using only uppercase
+letters. Currently there are no more than two uppercase letters per
+identifier.</p>
+<p>The order of properties in a node is not fixed. It may change every
+time the file is saved and may vary from application to application.
+Furthermore applications should <strong>not</strong> rely on the order
+of property values. The order of values might change as well.</p>
+<p>Everybody is free to define additional, private properties, as long
+as they do not interfere with the standard properties defined in this
+document.</p>
+<p>Therefore, if one is writing a SGF reader, it is important to skip
+unknown properties. An application should issue a warning message when
+skipping unknown or faulty properties.</p>
+<p>Only one of each property is allowed per node, e.g. one cannot have
+two comments in one node:</p>
+<pre><code>... ;  C[comment1]  B  [dg]  C[comment2] ; ...</code></pre>
+<p>This is an error.</p>
+<p>Each property has a property type. Property types place restrictions
+on certain properties e.g. in which nodes they are allowed and with
+which properties they may be combined.</p>
+<h3 data-number="4.2.1" id="property-types-currently-five"><span
+class="header-section-number">4.2.1</span> 2.2.1. Property Types
+(currently five):</h3>
+<pre><code>move    Properties of this type concentrate on the move made, not on
+    the position arrived at by this move.
+    Move properties must not be mixed with setup properties within
+    the same node.
+    Note: it&#39;s bad style to have move properties in root nodes.
+    (it isn&#39;t forbidden though)
+
+setup   Properties of this type concentrate on the current position.
+    Setup properties must not be mixed with move properties within
+    a node.
+
+root    Root properties may only appear in root nodes. Root nodes are
+    the first nodes of gametrees, which are direct descendants from a
+    collection (i.e. not gametrees within other gametrees).
+    They define some global &#39;attributes&#39; such as board-size, kind
+    of game, used file format etc.
+
+game-info
+    Game-info properties provide some information about the game
+    played (e.g. who, where, when, what, result, rules, etc.).
+    These properties are usually stored in root nodes.
+    When merging a set of games into a single gametree, game infos
+    are stored at the nodes where a game first becomes distinguishable
+    from all other games in the tree.
+
+        A node containing game-info properties is called a game-info node.
+        There may be only one game-info node on any path within the tree,
+        i.e. if some game-info properties occur in one node there may not be
+        any further game-info properties in following nodes:
+        a) on the path from the root node to this node.
+        b) in the subtree below this node.
+
+-   no type. These properties have no special types and may appear
+    anywhere in a collection.</code></pre>
+<p>Because of the strict distinction between move and setup properties
+nodes could also be divided into two classes: move-nodes and
+setup-nodes. This is important for databases, converting to/from
+ISHI-format and for some special applications.</p>
+<h3 data-number="4.2.2"
+id="property-attributes-currently-only-one"><span
+class="header-section-number">4.2.2</span> 2.2.2. Property attributes
+(currently only one)</h3>
+<pre><code>inherit
+    Properties having this attribute affect not only the node containing
+    these properties but also ALL subsequent child nodes as well until
+    a new setting is encountered or the setting gets cleared.
+    I.e. once set all children (of this node) inherit the values of the
+    &#39;inherit&#39; type properties.
+    E.g. VW restricts the view not only of the current node, but
+    of all successors nodes as well. Thus a VW at the beginning of a
+    variation is valid for the whole variation tree.
+    Inheritance stops, if either a new property is encountered and those
+    values are inherited from now on, or the property value gets cleared,
+    typically by an empty value, e.g. VW[].</code></pre>
+<h3 data-number="4.2.3"
+id="how-to-handle-unknownfaulty-properties"><span
+class="header-section-number">4.2.3</span> 2.2.3. How to handle
+unknown/faulty properties</h3>
+<ul>
+<li><p>Unknown properties and their values should be preserved.</p>
+<p>If an application isn’t able to preserve unknown properties, then it
+has to display a warning message.</p></li>
+<li><p>Illegally formatted game-info properties should be corrected if
+possible, otherwise preserved.</p></li>
+<li><p>Other illegally formatted properties should be corrected if
+possible, otherwise deleted.</p>
+<p>An application has to display a warning message, if it deletes
+illegally formatted properties.</p></li>
+</ul>
+<h3 data-number="4.2.4" id="private-properties"><span
+class="header-section-number">4.2.4</span> 2.2.4. Private
+Properties</h3>
+<p>Applications may define their own private properties. Some
+restrictions apply.</p>
+<p><strong>Property identifier:</strong> private properties <strong>must
+not</strong> use an identifier used by one of the standard properties.
+You have to use a new identifier instead. The identifier should consist
+of up to two uppercase letters. SGF doesn’t require to limit the
+identifier to two letters, but some applications could break
+otherwise.</p>
+<p><strong>Property value:</strong> private properties may use one of
+the value types defined in this document or define their own value type.
+When using a private value type the application has to escape
+<strong>every</strong> <code>"]"</code> with a leading <code>"\"</code>.
+Otherwise the file would become unparseable. Should the value type be a
+combination of two simpler types then it’s suggested that your
+application uses the <strong>Compose</strong> type.</p>
+<hr />
+<h1 data-number="5" id="property-value-types"><span
+class="header-section-number">5</span> 3. Property Value Types</h1>
+<pre><code>  UcLetter   = &quot;A&quot;..&quot;Z&quot;
+  Digit      = &quot;0&quot;..&quot;9&quot;
+  None       = &quot;&quot;
+
+  Number     = [(&quot;+&quot;|&quot;-&quot;)] Digit { Digit }
+  Real       = Number [&quot;.&quot; Digit { Digit }]
+
+  Double     = (&quot;1&quot; | &quot;2&quot;)
+  Color      = (&quot;B&quot; | &quot;W&quot;)
+
+  SimpleText = { any character (handling see below) }
+  Text       = { any character (handling see below) }
+
+  Point      = game-specific
+  Move       = game-specific
+  Stone      = game-specific
+
+  Compose    = ValueType &quot;:&quot; ValueType</code></pre>
+<h2 data-number="5.1" id="double"><span
+class="header-section-number">5.1</span> 3.1. Double</h2>
+<p>Double values are used for annotation properties. They are called
+Double because the value is either simple or emphasized. A value of ‘1’
+means ‘normal’; ‘2’ means that it is emphasized.</p>
+<p>Example:</p>
+<p>GB[1] could be displayed as: Good for black</p>
+<p>GB[2] could be displayed as: Very good for black</p>
+<h2 data-number="5.2" id="text"><span
+class="header-section-number">5.2</span> 3.2. Text</h2>
+<p>Text is a formatted text. White spaces other than linebreaks are
+converted to space (e.g. no tab, vertical tab, ..).</p>
+<p><strong>Formatting</strong>:</p>
+<p><em>Soft line break:</em> linebreaks preceded by a <code>"\"</code>
+(soft linebreaks are converted to <code>""</code>, i.e. they are
+removed)</p>
+<p><em>Hard line breaks:</em> any other linebreaks encountered</p>
+<p><strong>Attention</strong>: a single linebreak is represented
+differently on different systems, e.g. <code>"LFCR"</code> for DOS,
+<code>"LF"</code> on Unix. An application should be able to deal with
+following linebreaks: LF, CR, LFCR, CRLF.</p>
+<p>Applications must be able to handle Texts of any size. The text
+should be displayed the way it is, though long lines may be
+word-wrapped, if they don’t fit the display.</p>
+<p><strong>Escaping:</strong> <code>"\"</code> is the escape character.
+Any char following <code>"\"</code> is inserted verbatim (exception:
+whitespaces still have to be converted to space!). Following chars have
+to be escaped, when used in Text: <code>"]"</code>, <code>"\"</code> and
+<code>":"</code> (only if used in compose data type).</p>
+<p><strong>Encoding</strong>: texts can be encoded in different
+charsets. See <a
+href="https://red-bean.com/sgf/properties.html#CA">CA</a> property.</p>
+<h3 data-number="5.2.1" id="example"><span
+class="header-section-number">5.2.1</span> 3.2.1. Example:</h3>
+<pre><code>C[Meijin NR: yeah, k4 is won\\
+derful\
+sweat NR: thank you! :\)\
+dada NR: yup. I like this move too. It&#39;s a move only to be expected from a pro. I really like it :)\
+jansteen 4d: Can anyone\\
+ explain [me\] k4?]</code></pre>
+<p>could be rendered as:</p>
+<pre><code>Meijin NR: yeah, k4 is wonderful
+sweat NR: thank you! :)
+dada NR: yup. I like this move too. It&#39;s a move only to be expected
+from a pro. I really like it :)
+jansteen 4d: Can anyone explain [me] k4?</code></pre>
+<h2 data-number="5.3" id="simpletext"><span
+class="header-section-number">5.3</span> 3.3. SimpleText</h2>
+<p>SimpleText is a simple string. Whitespaces other than space must be
+converted to space, i.e. there’s no newline! Applications must be able
+to handle SimpleTexts of any size.</p>
+<p><strong>Formatting</strong>: linebreaks preceded by a
+<code>"\"</code> are converted to <code>""</code>, i.e. they are removed
+(same as Text type). All other linebreaks are converted to space (no
+newline on display!!).</p>
+<p><strong>Escaping</strong> (same as Text type): <code>"\"</code> is
+the escape character. Any char following <code>"\"</code> is inserted
+verbatim (exception: whitespaces still have to be converted to space!).
+Following chars have to be escaped, when used in SimpleText:
+<code>"]"</code>, <code>"\"</code> and <code>":"</code> (only if used in
+compose data type).</p>
+<p><strong>Encoding</strong> (same as Text type): SimpleTexts can be
+encoded in different charsets. See <a
+href="https://red-bean.com/sgf/properties.html#CA">CA</a> property.</p>
+<h2 data-number="5.4" id="stone"><span
+class="header-section-number">5.4</span> 3.4. Stone</h2>
+<p>This type is used to specify the point and the piece that should be
+placed at that point. If a game doesn’t have a distinguishable set of
+pieces (figures) like e.g. Go (GM[1]) the Stone type is reduced to the
+Point type below, e.g. “list of stone” becomes “list of point” for that
+game.</p>
+<p><strong>Note:</strong> if a property allows “list of stone” a
+reduction to “list of point” allows compressed point lists.</p>
+<ul>
+<li><p><em>Go, Othello, Gomuku, Renju:</em> Stone becomes Point</p></li>
+<li><p><em>Chess</em></p></li>
+<li><p><em>Nine Men’s Morris</em></p></li>
+<li><p><em>Chinese chess</em></p></li>
+<li><p><em>Shogi</em></p></li>
+<li><p><em>Backgammon, Lines of Action, Hex, Gess:</em> Stone becomes
+Point</p></li>
+<li><p><em>Amazons</em></p></li>
+<li><p><em><a
+href="https://red-bean.com/sgf/octi.html#types">Octi</a></em></p></li>
+</ul>
+<h2 data-number="5.5" id="move-point"><span
+class="header-section-number">5.5</span> 3.5. Move / Point</h2>
+<p>These two types are game specific.</p>
+<ul>
+<li><p><a href="https://red-bean.com/sgf/go.html#types">Go</a></p></li>
+<li><p>Othello</p></li>
+<li><p>Chess</p></li>
+<li><p>Gomoku, Renju</p></li>
+<li><p>Nine Men’s Morris</p></li>
+<li><p><a
+href="https://red-bean.com/sgf/backgammon.html#types">Backgammon</a></p></li>
+<li><p>Chinese chess</p></li>
+<li><p>Shogi</p></li>
+<li><p><a href="https://red-bean.com/sgf/loa.html#types">Lines of
+Action</a></p></li>
+<li><p><a
+href="https://red-bean.com/sgf/hex.html#types">Hex</a></p></li>
+<li><p><a
+href="https://red-bean.com/sgf/amazons.html#types">Amazons</a></p></li>
+<li><p><a
+href="https://red-bean.com/sgf/gess.html#types">Gess</a></p></li>
+<li><p><a
+href="https://red-bean.com/sgf/octi.html#types">Octi</a></p></li>
+</ul>
+<h3 data-number="5.5.1" id="compressed-point-lists"><span
+class="header-section-number">5.5.1</span> 3.5.1. Compressed point
+lists</h3>
+<p>The PropValue type <em>“list of point”</em> or <em>“elist of
+point”</em> may be compressed.</p>
+<p>Compressing is done by specifying rectangles instead of listing every
+single point in the rectangle. Rectangles are specified by using the
+upper left and lower right corner of the rectangle.</p>
+<pre><code>Definition:
+List of point: list of (point | composition of point &quot;:&quot; point)
+For the composed type the first point specifies the upper left corner,
+the second point the lower right corner of the rectangle.
+1x1 Rectangles are illegal - they&#39;ve to be listed as single point.</code></pre>
+<p>The definition of ‘point list’ allows both single point [xy] and
+rectangle [ul:lr] specifiers in any order and combination. However the
+points have to be unique, i.e. overlap and duplication are
+forbidden.</p>
+<p>To get an idea have a look at an <a
+href="https://red-bean.com/sgf/DD_VW.html">example</a>.</p>
+<h1 data-number="6" id="contents-1"><span
+class="header-section-number">6</span> Contents</h1>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<tbody>
+<tr>
+<td>Move Properties</td>
+<td><a href="https://red-bean.com/sgf/properties.html#B">B</a>,<br><a
+href="https://red-bean.com/sgf/properties.html#KO">KO</a>, <a
+href="https://red-bean.com/sgf/properties.html#MN">MN</a>, <a
+href="https://red-bean.com/sgf/properties.html#W">W</a></td>
+</tr>
+<tr>
+<td>Setup Properties</td>
+<td><a href="https://red-bean.com/sgf/properties.html#AB">AB</a>,<br><a
+href="https://red-bean.com/sgf/properties.html#AE">AE</a>, <a
+href="https://red-bean.com/sgf/properties.html#AW">AW</a>, <a
+href="https://red-bean.com/sgf/properties.html#PL">PL</a></td>
+</tr>
+<tr>
+<td>Node Annotation Properties</td>
+<td><a href="https://red-bean.com/sgf/properties.html#C">C</a>,<br><a
+href="https://red-bean.com/sgf/properties.html#DM">DM</a>, <a
+href="https://red-bean.com/sgf/properties.html#GB">GB</a>,<br><a
+href="https://red-bean.com/sgf/properties.html#GW">GW</a>, <a
+href="https://red-bean.com/sgf/properties.html#HO">HO</a>,<br><a
+href="https://red-bean.com/sgf/properties.html#N">N</a>, <a
+href="https://red-bean.com/sgf/properties.html#UC">UC</a>, <a
+href="https://red-bean.com/sgf/properties.html#V">V</a></td>
+</tr>
+<tr>
+<td>Move Annotation Properties</td>
+<td><a href="https://red-bean.com/sgf/properties.html#BM">BM</a>,<br><a
+href="https://red-bean.com/sgf/properties.html#DO">DO</a>, <a
+href="https://red-bean.com/sgf/properties.html#IT">IT</a>, <a
+href="https://red-bean.com/sgf/properties.html#TE">TE</a></td>
+</tr>
+<tr>
+<td>Markup Properties</td>
+<td><a href="https://red-bean.com/sgf/properties.html#AR">AR</a>,<br><a
+href="https://red-bean.com/sgf/properties.html#CR">CR</a>, <a
+href="https://red-bean.com/sgf/properties.html#DD">DD</a>,<br><a
+href="https://red-bean.com/sgf/properties.html#LB">LB</a>, <a
+href="https://red-bean.com/sgf/properties.html#LN">LN</a>,<br><a
+href="https://red-bean.com/sgf/properties.html#MA">MA</a>, <a
+href="https://red-bean.com/sgf/properties.html#SL">SL</a>,<br><a
+href="https://red-bean.com/sgf/properties.html#SQ">SQ</a>, <a
+href="https://red-bean.com/sgf/properties.html#TR">TR</a></td>
+</tr>
+<tr>
+<td>Root Properties</td>
+<td><a href="https://red-bean.com/sgf/properties.html#AP">AP</a>,<br><a
+href="https://red-bean.com/sgf/properties.html#CA">CA</a>, <a
+href="https://red-bean.com/sgf/properties.html#FF">FF</a>,<br><a
+href="https://red-bean.com/sgf/properties.html#GM">GM</a>, <a
+href="https://red-bean.com/sgf/properties.html#ST">ST</a>, <a
+href="https://red-bean.com/sgf/properties.html#SZ">SZ</a></td>
+</tr>
+<tr>
+<td>Game Info Properties</td>
+<td><a href="https://red-bean.com/sgf/properties.html#AN">AN</a>,<br><a
+href="https://red-bean.com/sgf/properties.html#BR">BR</a>, <a
+href="https://red-bean.com/sgf/properties.html#BT">BT</a>, <a
+href="https://red-bean.com/sgf/properties.html#CP">CP</a>,<br><a
+href="https://red-bean.com/sgf/properties.html#DT">DT</a>, <a
+href="https://red-bean.com/sgf/properties.html#EV">EV</a>, <a
+href="https://red-bean.com/sgf/properties.html#GN">GN</a>,<br><a
+href="https://red-bean.com/sgf/properties.html#GC">GC</a>, <a
+href="https://red-bean.com/sgf/properties.html#ON">ON</a>, <a
+href="https://red-bean.com/sgf/properties.html#OT">OT</a>,<br><a
+href="https://red-bean.com/sgf/properties.html#PB">PB</a>, <a
+href="https://red-bean.com/sgf/properties.html#PC">PC</a>, <a
+href="https://red-bean.com/sgf/properties.html#PW">PW</a>,<br><a
+href="https://red-bean.com/sgf/properties.html#RE">RE</a>, <a
+href="https://red-bean.com/sgf/properties.html#RO">RO</a>, <a
+href="https://red-bean.com/sgf/properties.html#RU">RU</a>,<br><a
+href="https://red-bean.com/sgf/properties.html#SO">SO</a>, <a
+href="https://red-bean.com/sgf/properties.html#TM">TM</a>, <a
+href="https://red-bean.com/sgf/properties.html#US">US</a>,<br><a
+href="https://red-bean.com/sgf/properties.html#WR">WR</a>, <a
+href="https://red-bean.com/sgf/properties.html#WT">WT</a></td>
+</tr>
+<tr>
+<td>Timing Properties</td>
+<td><a href="https://red-bean.com/sgf/properties.html#BL">BL</a>,<br><a
+href="https://red-bean.com/sgf/properties.html#OB">OB</a>, <a
+href="https://red-bean.com/sgf/properties.html#OW">OW</a>, <a
+href="https://red-bean.com/sgf/properties.html#WL">WL</a></td>
+</tr>
+<tr>
+<td>Miscellaneous Properties</td>
+<td><a href="https://red-bean.com/sgf/properties.html#FG">FG</a>,<br><a
+href="https://red-bean.com/sgf/properties.html#PM">PM</a>, <a
+href="https://red-bean.com/sgf/properties.html#VW">VW</a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h1 data-number="7" id="sgf-properties-ff4"><span
+class="header-section-number">7</span> SGF Properties (FF[4])</h1>
+<h2 data-number="7.1" id="move-properties"><span
+class="header-section-number">7.1</span> Move properties</h2>
+<pre><code>Property:   B
+Propvalue:  move
+Propertytype:   move
+Function:   Execute a black move. This is one of the most used properties
+        in actual collections. As long as
+        the given move is syntactically correct it should be executed.
+        It doesn&#39;t matter if the move itself is illegal
+        (e.g. recapturing a ko in a Go game).
+        Have a look at how to execute a Go-move.
+        B and W properties must not be mixed within a node.
+Related:    W, KO
+
+Property:   KO
+Propvalue:  none
+Propertytype:   move
+Function:   Execute a given move (B or W) even it&#39;s illegal. This is
+        an optional property, SGF viewers themselves should execute
+        ALL moves. It&#39;s purpose is to make it easier for other
+        applications (e.g. computer-players) to deal with illegal
+        moves. A KO property without a black or white move within
+        the same node is illegal.
+Related:    W, B
+
+Property:   MN
+Propvalue:  number
+Propertytype:   move
+Function:   Sets the move number to the given value, i.e. a move
+        specified in this node has exactly this move-number. This
+        can be useful for variations or printing.
+Related:    B, W, FG, PM
+
+Property:   W
+Propvalue:  move
+Propertytype:   move
+Function:   Execute a white move. This is one of the most used properties
+        in actual collections. As long as
+        the given move is syntactically correct it should be executed.
+        It doesn&#39;t matter if the move itself is illegal
+        (e.g. recapturing a ko in a Go game).
+        Have a look at how to execute a Go-move.
+        B and W properties must not be mixed within a node.
+Related:    B, KO</code></pre>
+<hr />
+<h2 data-number="7.2" id="setup-properties"><span
+class="header-section-number">7.2</span> Setup properties</h2>
+<h3 data-number="7.2.1" id="restrictions"><span
+class="header-section-number">7.2.1</span> Restrictions</h3>
+<p>AB, AW and AE must have unique points, i.e. it is illegal to place
+different colors on the same point within one node.</p>
+<p>AB, AW and AE values which don’t change the board, e.g. placing a
+black stone with AB[] over a black stone that’s already there, is bad
+style. Applications may want to delete these values and issue a
+warning.</p>
+<pre><code>Property:   AB
+Propvalue:  list of stone
+Propertytype:   setup
+Function:   Add black stones to the board. This can be used to set up
+        positions or problems. Adding is done by &#39;overwriting&#39; the
+        given point with black stones. It doesn&#39;t matter what
+        was there before. Adding a stone doesn&#39;t make any prisoners
+        nor any other captures (e.g. suicide). Thus it&#39;s possible
+        to create illegal board positions.
+        Points used in stone type must be unique.
+Related:    AW, AE, PL
+
+Property:   AE
+Propvalue:  list of point
+Propertytype:   setup
+Function:   Clear the given points on the board. This can be used
+        to set up positions or problems. Clearing is done by
+        &#39;overwriting&#39; the given points, so that they contain no
+        stones. It doesn&#39;t matter what was there before.
+        Clearing doesn&#39;t count as taking prisoners.
+        Points must be unique.
+Related:    AB, AW, PL
+
+Property:   AW
+Propvalue:  list of stone
+Propertytype:   setup
+Function:   Add white stones to the board. This can be used to set up
+        positions or problems. Adding is done by &#39;overwriting&#39; the
+        given points with white stones. It doesn&#39;t matter what
+        was there before. Adding a stone doesn&#39;t make any prisoners
+        nor any other captures (e.g. suicide). Thus it&#39;s possible
+        to create illegal board positions.
+        Points used in stone type must be unique.
+Related:    AB, AE, PL
+
+Property:   PL
+Propvalue:  color
+Propertytype:   setup
+Function:   PL tells whose turn it is to play. This can be used when
+        setting up positions or problems.
+Related:    AE, AB, AW</code></pre>
+<hr />
+<h2 data-number="7.3" id="node-annotation-properties"><span
+class="header-section-number">7.3</span> Node annotation properties</h2>
+<pre><code>Property:   C
+Propvalue:  text
+Propertytype:   -
+Function:   Provides a comment text for the given node. The purpose of
+        providing both a node name and a comment is to have a short
+        identifier like &quot;doesn&#39;t work&quot; or &quot;Dia. 15&quot; that can be
+        displayed directly with the properties of the node, even if
+        the comment is turned off or shown in a separate window.
+        See text-type for more info.
+Related:    N, ST, V, UC, DM, HO
+
+Property:   DM
+Propvalue:  double
+Propertytype:   -
+Function:   The position is even. SGF viewers should display a
+        message. This property may indicate main variations in
+        opening libraries (joseki) too. Thus DM[2] indicates an
+        even result for both players and that this is a main
+        variation of this joseki/opening.
+        This property must not be mixed with UC, GB or GW
+        within a node.
+Related:    UC, GW, GB
+
+Property:   GB
+Propvalue:  double
+Propertytype:   -
+Function:   Something good for black. SGF viewers should display a
+        message. The property is not related to any specific place
+        on the board, but marks the whole node instead.
+        GB must not be mixed with GW, DM or UC within a node.
+Related:    GW, C, UC, DM
+
+Property:   GW
+Propvalue:  double
+Propertytype:   -
+Function:   Something good for white. SGF viewers should display a
+        message. The property is not related to any specific place
+        on the board, but marks the whole node instead.
+        GW must not be mixed with GB, DM or UC within a node.
+Related:    GB, C, UC, DM
+
+Property:   HO
+Propvalue:  double
+Propertytype:   -
+Function:   Node is a &#39;hotspot&#39;, i.e. something interesting (e.g.
+        node contains a game-deciding move).
+        SGF viewers should display a message.
+        The property is not related to any specific place
+        on the board, but marks the whole node instead.
+        Sophisticated applications could implement the navigation
+        command next/previous hotspot.
+Related:    GB, GW, C, UC, DM
+
+Property:   N
+Propvalue:  simpletext
+Propertytype:   -
+Function:   Provides a name for the node. For more info have a look at
+        the C-property.
+Related:    C, ST, V
+
+Property:   UC
+Propvalue:  double
+Propertytype:   -
+Function:   The position is unclear. SGF viewers should display a
+        message. This property must not be mixed with DM, GB or GW
+        within a node.
+Related:    DM, GW, GB
+
+Property:   V
+Propvalue:  real
+Propertytype:   -
+Function:   Define a value for the node.  Positive values are good for
+        black, negative values are good for white.
+        The interpretation of particular values is game-specific.
+        In Go, this is the estimated score.
+Related:    C, N, RE</code></pre>
+<hr />
+<h2 data-number="7.4" id="move-annotation-properties"><span
+class="header-section-number">7.4</span> Move annotation properties</h2>
+<h3 data-number="7.4.1" id="restrictions-1"><span
+class="header-section-number">7.4.1</span> Restrictions</h3>
+<p>Move annotation properties without a move (B[] or W[]) within the
+same node are senseless and therefore illegal. Applications should
+delete such properties and issue a warning.</p>
+<p>BM, TE, DO and IT are mutual exclusive, i.e. they must not be mixed
+within a single node.</p>
+<pre><code>Property:   BM
+Propvalue:  double
+Propertytype:   move
+Function:   The played move is bad.
+        Viewers should display a message.
+Related:    TE, DO, IT
+
+Property:   DO
+Propvalue:  none
+Propertytype:   move
+Function:   The played move is doubtful.
+        Viewers should display a message.
+Related:    BM, TE, IT
+
+Property:   IT
+Propvalue:  none
+Propertytype:   move
+Function:   The played move is interesting.
+        Viewers should display a message.
+Related:    BM, DO, TE
+
+Property:   TE
+Propvalue:  double
+Propertytype:   move
+Function:   The played move is a tesuji (good move).
+        Viewers should display a message.
+Related:    BM, DO, IT</code></pre>
+<hr />
+<h2 data-number="7.5" id="markup-properties"><span
+class="header-section-number">7.5</span> Markup properties</h2>
+<h3 data-number="7.5.1" id="restrictions-2"><span
+class="header-section-number">7.5.1</span> Restrictions</h3>
+<p>CR, MA, SL, SQ and TR points must be unique, i.e. it’s illegal to
+have two or more of these markups on the same point within a node.</p>
+<pre><code>Property:   AR
+Propvalue:  list of composed point &#39;:&#39; point
+Propertytype:   -
+Function:   Viewers should draw an arrow pointing FROM the first point
+        TO the second point.
+        It&#39;s illegal to specify the same arrow twice,
+        e.g. (Go) AR[aa:bb][aa:bb]. Different arrows may have the same
+        starting or ending point though.
+        It&#39;s illegal to specify a one point arrow, e.g. AR[cc:cc]
+        as it&#39;s impossible to tell into which direction the
+        arrow points.
+Related:    TR, CR, LB, SL, MA, SQ, LN
+
+Property:   CR
+Propvalue:  list of point
+Propertytype:   -
+Function:   Marks the given points with a circle.
+        Points must be unique.
+Related:    TR, MA, LB, SL, AR, SQ, LN
+
+Property:   DD
+Propvalue:  elist of point
+Propertytype:   inherit
+Function:   Dim (grey out) the given points.
+            Have a look at the picture to get an idea.
+            DD[] clears any setting, i.e. it undims everything.
+Related:    VW
+
+Property:   LB
+Propvalue:  list of composed point &#39;:&#39; simpletext
+Propertytype:   -
+Function:   Writes the given text on the board. The text should be
+        centered around the given point. Note: there&#39;s no longer
+        a restriction to the length of the text to be displayed.
+        Have a look at the FF4 example file on possibilities
+        to display long labels (pictures five and six).
+        Points must be unique.
+Related:    TR, CR, MA, SL, AR, SQ, LN
+
+Property:   LN
+Propvalue:  list of composed point &#39;:&#39; point
+Propertytype:   -
+Function:   Applications should draw a simple line form one point
+        to the other.
+        It&#39;s illegal to specify the same line twice,
+        e.g. (Go) LN[aa:bb][aa:bb]. Different lines may have the same
+        starting or ending point though.
+        It&#39;s illegal to specify a one point line, e.g. LN[cc:cc].
+Related:    TR, CR, MA, SL, AR, SQ, LB
+
+Property:   MA
+Propvalue:  list of point
+Propertytype:   -
+Function:   Marks the given points with an &#39;X&#39;.
+        Points must be unique.
+Related:    TR, CR, LB, SL, AR, SQ, LN
+
+Property:   SL
+Propvalue:  list of point
+Propertytype:   -
+Function:   Selected points. Type of markup unknown
+        (though SGB inverts the colors of the given points).
+        Points must be unique.
+Related:    TR, CR, LB, MA, AR, LN
+
+Property:   SQ
+Propvalue:  list of point
+Propertytype:   -
+Function:   Marks the given points with a square.
+        Points must be unique.
+Related:    TR, CR, LB, SL, AR, MA, LN
+
+Property:   TR
+Propvalue:  list of point
+Propertytype:   -
+Function:   Marks the given points with a triangle.
+        Points must be unique.
+Related:    MA, CR, LB, SL, AR, LN</code></pre>
+<hr />
+<h2 data-number="7.6" id="root-properties"><span
+class="header-section-number">7.6</span> Root properties</h2>
+<pre><code>Property:   AP
+Propvalue:  composed simpletext &quot;:&quot; simpletext
+Propertytype:   root
+Function:   Provides the name and version number of the application used
+        to create this gametree.
+        The name should be unique and must not be changed for
+        different versions of the same program.
+        The version number itself may be of any kind, but the format
+        used must ensure that by using an ordinary string-compare,
+        one is able to tell if the version is lower or higher
+        than another version number.
+        Here&#39;s the list of known applications and their names:
+
+        Application          System   Name
+        ---------------------------  -----------  --------------------
+        [CGoban:1.6.2]           Unix     CGoban
+        [Hibiscus:2.1]           Windows 95   Hibiscus Go Editor
+        [IGS:5.0]                 Internet Go Server
+        [Many Faces of Go:10.0]      Windows 95   The Many Faces of Go
+        [MGT:?]              DOS/Unix     MGT
+        [NNGS:?]             Unix     No Name Go Server
+        [Primiview:3.0]          Amiga OS3.0  Primiview
+        [SGB:?]              Macintosh    Smart Game Board
+        [SmartGo:1.0]            Windows      SmartGo
+
+Related:    FF, GM, SZ, ST, CA
+
+Property:   CA
+Propvalue:  simpletext
+Propertytype:   root
+Function:   Provides the used charset for SimpleText and Text type.
+        Default value is &#39;ISO-8859-1&#39; aka &#39;Latin1&#39;.
+        Only charset names (or their aliases) as specified in RFC 1345
+        (or updates thereof) are allowed.
+        Basically this field uses the same names as MIME messages in
+        their &#39;charset=&#39; field (in Content-Type).
+        RFC&#39;s can be obtained via FTP from DS.INTERNIC.NET,
+        NIS.NSF.NET, WUARCHIVE.WUSTL.EDU, SRC.DOC.IC.AC.UK
+        or FTP.IMAG.FR.
+Related:    FF, C, text type
+
+Property:   FF
+Propvalue:  number (range: 1-4)
+Propertytype:   root
+Function:   Defines the used file format. For difference between those
+        formats have a look at the history of SGF.
+        Default value: 1
+        Applications must be able to deal with different file formats
+        within a collection.
+Related:    GM, SZ, ST, AP, CA
+
+Property:   GM
+Propvalue:  number (range: 1-16)
+Propertytype:   root
+Function:   Defines the type of game, which is stored in the current
+        gametree. The property should help applications
+        to reject games, they cannot handle.
+        Valid numbers are: Go = 1, Othello = 2, chess = 3,
+        Gomoku+Renju = 4, Nine Men&#39;s Morris = 5, Backgammon = 6,
+        Chinese chess = 7, Shogi = 8, Lines of Action = 9,
+        Ataxx = 10, Hex = 11, Jungle = 12, Neutron = 13,
+        Philosopher&#39;s Football = 14, Quadrature = 15, Trax = 16,
+        Tantrix = 17, Amazons = 18, Octi = 19, Gess = 20,
+        Twixt = 21, Zertz = 22, Plateau = 23, Yinsh = 24,
+        Punct = 25, Gobblet = 26, hive = 27, Exxit = 28,
+        Hnefatal = 29, Kuba = 30, Tripples = 31, Chase = 32,
+        Tumbling Down = 33, Sahara = 34, Byte = 35, Focus = 36,
+        Dvonn = 37, Tamsk = 38, Gipf = 39, Kropki = 40.
+        Default value: 1
+        Different kind of games may appear within a collection.
+Related:    FF, SZ, ST, AP, CA
+
+Property:   ST
+Propvalue:  number (range: 0-3)
+Propertytype:   root
+Function:   Defines how variations should be shown (this is needed to
+        synchronize the comments with the variations). If ST is omitted
+        viewers should offer the possibility to change the mode online.
+        Basically most programs show variations in two ways:
+        as markup on the board (if the variation contains a move)
+        and/or as a list (in a separate window).
+        The style number consists two options.
+        1) show variations of successor node (children) (value: 0)
+           show variations of current node   (siblings) (value: 1)
+           affects markup &amp; list
+        2) do board markup         (value: 0)
+           no (auto-) board markup (value: 2)
+           affects markup only.
+           Using no board markup could be used in problem collections
+           or if variations are marked by subsequent properties.
+           Viewers should take care, that the automatic variation
+           board markup DOESN&#39;T overwrite any markup of other
+           properties.
+        The  final number is calculated by adding the values of each
+        option. Example: 3 = no board markup/variations of current node
+                 1 = board markup/variations of current node
+        Default value: 0
+Related:    C, FF, GM, SZ, AP, CA
+
+Property:   SZ
+Propvalue:  (number | composed number &#39;:&#39; number)
+Propertytype:   root
+Function:   Defines the size of the board. If only a single value
+        is given, the board is a square; with two numbers given,
+        rectangular boards are possible.
+        If a rectangular board is specified, the first number specifies
+        the number of columns, the second provides the number of rows.
+        Square boards must not be defined using the compose type
+        value: e.g. SZ[19:19] is illegal.
+        The valid range for SZ is any size greater or equal to 1x1.
+        For Go games the maximum size is limited to 52x52.
+        Default value: game specific
+                   for Go: 19 (square board)
+                   for Chess: 8 (square board)
+        Different board sizes may appear within a collection.
+        See move-/point-type for more info.
+Related:    FF, GM, ST, AP, CA</code></pre>
+<hr />
+<h2 data-number="7.7" id="game-info-properties"><span
+class="header-section-number">7.7</span> Game info properties</h2>
+<pre><code>Property:   AN
+Propvalue:  simpletext
+Propertytype:   game-info
+Function:   Provides the name of the person, who made the annotations
+        to the game.
+Related:    US, SO, CP
+
+Property:   BR
+Propvalue:  simpletext
+Propertytype:   game-info
+Function:   Provides the rank of the black player.
+        For Go (GM[1]) the following format is recommended:
+        &quot;..k&quot; or &quot;..kyu&quot; for kyu ranks and
+        &quot;..d&quot; or &quot;..dan&quot; for dan ranks.
+        Go servers may want to add &#39;?&#39; for an uncertain rating and
+        &#39;*&#39; for an established rating.
+Related:    PB, BT, WR
+
+Property:   BT
+Propvalue:  simpletext
+Propertytype:   game-info
+Function:   Provides the name of the black team, if game was part of a
+        team-match (e.g. China-Japan Supermatch).
+Related:    PB, PW, WT
+
+Property:   CP
+Propvalue:  simpletext
+Propertytype:   game-info
+Function:   Any copyright information (e.g. for the annotations) should
+        be included here.
+Related:    US, SO, AN
+
+Property:   DT
+Propvalue:  simpletext
+Propertytype:   game-info
+Function:   Provides the date when the game was played.
+        It is MANDATORY to use the ISO-standard format for DT.
+        Note: ISO format implies usage of the Gregorian calendar.
+        Syntax:
+        &quot;YYYY-MM-DD&quot; year (4 digits), month (2 digits), day (2 digits)
+        Do not use other separators such as &quot;/&quot;, &quot; &quot;, &quot;,&quot; or &quot;.&quot;.
+        Partial dates are allowed:
+        &quot;YYYY&quot; - game was played in YYYY
+        &quot;YYYY-MM&quot; - game was played in YYYY, month MM
+        For games that last more than one day: separate other dates
+        by a comma (no spaces!); following shortcuts may be used:
+        &quot;MM-DD&quot; - if preceded by YYYY-MM-DD, YYYY-MM, MM-DD, MM or DD
+        &quot;MM&quot; - if preceded by YYYY-MM or MM
+        &quot;DD&quot; - if preceded by YYYY-MM-DD, MM-DD or DD
+        Shortcuts acquire the last preceding YYYY and MM (if
+        necessary).
+        Note: interpretation is done from left to right.
+        Examples:
+            1996-05,06 = played in May,June 1996
+            1996-05-06,07,08 = played on 6th,7th,8th May 1996
+            1996,1997 = played in 1996 and 1997
+            1996-12-27,28,1997-01-03,04 = played on 27th,28th
+            of December 1996 and on 3rd,4th January 1997
+        Note: it&#39;s recommended to use shortcuts whenever possible,
+        e.g. 1997-05-05,06 instead of 1997-05-05,1997-05-06
+Related:    EV, RO, PC, RU, RE, TM
+
+Property:   EV
+Propvalue:  simpletext
+Propertytype:   game-info
+Function:   Provides the name of the event (e.g. tournament).
+        Additional information (e.g. final, playoff, ..)
+        shouldn&#39;t be included (see RO).
+Related:    GC, RO, DT, PC, RU, RE, TM
+
+Property:   GN
+Propvalue:  simpletext
+Propertytype:   game-info
+Function:   Provides a name for the game. The name is used to
+        easily find games within a collection.
+        The name should therefore contain some helpful information
+        for identifying the game. &#39;GameName&#39; could also be used
+        as the file-name, if a collection is split into
+        single files.
+Related:    GC, EV, DT, PC, RO
+
+Property:   GC
+Propvalue:  text
+Propertytype:   game-info
+Function:   Provides some extra information about the following game.
+        The intend of GC is to provide some background information
+        and/or to summarize the game itself.
+Related:    GN, ON, AN, CP
+
+Property:   ON
+Propvalue:  simpletext
+Propertytype:   game-info
+Function:   Provides some information about the opening played
+        (e.g. san-ren-sei, Chinese fuseki, etc.).
+Related:    GN, GC
+
+Property:   OT
+Propvalue:  simpletext
+Propertytype:   game-info
+Function:   Describes the method used for overtime (byo-yomi).
+        Examples: &quot;5 mins Japanese style, 1 move / min&quot;,
+              &quot;25 moves / 10 min&quot;.
+Related:    TM, BL, WL, OB, OW
+
+Property:   PB
+Propvalue:  simpletext
+Propertytype:   game-info
+Function:   Provides the name of the black player.
+Related:    PW, BT, WT
+
+Property:   PC
+Propvalue:  simpletext
+Propertytype:   game-info
+Function:   Provides the place where the games was played.
+Related:    EV, DT, RO, RU, RE, TM
+
+Property:   PW
+Propvalue:  simpletext
+Propertytype:   game-info
+Function:   Provides the name of the white player.
+Related:    PB, BT, WT
+
+Property:   RE
+Propvalue:  simpletext
+Propertytype:   game-info
+Function:   Provides the result of the game. It is MANDATORY to use the
+        following format:
+        &quot;0&quot; (zero) or &quot;Draw&quot; for a draw (jigo),
+        &quot;B+&quot; [&quot;score&quot;] for a black win and
+        &quot;W+&quot; [&quot;score&quot;] for a white win
+        Score is optional (some games don&#39;t have a score e.g. chess).
+        If the score is given it has to be given as a real value,
+        e.g. &quot;B+0.5&quot;, &quot;W+64&quot;, &quot;B+12.5&quot;
+        Use &quot;B+R&quot; or &quot;B+Resign&quot; and &quot;W+R&quot; or &quot;W+Resign&quot; for a win by
+        resignation. Applications must not write &quot;Black resigns&quot;.
+        Use &quot;B+T&quot; or &quot;B+Time&quot; and &quot;W+T&quot; or &quot;W+Time&quot; for a win on time,
+        &quot;B+F&quot; or &quot;B+Forfeit&quot; and &quot;W+F&quot; or &quot;W+Forfeit&quot; for a win by
+        forfeit,
+        &quot;Void&quot; for no result or suspended play and
+        &quot;?&quot; for an unknown result.
+
+Related:    EV, DT, PC, RO, RU, TM
+
+Property:   RO
+Propvalue:  simpletext
+Propertytype:   game-info
+Function:   Provides round-number and type of round. It should be
+        written in the following way: RO[xx (tt)], where xx is the
+        number of the round and (tt) the type:
+        final, playoff, league, ...
+Related:    EV, DT, PC, RU, RE, TM
+
+Property:   RU
+Propvalue:  simpletext
+Propertytype:   game-info
+Function:   Provides the used rules for this game.
+        Because there are many different rules, SGF requires
+        mandatory names only for a small set of well known rule sets.
+        Note: it&#39;s beyond the scope of this specification to give an
+        exact specification of these rule sets.
+        Mandatory names for Go (GM[1]):
+            &quot;AGA&quot; (rules of the American Go Association)
+            &quot;GOE&quot; (the Ing rules of Goe)
+            &quot;Japanese&quot; (the Nihon-Kiin rule set)
+            &quot;NZ&quot; (New Zealand rules)
+
+Related:    EV, DT, PC, RO, RE, TM
+
+Property:   SO
+Propvalue:  simpletext
+Propertytype:   game-info
+Function:   Provides the name of the source (e.g. book, journal, ...).
+Related:    US, AN, CP
+
+Property:   TM
+Propvalue:  real
+Propertytype:   game-info
+Function:   Provides the time limits of the game.
+        The time limit is given in seconds.
+Related:    EV, DT, PC, RO, RU, RE
+
+Property:   US
+Propvalue:  simpletext
+Propertytype:   game-info
+Function:   Provides the name of the user (or program), who entered
+        the game.
+Related:    SO, AN, CP
+
+Property:   WR
+Propvalue:  simpletext
+Propertytype:   game-info
+Function:   Provides the rank of the white player. For recommended
+        format see BR.
+Related:    PW, WT, BR
+
+Property:   WT
+Propvalue:  simpletext
+Propertytype:   game-info
+Function:   Provide the name of the white team, if game was part of a
+        team-match (e.g. China-Japan Supermatch).
+Related:    PB, PW, BT</code></pre>
+<hr />
+<h2 data-number="7.8" id="timing-properties"><span
+class="header-section-number">7.8</span> Timing properties</h2>
+<pre><code>Property:   BL
+Propvalue:  real
+Propertytype:   move
+Function:   Time left for black, after the move was made.
+        Value is given in seconds.
+Related:    TM, OT, WL, OB, OW
+
+Property:   OB
+Propvalue:  number
+Propertytype:   move
+Function:   Number of black moves left (after the move of this node was
+        played) to play in this byo-yomi period.
+Related:    TM, OT, BL, WL, OW
+
+Property:   OW
+Propvalue:  number
+Propertytype:   move
+Function:   Number of white moves left (after the move of this node was
+        played) to play in this byo-yomi period.
+Related:    TM, OT, BL, WL, OB
+
+Property:   WL
+Propvalue:  real
+Propertytype:   move
+Function:   Time left for white after the move was made.
+        Value is given in seconds.
+Related:    TM, OT, BL, OB, OW</code></pre>
+<hr />
+<h2 data-number="7.9" id="miscellaneous-properties"><span
+class="header-section-number">7.9</span> Miscellaneous properties</h2>
+<pre><code>Property:   FG
+Propvalue:  none | composition of number &quot;:&quot; SimpleText
+Propertytype:   -
+Function:   The figure property is used to divide a game into
+        different figures for printing: a new figure starts at the
+        node containing a figure property.
+        If the value is not empty then
+        - Simpletext provides a name for the diagram
+        - Number specifies some flags (for printing).
+          These flags are:
+            - coordinates on/off (value: 0/1)
+            - diagram name on/off (value: 0/2)
+            - list moves not shown in figure on/off (value: 0/4)
+              Some moves can&#39;t be shown in a diagram (e.g. ko
+              captures in Go) - these moves may be listed as text.
+            - remove captured stones on/off (value: 0/256)
+              &#39;remove off&#39; means: keep captured stones in the
+              diagram and don&#39;t overwrite stones played earlier -
+              this is the way diagrams are printed in books.
+              &#39;remove on&#39; means: capture and remove the stones from
+              the display - this is the usual viewer mode.
+              This flag is specific to Go (GM[1]).
+            - hoshi dots on/off (value: 0/512)
+              This flag is specific to Go (GM[1]).
+            - Ignore flags on/off (value: 32768)
+              If on, then all other flags should be ignored and
+              the application should use its own defaults.
+          The final number is calculated by summing up all flag values.
+          E.g. 515 = coordinates and diagram name off, remove captured
+          stones, list unshown moves, hoshi dots off;
+          257 = coordinates off, diagram name on, list unshown moves,
+          don&#39;t remove captured stones, hoshi dots on.
+          (this is how diagrams are printed in e.g. Go World)
+        Note: FG combined with VW, MN and PM are mighty tools to print
+        and compile diagrams.
+Related:    MN, PM, VW
+
+Property:   PM
+Propvalue:  number
+Propertytype:   inherit
+Function:   This property is used for printing.
+        It specifies how move numbers should be printed.
+        0 ... don&#39;t print move numbers
+        1 ... print move numbers as they are
+        2 ... print &#39;modulo 100&#39; move numbers
+            This mode is usually used in books or magazines.
+            Note: Only the first move number is calculated
+            &#39;modulo 100&#39; and the obtained number is increased
+            for each move in the diagram.
+            E.g. A figure containing moves
+                 32-78  is printed as moves 32-78
+                102-177 is printed as moves  2-77
+                 67-117 is printed as moves 67-117
+                154-213 is printed as moves 54-113
+        Default value: 1
+Related:    MN, FG
+
+Property:   VW
+Propvalue:  elist of point
+Propertytype:   inherit
+Function:   View only part of the board. The points listed are
+            visible, all other points are invisible.
+            Note: usually the point list is given in compressed
+            format (see &#39;point&#39; type)!
+            Points have to be unique.
+            Have a look at the picture to get an idea.
+            VW[] clears any setting, i.e. the whole board is
+            visible again.
+Related:    DD, PM, FG</code></pre>
+<h1 data-number="8" id="variations"><span
+class="header-section-number">8</span> Variations</h1>
+<p>SGF’s internal structure is a tree of property lists. This allows
+storing variations of the main line of play. The tree is written in
+pre-order. Here’s a short sketch for an algorithm for writing a tree in
+pre-order:</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<tbody>
+<tr>
+<td>Algorithm</td>
+<td>Example tree</td>
+<td>pre-order</td>
+</tr>
+<tr>
+<td><code>&lt;br&gt;WriteTree(Root)&lt;br&gt;End&lt;br&gt;WriteTree(Node)&lt;br&gt;   Write(Node)&lt;br&gt;   for each child of Node&lt;br&gt;      WriteTree(child)&lt;br&gt;   end for&lt;br&gt;end&lt;br&gt;</code></td>
+<td><img src="https://red-bean.com/sgf/images/TA1.gif"
+alt="[ node-tree ]" /></td>
+<td>root a b c d e f g h i j</td>
+</tr>
+<tr>
+<td>SGF</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>&lt;br&gt;(;FF[4]C[root](;C[a];C[b](;C[c])&lt;br&gt;(;C[d];C[e]))&lt;br&gt;(;C[f](;C[g];C[h];C[i])&lt;br&gt;(;C[j])))&lt;br&gt;</code></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Have a look at the <a
+href="https://red-bean.com/sgf/sgf4.html#ebnf-def">EBNF definition</a>
+again. Check the <a href="https://red-bean.com/sgf/examples">SGF example
+file</a> and the <a href="https://red-bean.com/sgf/user_guide">User
+Guide</a> for more details, such as problems with annotations and
+variations. Related properties: <a
+href="https://red-bean.com/sgf/properties.html#ST">ST</a>, <a
+href="https://red-bean.com/sgf/properties.html#C">C</a>, <a
+href="https://red-bean.com/sgf/properties.html#N">N</a>.</p>
+<p>Here are some examples to make it easier to understand the EBNF
+definition and its application to variations.</p>
+<p>Pictures taken from cgoban</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<tbody>
+<tr>
+<td>No Variation</td>
+<td><img src="https://red-bean.com/sgf/images/var1.gif"
+alt="[ no variations ]" /></td>
+</tr>
+<tr>
+<td><code>&lt;br&gt;(;FF[4]GM[1]SZ[19];B[aa];W[bb];B[cc];W[dd];B[ad];W[bd])&lt;br&gt;</code></td>
+<td></td>
+</tr>
+<tr>
+<td>One variation at move 3</td>
+<td><img src="https://red-bean.com/sgf/images/var2.gif"
+alt="[ one variation ]" /></td>
+</tr>
+<tr>
+<td><code>&lt;br&gt;(;FF[4]GM[1]SZ[19];B[aa];W[bb](;B[cc];W[dd];B[ad];W[bd])&lt;br&gt;(;B[hh];W[hg]))&lt;br&gt;</code></td>
+<td></td>
+</tr>
+<tr>
+<td>Note the beginning of a new game tree in front of
+<code>B[cc]</code><br>and the variation itself on the second line. There
+are two “)” at the end:<br>one for the variation gametree and one for
+the end of the main gametree<br>starting at <code>FF[4]</code>.</td>
+<td></td>
+</tr>
+<tr>
+<td>Two variations at move 3</td>
+<td><img src="https://red-bean.com/sgf/images/var3.gif"
+alt="[ two variations ]" /></td>
+</tr>
+<tr>
+<td><code>&lt;br&gt;(;FF[4]GM[1]SZ[19];B[aa];W[bb](;B[cc]N[Var A];W[dd];B[ad];W[bd])&lt;br&gt;(;B[hh]N[Var B];W[hg])&lt;br&gt;(;B[gg]N[Var C];W[gh];B[hh];W[hg];B[kk]))&lt;br&gt;</code></td>
+<td></td>
+</tr>
+<tr>
+<td>Usually the main line is labeled variation “A”, the first
+variation<br>“B”, the second variation “C” and so on. That’s why many
+annotations refer<br>to the next move as “A”.</td>
+<td></td>
+</tr>
+<tr>
+<td>Two variations at different moves</td>
+<td><img src="https://red-bean.com/sgf/images/var4.gif"
+alt="[ one and one variation ]" /></td>
+</tr>
+<tr>
+<td><code>&lt;br&gt;(;FF[4]GM[1]SZ[19];B[aa];W[bb](;B[cc];W[dd](;B[ad];W[bd])&lt;br&gt;(;B[ee];W[ff]))&lt;br&gt;(;B[hh];W[hg]))&lt;br&gt;</code></td>
+<td></td>
+</tr>
+<tr>
+<td>The new gametree starts in front of <code>B[ad]</code>. Note
+that<br>the second varition (2nd line) is in front of the first
+variation (3rd line).<br>Have a look at the closing brackets as
+well.</td>
+<td></td>
+</tr>
+<tr>
+<td>Variation of a variation</td>
+<td><img src="https://red-bean.com/sgf/images/var5.gif"
+alt="[ variation of variation ]" /></td>
+</tr>
+<tr>
+<td><code>&lt;br&gt;(;FF[4]GM[1]SZ[19];B[aa];W[bb](;B[cc]N[Var A];W[dd];B[ad];W[bd])&lt;br&gt;(;B[hh]N[Var B];W[hg])&lt;br&gt;(;B[gg]N[Var C];W[gh];B[hh]  (;W[hg]N[Var A];B[kk])  (;W[kl]N[Var B])))&lt;br&gt;</code></td>
+<td></td>
+</tr>
+<tr>
+<td>The new game tree starts in front of <code>W[hg]</code>. Note
+that<br>there are three “)” at the end: one for the <code>W[kl]</code>
+variation, one<br>for the <code>B[gg]</code> variation, and one for the
+main gametree.</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 data-number="8.1" id="common-pitfalls"><span
+class="header-section-number">8.1</span> Common pitfalls:</h2>
+<p>Every variation has at least one node (see <a
+href="https://red-bean.com/sgf/sgf4.html#ebnf-def">EBNF\
+definition</a>)! That is, the smallest possible variation looks like
+<code>(;)</code> - <code>()</code> is an error! Another example:
+removing all properties from the “variation of a variation” example
+leads to: <code>(;;;(;;;;)(;;)(;;;(;;)(;)))</code> and additionally
+removing unnecessary nodes leads to <code>(;(;)(;)(;(;)(;)))</code></p>
+<p>Properties are part of a node, therefore <code>(W[tt])</code> is an
+error. Correct is <code>(;W[tt])</code></p>
+<p>No properties outside a gametree! E.g. <code>(;)W[tt]</code> is an
+error.</p>
+<h1 data-number="9" id="go-gm1"><span
+class="header-section-number">9</span> Go (GM[1])</h1>
+<h2 data-number="9.1" id="move-point-stone-type"><span
+class="header-section-number">9.1</span> Move, Point &amp; Stone
+type</h2>
+<p>In Go the Stone becomes Point and</p>
+<p>the Move and Point type are the same: two lowercase letters.</p>
+<p><img src="https://red-bean.com/sgf/images/TA2.gif"
+alt="[coordinates (TA2.gif)]" /> Coordinate system for points and
+moves</p>
+<p>The first letter designates the column (left to right), the second
+the row (top to bottom). The upper left part of the board is used for
+smaller boards, e.g. letters “a”-“m” for 13*13.</p>
+<p>A pass move is shown as ‘[]’ or alternatively as ‘[tt]’ (only for
+boards &lt;= 19x19), i.e. applications should be able to deal with both
+representations. ‘[tt]’ is kept for compatibility with FF[3].</p>
+<p>Using lowercase letters only the maximum board size is 26x26.</p>
+<p>In FF[4] it is possible to specify board sizes upto 52x52. In this
+case uppercase letters are used to represent points from 27-52,
+i.e. ‘a’=1 … ‘z’=26 , ‘A’=27 … ‘Z’=52</p>
+<h3 data-number="9.1.1" id="how-to-execute-a-move"><span
+class="header-section-number">9.1.1</span> How to execute a move</h3>
+<p>When a B (resp. W) property is encountered, a stone of that color is
+placed on the given position (no matter what was there before).</p>
+<p>Then the application should check any W (resp. B) groups that are
+adjacent to the stone just placed. If they have no liberties they should
+be removed and the prisoner count increased accordingly.</p>
+<p>Lastly, the B (resp. W) group that the newest stone belongs to should
+be checked for liberties, and if it has no liberties, it should be
+removed (suicide) and the prisoner count increased accordingly.</p>
+<p><strong>See also:</strong> <a
+href="https://red-bean.com/sgf/ff5/m_vs_ax.htm">extensive explanation
+with examples</a> (should leave no question unanswered; is part of FF5
+discussion but valid for FF4 as well).</p>
+<h2 data-number="9.2" id="properties"><span
+class="header-section-number">9.2</span> Properties</h2>
+<p>TW and TB points must be unique, i.e. it’s illegal to list the same
+point in TB and TW within the same node.</p>
+<pre><code>Property:   HA
+Propvalue:  number
+Propertytype:   game-info
+Function:   Defines the number of handicap stones (&gt;=2).
+        If there is a handicap, the position should be set up with
+        AB within the same node.
+        HA itself doesn&#39;t add any stones to the board, nor does
+        it imply any particular way of placing the handicap stones.
+Related:    KM, RE, RU
+
+Property:   KM
+Propvalue:  real
+Propertytype:   game-info
+Function:   Defines the komi.
+Related:    HA, RE, RU
+
+Property:   TB
+Propvalue:  elist of point
+Propertytype:   -
+Function:   Specifies the black territory or area (depends on
+        rule set used).
+        Points must be unique.
+Related:    TW
+
+Property:   TW
+Propvalue:  elist of point
+Propertytype:   -
+Function:   Specifies the white territory or area (depends on
+        rule set used).
+        Points must be unique.
+Related:    TB</code></pre>
+<h1 data-number="10" id="ff4-property-index"><span
+class="header-section-number">10</span> FF[4] property index</h1>
+<p>This is an alphabetical index to all properties defined in FF[4].</p>
+<p>New properties are marked with ‘*’, changed properties are marked
+with ‘!’.</p>
+<pre><code>ID   Description     property type    property value
+---- --------------- ---------------  --------------------------------------
+AB   Add Black       setup            list of stone
+AE   Add Empty       setup            list of point
+AN   Annotation      game-info        simpletext
+*AP  Application     root         composed simpletext &#39;:&#39; simpletext
+*AR  Arrow           -                list of composed point &#39;:&#39; point
+*AS  Who adds stones - (LOA)          simpletext
+AW   Add White       setup            list of stone
+B    Black           move             move
+BL   Black time left move             real
+BM   Bad move        move             double
+BR   Black rank      game-info        simpletext
+BT   Black team      game-info        simpletext
+C    Comment         -                text
+*CA  Charset         root         simpletext
+CP   Copyright       game-info        simpletext
+CR   Circle          -                list of point
+*DD  Dim points      - (inherit)      elist of point
+DM   Even position   -                double
+DO   Doubtful        move             none
+!DT  Date            game-info        simpletext
+EV   Event           game-info        simpletext
+FF   Fileformat      root         number (range: 1-4)
+!FG  Figure          -                none | composed number &quot;:&quot; simpletext
+GB   Good for Black  -                double
+GC   Game comment    game-info        text
+GM   Game            root         number (range: 1-5,7-16)
+GN   Game name       game-info        simpletext
+GW   Good for White  -                double
+HA   Handicap        game-info (Go)   number
+HO   Hotspot         -                double
+*IP  Initial pos.    game-info (LOA)  simpletext
+IT   Interesting     move             none
+*IY  Invert Y-axis   game-info (LOA)  simpletext
+KM   Komi            game-info (Go)   real
+KO   Ko              move             none
+!LB  Label           -                list of composed point &#39;:&#39; simpletext
+*LN  Line            -                list of composed point &#39;:&#39; point
+MA   Mark            -                list of point
+MN   set move number move             number
+N    Nodename        -                simpletext
+OB   OtStones Black  move             number
+ON   Opening         game-info        simpletext
+*OT  Overtime        game-info        simpletext
+OW   OtStones White  move             number
+PB   Player Black    game-info        simpletext
+PC   Place           game-info        simpletext
+PL   Player to play  setup            color
+*PM  Print move mode - (inherit)      number
+PW   Player White    game-info        simpletext
+!RE  Result          game-info        simpletext
+RO   Round           game-info        simpletext
+!RU  Rules           game-info        simpletext
+*SE  Markup          - (LOA)          point
+SL   Selected        -                list of point
+SO   Source          game-info        simpletext
+*SQ  Square          -                list of point
+*ST  Style           root         number (range: 0-3)
+*SU  Setup type      game-info (LOA)  simpletext
+!SZ  Size            root         (number | composed number &#39;:&#39; number)
+TB   Territory Black - (Go)           elist of point
+TE   Tesuji          move             double
+TM   Timelimit       game-info        real
+TR   Triangle        -                list of point
+TW   Territory White - (Go)           elist of point
+UC   Unclear pos     -                double
+US   User            game-info        simpletext
+V    Value           -                real
+*VW  View            - (inherit)      elist of point
+W    White           move             move
+WL   White time left move             real
+WR   White rank      game-info        simpletext
+WT   White team      game-info        simpletext</code></pre>
+<h1 data-number="11" id="ff4-property-index-1"><span
+class="header-section-number">11</span> FF[4] property index</h1>
+<p>This is an alphabetical index to all properties defined in FF[4]
+sorted by property type.</p>
+<p>New properties are marked with ‘*’, changed properties are marked
+with ‘!’.</p>
+<h2 data-number="11.1" id="general-properties"><span
+class="header-section-number">11.1</span> General properties</h2>
+<pre><code>ID   Description     property type    property value
+---- --------------- ---------------  --------------------------------------
+B    Black           move             move
+BL   Black time left move             real
+BM   Bad move        move             double
+DO   Doubtful        move             none
+IT   Interesting     move             none
+KO   Ko              move             none
+MN   set MoveNumber  move             number
+OB   OtStones Black  move             number
+OW   OtStones White  move             number
+TE   Tesuji          move             double
+W    White           move             move
+WL   White time left move             real
+
+AB   Add Black       setup            list of stone
+AE   Add Empty       setup            list of point
+AW   Add White       setup            list of stone
+PL   Player to play  setup            color
+
+*AR  Arrow           -                list of composed point &#39;:&#39; point
+C    Comment         -                text
+CR   Circle          -                list of point
+*DD  Dim points      - (inherit)      elist of point
+DM   Even position   -                double
+!FG  Figure          -                none | composed number &quot;:&quot; simpletext
+GB   Good for Black  -                double
+GW   Good for White  -                double
+HO   Hotspot         -                double
+!LB  Label           -                list of composed point &#39;:&#39; simpletext
+*LN  Line            -                list of composed point &#39;:&#39; point
+MA   Mark            -                list of point
+N    Nodename        -                simpletext
+*PM  Print move mode - (inherit)      number
+SL   Selected        -                list of point
+*SQ  Square          -                list of point
+TR   Triangle        -                list of point
+UC   Unclear pos     -                double
+V    Value           -                real
+*VW  View            - (inherit)      elist of point
+
+*AP  Application     root         composed simpletext &#39;:&#39; number
+*CA  Charset         root         simpletext
+FF   Fileformat      root         number (range: 1-4)
+GM   Game            root         number (range: 1-5,7-17)
+*ST  Style           root         number (range: 0-3)
+!SZ  Size            root         (number | composed number &#39;:&#39; number)
+
+AN   Annotation      game-info        simpletext
+BR   Black rank      game-info        simpletext
+BT   Black team      game-info        simpletext
+CP   Copyright       game-info        simpletext
+!DT  Date            game-info        simpletext
+EV   Event           game-info        simpletext
+GC   Game comment    game-info        text
+GN   Game name       game-info        simpletext
+ON   Opening         game-info        simpletext
+*OT  Overtime        game-info        simpletext
+PB   Player Black    game-info        simpletext
+PC   Place           game-info        simpletext
+PW   Player White    game-info        simpletext
+!RE  Result          game-info        simpletext
+RO   Round           game-info        simpletext
+!RU  Rules           game-info        simpletext
+SO   Source          game-info        simpletext
+TM   Timelimit       game-info        real
+US   User            game-info        simpletext
+WR   White rank      game-info        simpletext
+WT   White team      game-info        simpletext</code></pre>
+<h2 data-number="11.2" id="go-gm1-specific-properties"><span
+class="header-section-number">11.2</span> Go (GM[1]) specific
+properties</h2>
+<pre><code>ID   Description     property type    property value
+---- --------------- ---------------  --------------------------------------
+TB   Territory Black -                elist of point
+TW   Territory White -                elist of point
+
+HA   Handicap        game-info        number
+KM   Komi            game-info        real</code></pre>
+<h2 data-number="11.3"
+id="lines-of-action-gm9-specific-properties"><span
+class="header-section-number">11.3</span> Lines of Action (GM[9])
+specific properties</h2>
+<pre><code>ID   Description     property type    property value
+---- --------------- ---------------  --------------------------------------
+*AS  Who adds stones -                simpletext
+*IP  Initial pos.    game-info        simpletext
+*IY  Invert Y-axis   game-info        simpletext
+*SE  Markup          -                point
+*SU  Setup type      game-info        simpletext</code></pre>
+<h1 data-number="12" id="property-index-of-ff1-ff4"><span
+class="header-section-number">12</span> Property index of
+FF[1]-FF[4]</h1>
+<p>This is an alphabetical index to all properties defined in FF[1] (as
+in Kierulf’s thesis), FF[3] (as on Martin’s pages) and FF[4] (as in this
+spec).</p>
+<p>Note: FF[2] was never made public. It’s more or less identical to
+FF[1] - the only changes known (to me) are that the BS/WS values had
+been redefined.</p>
+<pre><code>ID   FF   Description     property type    property value
+--  ----  --------------  ---------------  ---------------------------------
+AB  1234  Add Black       setup            list of stone
+AE  1234  Add Empty       setup            list of point
+AN  --34  Annotation      game-info        simpletext
+AP  ---4  Application     root             composed simpletext : simpletext
+AR  ---4  Arrow           -                list of composed point : point
+AS  ---4  Who adds stones - (LOA)          simpletext
+AW  1234  Add White       setup            list of stone
+B   1234  Black           move             move
+BL  1234  Black time left move             real
+BM  1234  Bad move        move             double
+BR  1234  Black rank      game-info        simpletext
+BS  123-  Black species   game-info        number
+BT  --34  Black team      game-info        simpletext
+C   1234  Comment         -                text
+CA  ---4  Charset         root             simpletext
+CH  123-  Check mark      -                double
+CP  --34  Copyright       game-info        simpletext
+CR  --34  Circle          -                list of point
+DD  ---4  Dim points      - (inherit)      elist of point
+DM  --34  Even position   -                double
+DO  --34  Doubtful        move             none
+DT  1234  Date            game-info        simpletext
+EL  12--  Eval. comp move -                number
+EV  1234  Event           game-info        simpletext
+EX  12--  Expected move   -                move
+FF  -234  Fileformat      root             number (range: 1-4)
+FG  1234  Figure          -                none | composed number : simpletext
+GB  1234  Good for Black  -                double
+GC  1234  Game comment    game-info        text
+GM  1234  Game            root             number (range: 1-5,7-16)
+GN  1234  Game name       game-info        simpletext
+GW  1234  Good for White  -                double
+HA  1234  Handicap        game-info (Go)   number
+HO  --34  Hotspot         -                double
+ID  --3-  Game identifier game-info        simpletext
+IP  ---4  Initial pos.    game-info (LOA)  simpletext
+IT  --34  Interesting     move             none
+IY  ---4  Invert Y-axis   game-info (LOA)  simpletext
+KM  1234  Komi            game-info (Go)   real
+KO  --34  Ko              move             none
+L   12--  Letters         -                list of point
+LB  --34  Label           -                list of composed point : simpletext
+LN  --34  Line            -                list of composed point : point
+LT  --3-  Lose on time    -                none
+M   12--  Simple markup   -                list of point
+MA  --34  Mark with X     -                list of point
+MN  --34  Set move number move             number
+N   1234  Nodename        -                simpletext
+OB  --34  OtStones Black  move             number
+OM  --3-  Moves/overtime  -                number
+ON  --34  Opening         game-info        simpletext
+OP  --3-  Overtime length -                real
+OT  ---4  Overtime        game-info        simpletext
+OV  --3-  Operator overhead -              real
+OW  --34  OtStones White  move             number
+PB  1234  Player Black    game-info        simpletext
+PC  1234  Place           game-info        simpletext
+PL  1234  Player to play  setup            color
+PM  ---4  Print move mode - (inherit)      number
+PW  1234  Player White    game-info        simpletext
+RE  1234  Result          game-info        simpletext
+RG  123-  Region          - (Go)           list of point
+RO  1234  Round           game-info        simpletext
+RU  --34  Rules           game-info        simpletext
+SC  123-  Secure stones   -                list of point
+SE  --3-  Selftest moves  -                list of point
+SE  ---4  Markup          - (LOA)          point
+SI  --3-  Sigma           -                double
+SL  1234  Selected        -                list of point
+SO  1234  Source          game-info        simpletext
+SQ  ---4  Square          -                list of point
+ST  ---4  Style           root             number (range: 0-3)
+SU  ---4  Setup type      game-info (LOA)  simpletext
+SZ  1234  Size            root             (number | composed number : number)
+TB  1234  Territory Black - (Go)           elist of point
+TC  --3-  Territory count - (Go)           number
+TE  1234  Tesuji          move             double
+TM  1234  Timelimit       game-info        real
+TR  --34  Triangle        -                list of point
+TW  1234  Territory White - (Go)           elist of point
+UC  --34  Unclear pos     -                double
+US  1234  User            game-info        simpletext
+V   1234  Value (score)   -                real
+VW  1234  View            - (inherit)      elist of point
+W   1234  White           move             move
+WL  1234  White time left move             real
+WR  1234  White rank      game-info        simpletext
+WS  123-  White species   game-info        number
+WT  --34  White team      game-info        simpletext</code></pre>
+<h1 data-number="13" id="dimmed-stones-and-view"><span
+class="header-section-number">13</span> Dimmed Stones and View</h1>
+<p>For more info on the properties have a look at:</p>
+<ul>
+<li><p><a href="https://red-bean.com/sgf/sgf4.html#inherit">inherit</a>
+property attribute</p></li>
+<li><p><a href="https://red-bean.com/sgf/properties.html#DD">DD</a>
+property</p></li>
+<li><p><a href="https://red-bean.com/sgf/properties.html#VW">VW</a>
+property</p></li>
+</ul>
+<p>Suppose you have the following SGF-file:</p>
+<pre><code>(;GM[1]SZ[9]FF[4]
+  AB[ac][bc][cc][dc][ec][fc][gc][hc][ic]
+  AW[ae][be][ce][de][ee][fe][ge][he][ie]
+ ;DD[aa][ab][ac][ad][ae][af][ag][ah][ai][bi][bh][bg][bf]
+    [be][bd][bc][bb][ba][ca][cb][cc][cd][ce]
+  VW[aa:bi][ca:ee][ge:ie][ga:ia][gc:ic][gb][ib]
+)</code></pre>
+<p>The same file using compressed point lists for every property:</p>
+<pre><code>(;GM[1]SZ[9]FF[4]
+  AB[ac:ic]AW[ae:ie]
+ ;DD[aa:bi][ca:ce]
+  VW[aa:bi][ca:ee][ge:ie][ga:ia][gc:ic][gb][ib]
+)</code></pre>
+<h2 data-number="13.1" id="picture-of-node-0"><span
+class="header-section-number">13.1</span> Picture of node 0</h2>
+<figure>
+<img src="https://red-bean.com/sgf/images/dim1.gif"
+alt="[board: node 0 (dim1.gif)]" />
+<figcaption aria-hidden="true">[board: node 0 (dim1.gif)]</figcaption>
+</figure>
+<h2 data-number="13.2" id="picture-of-node-1"><span
+class="header-section-number">13.2</span> Picture of node 1</h2>
+<figure>
+<img src="https://red-bean.com/sgf/images/dim2.gif"
+alt="[board: node 1, using DD &amp; VW (dim2.gif)]" />
+<figcaption aria-hidden="true">[board: node 1, using DD &amp; VW
+(dim2.gif)]</figcaption>
+</figure>
+<h1 data-number="14" id="sgf-ff4-history"><span
+class="header-section-number">14</span> SGF FF[4] History</h1>
+<h3 data-number="14.0.1" id="section"><span
+class="header-section-number">14.0.1</span> 2021-12-01</h3>
+<ul>
+<li>Twixt
+<ul>
+<li>added specification for long moves</li>
+<li>adapted move syntax a bit</li>
+<li>other minor corrections</li>
+</ul></li>
+<li>Hex
+<ul>
+<li>add <em>pass</em> move</li>
+<li>reduce minimum board size to 1x1; allow arbitrarily large
+boards</li>
+<li>define point syntax for more than 26 columns</li>
+</ul></li>
+</ul>
+<h3 data-number="14.0.2" id="section-1"><span
+class="header-section-number">14.0.2</span> 2007 - 2016</h3>
+<p>History between 2007-2016 is missing here; changes were mostly
+related to</p>
+<ul>
+<li><p>reserving new game numbers,</p></li>
+<li><p>new releases of SGFC, and</p></li>
+<li><p>adding a draft specification for the <a
+href="https://red-bean.com/sgf/drafts/sgf-uti-draft-2013-05-05.html">Uniform
+Type Identifier</a> (UTI) on 2013-05-05.</p></li>
+</ul>
+<h3 data-number="14.0.3" id="section-2"><span
+class="header-section-number">14.0.3</span> 2006-08-06</h3>
+<ul>
+<li><p>Added link to CA[] property in sections about Text/SimpleText
+property value types.</p></li>
+<li><p>New SGFC release: V1.16</p></li>
+</ul>
+<h3 data-number="14.0.4" id="section-3"><span
+class="header-section-number">14.0.4</span> 2006-06-25</h3>
+<ul>
+<li>Added new game number by request of Dave Dyer: hive = 27</li>
+</ul>
+<h3 data-number="14.0.5" id="section-4"><span
+class="header-section-number">14.0.5</span> 2006-05-13</h3>
+<ul>
+<li><p>Added new game number by request of Dave Dyer: Yinsh =
+24</p></li>
+<li><p>Added new game number by request of Dave Dyer: Punct =
+25</p></li>
+<li><p>Added new game number by request of Dave Dyer: Gobblet =
+26</p></li>
+</ul>
+<h3 data-number="14.0.6" id="section-5"><span
+class="header-section-number">14.0.6</span> 2002-2005</h3>
+<p>History between 2002-2005 is missing here; changes were mostly
+related to reserving new game numbers, and adding specifications for</p>
+<ul>
+<li><p><a href="https://red-bean.com/sgf/backgammon.html">Backgammon</a>
+(GM[6]),</p></li>
+<li><p><a href="https://red-bean.com/sgf/loa.html">Lines of Action</a>
+(GM[9]),</p></li>
+<li><p><a href="https://red-bean.com/sgf/hex.html">Hex</a>
+(GM[11]),</p></li>
+<li><p><a href="https://red-bean.com/sgf/amazons.html">Amazons</a>
+(GM[18]),</p></li>
+<li><p><a href="https://red-bean.com/sgf/octi.html">Octi</a>
+(GM[19]),</p></li>
+<li><p><a href="https://red-bean.com/sgf/gess.html">Gess</a>
+(GM[20]),</p></li>
+<li><p><a href="https://red-bean.com/sgf/twixt.html">Twixt</a>
+(GM[21]).</p></li>
+</ul>
+<h3 data-number="14.0.7" id="section-6"><span
+class="header-section-number">14.0.7</span> 2001-08-12</h3>
+<ul>
+<li><p>Some corrections by Anders Kierulf:</p></li>
+<li><p>File <a
+href="https://red-bean.com/sgf/converting.html">converting.html</a>: L[]
+should be converted to uppercase letters instead of lowercase
+letters.</p></li>
+<li><p>File <a
+href="https://red-bean.com/sgf/properties.html">properties.html</a>:
+Update for SmartGo AP[] entry, changed type of ON[] from Text to
+SimpleText, corrected typos in “related properties” section for OB[] and
+VW[].</p></li>
+<li><p>File <a
+href="https://red-bean.com/sgf/backgammon.html">backgammon.html</a>:
+renamed CP[] property to CO[] (cube owner), added new property DI[] (set
+dice) - by request of Gary Wong.</p></li>
+</ul>
+<h3 data-number="14.0.8" id="section-7"><span
+class="header-section-number">14.0.8</span> 2001-01-21</h3>
+<ul>
+<li><p>Added two new games: Octi (GM[19]) and Gess (Gm[20]) by request
+from Tim Prime.</p></li>
+<li><p>New file: <a
+href="https://red-bean.com/sgf/gess.html">gess.html</a></p></li>
+<li><p>New file: <a
+href="https://red-bean.com/sgf/octi.html">octi.html</a></p></li>
+<li><p>File: <a
+href="https://red-bean.com/sgf/properties.html">properties.html</a>:
+added new game numbers 19, 20 to GM property</p></li>
+<li><p>File: <a href="https://red-bean.com/sgf/sgf4.html">sgf4.html</a>:
+added references to both games</p></li>
+</ul>
+<h3 data-number="14.0.9" id="section-8"><span
+class="header-section-number">14.0.9</span> 2000-10-18</h3>
+<ul>
+<li><p>Added new game: Backgammon (GM[6]) by request from Gary
+Wong</p></li>
+<li><p>New file: <a
+href="https://red-bean.com/sgf/backgammon.html">backgammon.html</a></p></li>
+<li><p>File: <a
+href="https://red-bean.com/sgf/properties.html">properties.html</a>:
+added new game number 6 to GM property</p></li>
+<li><p>File: <a href="https://red-bean.com/sgf/sgf4.html">sgf4.html</a>:
+added references to Backgammon</p></li>
+</ul>
+<h3 data-number="14.0.10" id="section-9"><span
+class="header-section-number">14.0.10</span> 2000-01-15</h3>
+<ul>
+<li>Added “Defaults” and “Properties” sections to Amazons.</li>
+</ul>
+<h3 data-number="14.0.11" id="section-10"><span
+class="header-section-number">14.0.11</span> 2000-01-04</h3>
+<ul>
+<li><p>Added web interface to SGFC</p></li>
+<li><p>Made web pages HTML 4.0 compliant</p></li>
+</ul>
+<h3 data-number="14.0.12" id="section-11"><span
+class="header-section-number">14.0.12</span> 1999-12-17</h3>
+<ul>
+<li><p>Added new game: Amazons (GM[18]) by request from Martin
+Müller.</p></li>
+<li><p>New file: <a
+href="https://red-bean.com/sgf/amazons.html">amazons.html</a></p></li>
+<li><p>File: <a
+href="https://red-bean.com/sgf/index.html">index.html</a>: added
+references to Amazons</p></li>
+<li><p>File: <a
+href="https://red-bean.com/sgf/properties.html">properties.html</a>:
+added new game number i18 to GM property</p></li>
+<li><p>File: <a href="https://red-bean.com/sgf/sgf4.html">sgf4.html</a>:
+added references to Amazons</p></li>
+</ul>
+<h3 data-number="14.0.13" id="section-12"><span
+class="header-section-number">14.0.13</span> 1999-01-07</h3>
+<ul>
+<li><p>Created version history file :o)</p></li>
+<li><p>New file <a
+href="https://red-bean.com/sgf/var.html">var.html</a>: examples for
+variations</p></li>
+<li><p>File <a href="https://red-bean.com/sgf/sgf4.html">sgf4.html</a>
+(SGF Basics)</p>
+<ul>
+<li><p>Added “Contents” and modified layout</p></li>
+<li><p>Updated link for EBNF dictionary entry</p></li>
+<li><p>Added … <em>applications should <strong>not</strong> rely on the
+order of property</em> <em>values.</em></p></li>
+<li><p>Added section “Private Properties”</p></li>
+<li><p>Updated formatting of SimpleText: … <em>linebreaks preceded by
+a</em> <em><code>"\"</code> are converted to <code>""</code>, i.e. they
+are removed</em> <em>(same as Text type).</em></p></li>
+<li><p>Added information for tree structure of SGF file</p></li>
+<li><p>Corrected some syntax errors</p></li>
+</ul></li>
+<li><p>File <a
+href="https://red-bean.com/sgf/properties.html">properties.html</a></p>
+<ul>
+<li><p>Added “Contents” and modified layout</p></li>
+<li><p>Corrected CS links to “CA”</p></li>
+<li><p>Added new game number by request of Dave Dyer: Tantrix =
+17</p></li>
+<li><p>Added flag for FG: <em>Ignore flags on/off (value: 32768)</em>
+<em>If on, then all other flags should be ignored and</em> <em>the
+application should use its own defaults.</em></p></li>
+<li><p>Moved ” <em>TW and TB points must be unique, i.e. it’s illegal to
+list the</em> <em>same point in TB and TW within the same node.</em>” to
+go.html, as TB and TW are described there.</p></li>
+</ul></li>
+</ul>
+<h1 data-number="15" id="from-ff3-to-ff4"><span
+class="header-section-number">15</span> From FF[3] to FF[4]</h1>
+<h2 data-number="15.1" id="general"><span
+class="header-section-number">15.1</span> General</h2>
+<ul>
+<li><p>Specification is more complete now</p></li>
+<li><p>Property identifiers consist only of uppercase (no lowercase in
+between allowed)</p></li>
+<li><p>Go-move/position defined for board sizes upto 52x52</p></li>
+<li><p>Rectangular boards possible.</p></li>
+<li><p>Compressed point lists for “list of point” PropValues</p></li>
+<li><p>Pass move may be specified as ‘[]’</p></li>
+<li><p>Text has been divided into two types: simpletext (basically a
+string) and text, which can be formatted (hard &amp; soft
+linebreaks).</p></li>
+<li><p>Types for properties defined (move, setup, root, gameinfo, none).
+Therefore nodes can be divided into two types too: move /
+setup.</p></li>
+<li><p>Defined used charset (us-ascii) for property-identifiers and
+values. For SimpleText and Text charset is specified using CA property
+(default: ISO-latin-1)</p></li>
+<li><p>Property attribute ‘inherit’ defined.</p></li>
+<li><p>Time values are given in seconds</p></li>
+<li><p>Handling of unknown and illegal properties defined.</p></li>
+</ul>
+<h2 data-number="15.2" id="properties-no-longer-part-of-ff4"><span
+class="header-section-number">15.2</span> Properties no longer part of
+FF[4]</h2>
+<ul>
+<li><p>CH (checkmark), SI (sigma), SE (moves in selftest), LT (lose on
+time), BS, WS, TC: are considered private to SGB</p></li>
+<li><p>ID (game-id) : serves no purpose (see specification of EV, RO
+instead)</p></li>
+<li><p>OM (#moves per overtime), OP (length of overtime)</p></li>
+<li><p>CI (chinese handicap) : not needed (HA doesn’t imply fixed
+placement of handicap stones)</p></li>
+<li><p>OV (computer type property)</p></li>
+<li><p>RG, SC (obsolete markup)</p></li>
+</ul>
+<h2 data-number="15.3" id="new-properties"><span
+class="header-section-number">15.3</span> New properties</h2>
+<ul>
+<li><p>AP (application) : defines writer application</p></li>
+<li><p>ST (style) : for handling of comments and variations</p></li>
+<li><p>AR (arrow), LN (line), SQ (square) : new board markup</p></li>
+<li><p>OT (overtime) : gameinfo to describe byo-yomi rules</p></li>
+<li><p>CA (charset) : defines used charset for Text &amp; SimpleText
+types</p></li>
+<li><p>DD (dimmed positons) : grey out the listed positions</p></li>
+<li><p>VW (view) : restrict view</p></li>
+<li><p>PM (print move) : defines how move numbers should be
+printed</p></li>
+</ul>
+<h2 data-number="15.4" id="changed-properties"><span
+class="header-section-number">15.4</span> Changed properties</h2>
+<ul>
+<li><p>LB (label) may have more than 4 chars now (actually unlimited
+length)</p></li>
+<li><p>SZ (size) changed (rectangular boards possible now)</p></li>
+<li><p>Format of DT and RE is mandatory now (no longer just
+recommended)</p></li>
+<li><p>Some rule names are mandatory now.</p></li>
+<li><p>FG may contain some flags and a diagram name</p></li>
+</ul>
+<h1 data-number="16" id="compatibility-of-ff4"><span
+class="header-section-number">16</span> Compatibility of FF[4]</h1>
+<p>The following list summarizes the compatibility problems of FF[4].
+This is done both ways: problems for old (FF[3]) applications when
+reading a FF[4] file (3 rd 4) and problems of converting FF[3] to FF[4]
+(3-&gt;4). <em>‘np’</em> is used as abbreviation of <em>‘no
+problem’</em> and <em>‘nrp’</em> is used as abbreviation of <em>‘not
+really a problem’</em>.</p>
+<p>If you find some compatibility issues I’ve missed, please let me
+know.</p>
+<h2 data-number="16.1" id="general-types"><span
+class="header-section-number">16.1</span> General &amp; Types</h2>
+<ul>
+<li><strong>Verbose property names no longer exist.</strong>
+<ul>
+<li><p>3-&gt;4: np (delete all lowercase letters from IDs)</p></li>
+<li><p>3 rd 4: np</p></li>
+</ul></li>
+<li><strong>Five property types are introduced (and thus 2 node
+types)</strong>
+<ul>
+<li><p>3-&gt;4: FF[3] files may have mixed setup and move-properties in
+one node. In that case an application should split that node into two
+nodes: all setup, root and game- info properties and the node name
+(‘N[]’) into the first node, all other properties into the
+second.</p></li>
+<li><p>3 rd 4: np</p></li>
+</ul></li>
+<li><strong>FF[3] text type is split into two types: SimpleText and
+Text.</strong>
+<ul>
+<li><p>3-&gt;4: np</p></li>
+<li><p>3 rd 4: Soft linebreaks may be treated as hard
+linebreaks</p></li>
+</ul></li>
+<li><strong>Within the text types anything after a ‘\’ is inserted
+verbatim.</strong>
+<ul>
+<li><p>3-&gt;4: np</p></li>
+<li><p>3 rd 4: FF[3] only knows some ‘escaped’ chars. It’s uncertain
+what old applications will do (most likely their routines are already
+coded in the newly specified way).</p></li>
+</ul></li>
+<li><strong>Recangular boards and boards &gt;19x19 possible</strong>
+<ul>
+<li><p>3-&gt;4: np</p></li>
+<li><p>3 rd 4: totally incompatible</p></li>
+</ul></li>
+<li><strong>Compressed point lists</strong>
+<ul>
+<li><p>3-&gt;4: np</p></li>
+<li><p>3 rd 4: totally incompatible</p></li>
+</ul></li>
+<li><strong>Time values are in seconds</strong>
+<ul>
+<li><p>3-&gt;4: concerning server-games: np, otherwise wrong time is
+displayed</p></li>
+<li><p>3 rd 4: np</p></li>
+</ul></li>
+<li><strong>Used (default) charset defined</strong>
+<ul>
+<li><p>3-&gt;4: some files may contain a charset different from the
+default. Text will then be unreadable (unless the application allows to
+switch to another charset manually).</p></li>
+<li><p>3 rd 4: nrp (as default charset is the one used in
+FF[3])</p></li>
+</ul></li>
+<li><strong>Pass move may be ‘[]’ now (alternativ to ‘[tt]’)</strong>
+<ul>
+<li><p>3-&gt;4: np</p></li>
+<li><p>3 rd 4: ‘[]’ pass may cause problems (at the least the move will
+be ignored)</p></li>
+</ul></li>
+</ul>
+<h2 data-number="16.2" id="properties-1"><span
+class="header-section-number">16.2</span> Properties</h2>
+<ul>
+<li><p><strong>Obsolete properties</strong></p>
+<p>(CH, SI, SE, LT, ID, OM, OP, CI, OV, BS, WS, SC, RG)</p>
+<ul>
+<li><p>3-&gt;4: nrp (properties are treated as unkown properties and are
+preserved. Information is no longer displayed, though.)</p></li>
+<li><p>3 rd 4: np</p></li>
+</ul></li>
+<li><p><strong>New properties</strong></p>
+<p>(AP, ST, AR, LN, SQ, OT, BO, WO, DD, VW, PM)</p>
+<ul>
+<li><p>3-&gt;4: np</p></li>
+<li><p>3 rd 4: nrp (properties are treated as unkown properties.
+Information is not displayed though. Some applications may even strip
+these properties without displaying a warning)</p></li>
+</ul></li>
+<li><p><strong>LB may hold more than 4 chars now</strong></p>
+<ul>
+<li><p>3-&gt;4: np</p></li>
+<li><p>3 rd 4: only 4 chars are displayed/saved (labels get
+cut)</p></li>
+</ul></li>
+<li><p><strong>SZ may hold rectangular boards now</strong></p>
+<ul>
+<li><p>3-&gt;4: np</p></li>
+<li><p>3 rd 4: incompatible</p></li>
+</ul></li>
+<li><p><strong>Format of DT,RE and RU is specfied
+explicitly</strong></p>
+<ul>
+<li><p>3-&gt;4: unknown formats may appear - should be corrected if
+possible</p></li>
+<li><p>3 rd 4: np</p></li>
+</ul></li>
+<li><p><strong>FG may contain flags and diagram name</strong></p>
+<ul>
+<li><p>3-&gt;4: np</p></li>
+<li><p>3 rd 4: nrp (information may get lost though)</p></li>
+</ul></li>
+</ul>
+<h1 data-number="17" id="converting-old-sgf-files-to-ff4"><span
+class="header-section-number">17</span> Converting old SGF files to
+FF[4]</h1>
+<h2 data-number="17.1" id="converting-properties"><span
+class="header-section-number">17.1</span> Converting properties</h2>
+<p>This is a short list of properties that frequently occur in old SGF
+files and how they should be converted to FF[4].</p>
+<pre><code>Property:   M
+Propvalue:  list of point
+Function:   Simple board markup
+Conversion: M should be converted to MA if used on empty board points
+        and to TR if used on stones.
+
+Property:   L
+Propvalue:  list of point
+Function:   Label the given points with uppercase letters.
+Conversion: L should be converted to LB.
+        Example: L[fg][es][jk] -&gt; LB[fg:A][es:B][jk:C]
+
+Property:   TE then BM within a node
+Propvalue:  double
+Function:   Move annotation
+Conversion: Should be converted to IT.
+
+Property:   BM then TE within a node
+Propvalue:  double
+Function:   Move annotation
+Conversion: Should be converted to DO.
+
+Property:   VW
+Propvalue:  point, point
+Function:   Restrict view (just like in FF[4]).
+        VW wasn&#39;t an official property in FF[3] but was used by two
+        applications (SGB &amp; xgoban)
+Conversion: In FF[3] the two given points specified the upper
+        left and the lower right corner. To convert it to FF[4] either
+        make a compose type value out of it or write the uncompressed
+        point list.
+        Example: VW[ba][db] -&gt; VW[ba:db]
+                    or  -&gt; VW[ba][ca][da][bb][cb][db]</code></pre>
+<h2 data-number="17.2" id="other-conversion-issues"><span
+class="header-section-number">17.2</span> Other conversion issues</h2>
+<h3 data-number="17.2.1" id="property-identifiers"><span
+class="header-section-number">17.2.1</span> Property identifiers</h3>
+<p>In FF[1]-FF[3] lowercase letters where allowed in property
+identifiers, but in FF[4] only uppercase letters are allowed. I.e. the
+application <strong>has to</strong> remove all lowercase letters from
+the file.</p>
+<p>Example: <em>Black[qd];thisisaWhitemove[kk]bbrWyryrerwLerreoi[10.3]
+–&gt; B[qd];W[kk]WL[10.3]</em></p>
+<h3 data-number="17.2.2" id="property-types-move-setup"><span
+class="header-section-number">17.2.2</span> Property types move &amp;
+setup</h3>
+<p>The old fileformats didn’t make this distinction, i.e. these files
+may have mixed setup and move-properties in one node.</p>
+<p>In that case an application should split that node into two nodes:
+all setup, root and game-info properties and the node name (‘N[]’) into
+the first node, all other properties into the second. The node name
+should be in the first node because the node to be split might be the
+start of a variation.</p>
+<h3 data-number="17.2.3" id="illegal-errornous-files"><span
+class="header-section-number">17.2.3</span> Illegal &amp; errornous
+files</h3>
+<p>There are a lot of corrupt files out there. If you want to write a
+robust application you should be able to deal with the following
+cases:</p>
+<ul>
+<li><p>Line breaks &amp; whitespaces within moves or values: just remove
+all whitespaces in property values except in text values.</p></li>
+<li><p>Empty values e.g. ‘DT[]N[]’: remove those properties</p></li>
+<li><p>Properties without values e.g. ‘LB B[aa]’: remove the property
+identifiers</p></li>
+<li><p>Properties with too many values e.g. ‘B[aa][bb]’: this one is
+critical because it might be caused by a missing ‘]’ e.g. ‘B[aa
+LB[aa][bb]’<br />
+<br />
+</p></li>
+<li><p>Empty variations e.g. ‘()’: such a construct is illegal because a
+variation<br />
+has to have at least one node - remove ‘()’<br />
+<br />
+</p></li>
+<li><p>Files not starting with ‘(;’ e.g. the ‘;’ is missing - this one
+is tricky if<br />
+you want to skip junk in front of the SGF file.<br />
+<br />
+</p></li>
+<li><p>Faulty game-info values (e.g. RE, DT): the application should
+correct<br />
+those values if possible, otherwise leave them as they are.<br />
+<br />
+<br />
+These are just some frequent errors that occur.<br />
+<br />
+Have a look at the <a
+href="https://red-bean.com/sgf/sgfc/index.html">SGF Syntax Checker
+&amp;\ Converter</a> for more sophisticated errors and how to handle
+them.</p></li>
+</ul>
+<table>
+<tbody>
+</tbody>
+</table>
+<hr />
+<h1 data-number="18" id="sgf-user-guide"><span
+class="header-section-number">18</span> SGF User Guide</h1>
+<p>Version: 1.2</p>
+<hr />
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<tbody>
+<tr>
+<td>Author: Arno Hollosi <em><a
+href="mailto:ahollosi@xmp.net">&lt;ahollosi@xmp.net&gt;</a></em><br>Feedback
+welcome!<br>Published under the <a
+href="http://www.opencontent.org/opl.shtml">OpenContent
+License</a>.</td>
+<td>Still unanswered questions?<br>Go to the <a
+href="http://gtl.jeudego.org/phorum/list.php3?num=2">Discussion
+Forum</a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p>Basics</p>
+<ol type="1">
+<li><a href="https://red-bean.com/sgf/user_guide/index.html#what">What
+is SGF?</a></li>
+<li><a
+href="https://red-bean.com/sgf/user_guide/index.html#general">General
+Concepts</a></li>
+<li><a
+href="https://red-bean.com/sgf/user_guide/index.html#move_vs_place">`Make
+a Move’ vs. `Place a Stone’</a></li>
+<li><a
+href="https://red-bean.com/sgf/user_guide/index.html#style">Style</a></li>
+</ol>
+<p>More details</p>
+<ol start="5" type="1">
+<li><a
+href="https://red-bean.com/sgf/user_guide/index.html#variations">Variations</a></li>
+<li><a
+href="https://red-bean.com/sgf/user_guide/index.html#markup">Board
+markup</a></li>
+<li><a
+href="https://red-bean.com/sgf/user_guide/index.html#annotations">Comments
+and annotations</a></li>
+<li><a
+href="https://red-bean.com/sgf/user_guide/index.html#gameinfo">Game
+Information</a></li>
+</ol>
+<p>Troubleshooting</p>
+<ol start="9" type="1">
+<li>will follow someday</li>
+</ol>
+<hr />
+<h1 data-number="19" id="what-is-sgf"><span
+class="header-section-number">19</span> 1. What is SGF?</h1>
+<p>SGF is short for <strong>Smart Game Format</strong>.</p>
+<p>SGF is a file format used to store game records of two player board
+games. It is a text-only tree based format, i.e. it doesn’t contain
+binary data and thus can easily be emailed or posted to newsgroups. Tree
+based means, that starting from a root one can follow a main path or
+switch to variations (or variations of variations).</p>
+<p>SGF provides many features such as board markup, comments, game
+information, setup positions etc. In order to create a good SGF file one
+should have some knowledge of the internal structure of SGF.</p>
+<h2 data-number="19.1" id="versions"><span
+class="header-section-number">19.1</span> Versions</h2>
+<p>SGF was invented by Anders Kierulf in 1987 and became more and more
+popular. Since then SGF has undergone 2 major revisions.</p>
+<ul>
+<li><p><strong>FF[1]</strong> is the original specification by Anders
+Kierulf. This specification is the core of all later versions. Some
+applications still use this dated version of SGF - e.g. MGT (MS-DOS
+version) which had become quite popular before Windows became en
+vogue.</p></li>
+<li><p><strong>FF[3]</strong> was written by Martin Müller in 1993 and
+was a first step towards a clean specification of the SGF standard. By
+then SGF was an accepted standard for Go games on the Internet. FF[3]
+defined a lot of new properties, e.g. many game information properties
+and some markup properties.</p></li>
+<li><p><strong>FF[4]</strong> was written by Arno Hollosi in 1997 with
+help from many SGF applications programmers. FF[4] carried on the spirit
+of FF[3] and provides a clean, unambiguous definition of SGF. New
+features such as arrows, lines, boards of any size and rectangular
+boards have been introduced. However as this standard is very young, it
+isn’t widely adopted. This will (hopefully) change in the
+future.</p></li>
+</ul>
+<h2 data-number="19.2" id="what-does-an-sgf-file-look-like"><span
+class="header-section-number">19.2</span> What does an SGF file look
+like?</h2>
+<p>Here’s a short example:</p>
+<pre><code>(;FF[4]GM[1]SZ[19]AP[SGFC:1.13b]
+
+PB[troy]BR[12k*]
+PW[john]WR[11k*]
+KM[0.5]RE[W+12.5]
+DT[1998-06-15]
+TM[600]
+
+;B[pd];W[dp];B[pq];W[dd];B[qk];W[jd];B[fq];W[dj];B[jp];W[jj]
+;B[cn]LB[dn:A][po:B]C[dada: other ideas are &#39;A&#39; (d6) or &#39;B&#39; (q5)]
+;W[eo](;B[dl]C[dada: hm - looks troublesome.\
+Usually B plays the 3,3 invasion - see variation];W[qo];B[qp]
+...
+;W[sr];B[sk];W[sg];B[pa];W[gc];B[pi];W[ph];B[de];W[ed];B[kn]
+;W[dh];B[eh];W[se];B[sd];W[af];B[ie];W[id];B[hf];W[hd];B[if]
+;W[fp];B[gq];W[qj];B[sj];W[rh];B[sn];W[so];B[sm];W[ep];B[mn])
+...
+(;W[dq]N[wrong direction];B[qo];W[qp]))</code></pre>
+<h2 data-number="19.3" id="sgf-applications"><span
+class="header-section-number">19.3</span> SGF applications</h2>
+<p>SGF applications are available for all platforms. Most of them are
+freeware, some are shareware. Have a look at the <a
+href="ftp://igs.nuri.net/Go/">Go FTP Archive</a>.</p>
+<p>As no program is perfect and SGF is evolving it’s strongly
+recommended to update one’s favorite SGF application at least once a
+year. Right now many people still use applications that are over five
+years old which causes a lot of trouble.</p>
+<p><strong>Update your application on a regular basis!</strong></p>
+<p><a href="https://red-bean.com/sgf/user_guide/index.html#toc">back to
+top</a></p>
+<hr />
+<h1 data-number="20" id="general-concepts"><span
+class="header-section-number">20</span> 2. General Concepts</h1>
+<p>SGF consists of nodes which are structured in a tree, i.e. a node has
+exactly one predecessor called parent, but may have one <em>or more</em>
+successors called children. Thus SGF can store game records (a list of
+moves) and variations of the actual line of play.</p>
+<p><strong>A node is the smallest unit visible to the user</strong>,
+i.e. the user steps through the tree node-wise (forward [down the tree],
+backward [up the tree], etc.).</p>
+<p><strong>A node consists of properties.</strong> These properties
+contain a certain kind of information, e.g. the <em>B[]</em> property
+describes a black move made, the <em>C[]</em> property contains a
+comment text (don’t worry: you don’t have to remember the property names
+:-).</p>
+<p>For example: if you step forward and see a new move on the board and
+a comment in the comment window plus some markup on the board then all
+this information is represented by <strong>different</strong> properties
+which are parts of the <strong>same</strong> node.</p>
+<p>Thus editing is done in two levels: adding/deleting nodes and adding
+or deleting properties.</p>
+<p>To make it clear: a move is part of a node and not the node part of
+the move. A move is represented by <em>one</em> property but a node may
+contain <em>more than one</em> property.</p>
+<p><a href="https://red-bean.com/sgf/user_guide/index.html#toc">back to
+top</a></p>
+<hr />
+<h1 data-number="21" id="make-a-move-vs.-place-a-stone"><span
+class="header-section-number">21</span> 3. `Make a Move’ vs. `Place a
+Stone’</h1>
+<p>SGF provides two ways to add new stones to the board:</p>
+<ul>
+<li><p>make a move</p></li>
+<li><p>place a stone</p></li>
+</ul>
+<p><strong>Making a move</strong> is like making a move in a real game,
+i.e. you can only make moves on empty intersections, you can only make
+one move per turn (here: per node) and you may take some prisoners by
+making a move. In most applications the current move is highlighted.</p>
+<p><strong>Placing a stone</strong> on the board is like setting up a
+position, e.g. handicap stones, setting up a problem or analysis of
+positions (“this would work if the position over there would look like
+this…”). Thus one can place <em>more than one</em> stone, stones of
+different colors, remove stones, replace stones with that of the
+opposite color all in <em>one</em> node.</p>
+<p>But: there are no prisoners made as these are not regular moves!</p>
+<h2 data-number="21.1" id="restrictions-3"><span
+class="header-section-number">21.1</span> Restrictions</h2>
+<p>It is good style (and is required since FF[4]) to distinguish between
+a move and the position arrived at by this move.</p>
+<p>Therefore it’s <strong>illegal</strong> to mix setup properties and
+move properties within the same node.</p>
+<p><strong>Move properties</strong> are properties such as a black or
+white move, annotations on a move (bad move, interesting move, etc.) or
+how much time a player had left after the current move was made.</p>
+<p><strong>Setup properties</strong> are properties used to set up or
+describe a position such as place black/white stones on the board or
+who’s turn it is to play.</p>
+<p>A <a href="https://red-bean.com/sgf/proplist_t.html">detailed
+list</a> of setup and move properties is available.</p>
+<p>Unfortunately many applications allow mixing setup and move
+properties, so it’s up to the user to create a good SGF file.</p>
+<p><a href="https://red-bean.com/sgf/user_guide/index.html#toc">back to
+top</a></p>
+<hr />
+<h1 data-number="22" id="style"><span
+class="header-section-number">22</span> 4. Style</h1>
+<ul>
+<li><p>The <strong>first</strong> branch (variation `A’ or `1’) is the
+<strong>main</strong> branch.</p>
+<p>Variation `A’ should always follow the real game. Consider yourself
+viewing a game where you have to press `b’ then `c’ and then `b’ again
+just to follow the real game - disturbing.</p></li>
+<li><p>Don’t imitate sibling-style variations. Use a sibling-style
+application instead. Have a look at <a
+href="https://red-bean.com/sgf/user_guide/index.html#variations">definition
+and reason</a>.</p></li>
+<li><p>Omit extra pass plays and empty nodes at the end of the game.</p>
+<p>The last node of the game should contain the last move on the board.
+Do not put game information such as `Black wins and connects Ko’ into
+the comment field, rather add another move to the game which connects
+the Ko.</p></li>
+<li><p>Never substitute moves with placing stones.</p>
+<p>Never substitute a regular move with placing (setting up) a stone.
+Some applications rely on regular moves for sophisticated functions.
+Furthermore applications that show the position of the next move can’t
+display the position of the setup stone. Have a look at the <a
+href="https://red-bean.com/sgf/user_guide/index.html#move_vs_place">difference</a>
+between a real move and setting up a stone.</p></li>
+<li><p>Length of labels</p>
+<p>Since FF[4] it’s possible to use labels of any size. But some (old)
+applications have problems displaying labels longer than 2 chars. Use
+long labels with care!</p></li>
+<li><p>Don’t store game information such as who’s black/white etc. into
+the first comment - use game information properties instead. Here’s the
+<a
+href="https://red-bean.com/sgf/user_guide/index.html#why_gameinfo">reason</a>
+why.</p></li>
+<li><p>Use annotations for standard situations (e.g bad move).</p>
+<p>Annotations are represented by extra SGF-properties and thus can be
+treated in a <a
+href="https://red-bean.com/sgf/user_guide/index.html#annotations">special
+way</a>.</p></li>
+</ul>
+<p><a href="https://red-bean.com/sgf/user_guide/index.html#toc">back to
+top</a></p>
+<hr />
+<h1 data-number="23" id="variations-1"><span
+class="header-section-number">23</span> 5. Variations</h1>
+<p><img src="https://red-bean.com/sgf/user_guide/VARI.GIF"
+alt="[ Variation tree ]" /> SGF allows you to store variations of the
+main path of play, which is useful for analyzing different lines of
+play. The picture to the right illustrates this concept. Variations are
+usually assigned letters starting with ‘A’ where ‘A’ is the continuation
+of the current line of play. That’s why some applications refer to the
+next move as ‘A’.</p>
+<p>Applications show variations as either siblings or children.
+<strong>Showing variations as children</strong> means, that if the
+applications is currently at move #3 (like in the picture) it provides
+you the choice of ‘A’ through ‘C’ which are all move #4. That is, by
+selecting a variation, you step forward in the tree.</p>
+<p><strong>Showing variations as siblings</strong> means, that the
+application provides the variation choice at move #4. In this case,
+selecting a variation selects between moves at the same tree level
+(here: #4 moves). This method is perceived as alternatives to the
+current move and by e.g. selecting variation ‘B’ move #4 ‘A’ is removed
+from the board and move #4 ‘B’ is shown.</p>
+<p>The differences between this two styles may cause confusion when the
+variations are accompanied by comments. For example, imagine the comment
+saying something like: “This is bad. See variation ‘B’ instead.” If the
+author used a children-style application this comment is stored together
+with move #3. If readers use a sibling-style application, they see the
+comment on move #3, but no variations: they appear with the next move.
+The other case (author: sibling style, reader: children style) has
+similar implications. Users who read the comment at move #4 have to go
+back one move and select the variation there.</p>
+<p>Most people prefer the sibling style as it seems more natural. They
+even imitate the sibling style in children-style applications. This is
+done by removing the previous move and making a new move in the same
+(first) node of the variation. This is <strong>bad style</strong>. Since
+FF[4] it’s illegal syntax too. If you have a look at the picture you see
+that all alternative moves are at the same level (that is, all #4’s are
+in one column, all #7’s are in one column). By imitating the
+sibling-style in chlidren-style applications this is no longer the case,
+as the #4 moves of variation ‘B’ and ‘C’ would appear under move #5 of
+variation ‘A’. Furthermore those files cannot be converted to other
+fileformats easily. If you like sibling-style variations then use a
+sibling-style application!</p>
+<p><a href="https://red-bean.com/sgf/user_guide/index.html#toc">back to
+top</a></p>
+<hr />
+<h1 data-number="24" id="board-markup"><span
+class="header-section-number">24</span> 6. Board markup</h1>
+<p>SGF provides a wide selection of board markup. Almost every markup
+you see in magazines or books is available in SGF too. However some
+applications are not able to handle certain types of markup. Here’s a
+short list of markup types available:</p>
+<p>Snapshots taken from <strong>cgoban</strong> by W.M. Shubert</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Markup</th>
+<th>Property</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>simple markup</td>
+<td>M[]</td>
+<td>old (FF[1]), very common<br>This markup has been superceeded by MA[]
+and TR[], however very old <br>applications still use M[] and don’t
+understand MA[] and TR[].</td>
+</tr>
+<tr>
+<td>letters</td>
+<td>L[]</td>
+<td>old (FF[1]), very common<br>This markup has been<br>superceeded by
+LB[], however very old applications (e.g. MS-DOS MGT)<br>still use L[]
+and don’t understand LB[]</td>
+</tr>
+</tbody>
+</table>
+<p><a href="https://red-bean.com/sgf/user_guide/index.html#toc">back to
+top</a></p>
+<hr />
+<h1 data-number="25" id="comments-and-annotations"><span
+class="header-section-number">25</span> 7. Comments and annotations</h1>
+<p>In order to comment on a move or position SGF allows to store text in
+each node, which usually gets displayed in the comment window of your
+SGF application. Text is easy to edit, but has some disadvantages
+too:</p>
+<ul>
+<li><p>language - if you don’t understand the language you can’t
+understand the comment</p></li>
+<li><p>applications can’t use the text to provide more sophisticated
+functions (such as searching for bad moves or tesujis)</p></li>
+<li><p>computer players can’t utilize the text information</p></li>
+</ul>
+<p>Therefore SGF provides a set of so-called annotation properties.
+These properties are encoded differently in the file. They are not
+stored as readable text, but as tokens, which have a special meaning.
+Thus the SGF application reading the file knows their meaning and can
+provide the following:</p>
+<ul>
+<li><p>multi-lingual support - the application displays the message in
+the selected language.</p></li>
+<li><p>search or other database functions</p></li>
+<li><p>computer players can use annotations in their fuseki- or
+joseki-library to determine the best move or good alternatives.</p></li>
+</ul>
+<p>There are three types of annotation properties: <em>general
+annotations</em>, <em>move annotations</em> and <em>annotations on
+positions</em>. Have a look at the following table:</p>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr>
+<th>Annotation</th>
+<th>Property</th>
+<th>Type</th>
+<th>may be emphasized?</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Good for Black</td>
+<td>GB</td>
+<td>General</td>
+<td>yes</td>
+<td>Something good for black</td>
+</tr>
+<tr>
+<td>Good for White</td>
+<td>GW</td>
+<td>General</td>
+<td>yes</td>
+<td>Something good for white</td>
+</tr>
+<tr>
+<td>Even position</td>
+<td>DM</td>
+<td>General</td>
+<td>yes</td>
+<td>The position is even</td>
+</tr>
+<tr>
+<td>Unclear position</td>
+<td>UC</td>
+<td>General</td>
+<td>yes</td>
+<td>The position is unclear</td>
+</tr>
+<tr>
+<td>Hot spot</td>
+<td>HO</td>
+<td>General</td>
+<td>yes</td>
+<td>An important node (e.g. game<br>deciding move)</td>
+</tr>
+<tr>
+<td>Tesuji</td>
+<td>TE</td>
+<td>Move</td>
+<td>yes</td>
+<td>The move played is (locally) a good move</td>
+</tr>
+<tr>
+<td>Bad move</td>
+<td>BM</td>
+<td>Move</td>
+<td>yes</td>
+<td>The move played is bad</td>
+</tr>
+<tr>
+<td>Doubtful move</td>
+<td>DO</td>
+<td>Move</td>
+<td>no</td>
+<td>The move played is doubtful</td>
+</tr>
+<tr>
+<td>Interesting move</td>
+<td>IT</td>
+<td>Move</td>
+<td>no</td>
+<td>The move played is interesting</td>
+</tr>
+<tr>
+<td>Black to play</td>
+<td>PL</td>
+<td>Position</td>
+<td>no</td>
+<td>It’s black turn to play</td>
+</tr>
+<tr>
+<td>White to play</td>
+<td>PL</td>
+<td>Position</td>
+<td>no</td>
+<td>It’s white turn to play</td>
+</tr>
+</tbody>
+</table>
+<p>Unfortunately not many applications support these properties yet.
+This will hopefully change in the future. Consider using annotation
+properties whenever possible. They have many advantages despite their
+simplicity.</p>
+<p><a href="https://red-bean.com/sgf/user_guide/index.html#toc">back to
+top</a></p>
+<hr />
+<h1 data-number="26" id="game-information"><span
+class="header-section-number">26</span> 8. Game Information</h1>
+<p>SGF provides a wide range of properties to store so called game
+information. Usually applications provide a dialog or extra window to
+type in game information.</p>
+<p>Note that some entries have a <strong>mandatory format</strong>.
+Why?</p>
+<p>Because standard compliant entries can easily be parsed by
+applications and therefore can be searched in game collections or
+displayed in your favorite (customized) scheme. Unfortunately many
+applications allow the user to enter illegal information - so it’s up to
+you to create correct entries - please take care!</p>
+<p>E.g. consider that you’ve got a game collection of about 5000 pro
+games and want to look for games played by Cho Chikun in March 1996. Now
+if dates are stored as e.g. DT[5th March 1996], DT[11/3/96],
+DT[1996/3/7], DT[1996 6 8] - do you really know which of these games
+were played in March?</p>
+<h2 data-number="26.1" id="why-should-you-use-game-information"><span
+class="header-section-number">26.1</span> Why should you use game
+information?</h2>
+<p>Sometimes you see a SGF file which has all the information stored
+into the first comment.</p>
+<p>This is bad style!</p>
+<p>If the information is stored into a comment it’s almost impossible
+for a computer program to find the relevant data - searching becomes
+impossible. Therefore store the game information at the proper place -
+it’ll save you much time in the future and makes your database more
+usable. It makes converting or interchanging of games much more easier
+too.</p>
+<h2 data-number="26.2" id="list-of-game-information-properties"><span
+class="header-section-number">26.2</span> List of game information
+properties</h2>
+<p>Here’s a complete list with a short description of each item. If this
+list doesn’t answer all your questions have a look at the <a
+href="https://red-bean.com/sgf/properties.html#AN">official, detailed
+specification</a>.</p>
+<p>Note: recommended is not mandatory! But you should use the
+recommended format whenever possible.</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Name</th>
+<th>Property</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Black/white name</td>
+<td>PB[]/PW[]</td>
+<td>Name of the player who played black/white<br>Try to be consistent in
+using names - for professional players it’s<br>suggested to use the same
+names as Jan van der Steen in his<br><a
+href="http://gobase.org/information/players/browser/">database</a>.</td>
+</tr>
+<tr>
+<td>Black/white rank</td>
+<td>BR[]/WR[]</td>
+<td>Strength of the player who played black/white<br>Recommended
+format:<br><code>&lt;br&gt;"10k" or "10 kyu" for a kyu player&lt;br&gt;"3d"  or "3 dan" for a dan player&lt;br&gt;Go servers usually add a `*' (certain rating)&lt;br&gt;or `?' (uncertain rating) e.g. "10k*"&lt;br&gt;</code></td>
+</tr>
+<tr>
+<td>Black/white team</td>
+<td>BT[]/WT[]</td>
+<td>Name of the team (for games played in team events)</td>
+</tr>
+<tr>
+<td>Result</td>
+<td>RE[]</td>
+<td>Final result of the game<br><strong>Mandatory
+format:</strong><br><code>&lt;br&gt;"0" (zero) for a draw (jigo)&lt;br&gt;"B+score" for a black win and&lt;br&gt;"W+score" for a white win, e.g. "B+2.5", "W+64" or "B+0.5"&lt;br&gt;"B+R"/"B+Resign" and "W+R"/"W+Resign" for a win by resignation.&lt;br&gt;You MUST NOT write "Black resigns"&lt;br&gt;</code><br>A
+more <a href="https://red-bean.com/sgf/properties.html#RE">detailed
+description</a> is available.</td>
+</tr>
+<tr>
+<td>Komi</td>
+<td>KM[]</td>
+<td>Score adjustment (points added to White’s
+score)<br><strong>Mandatory format:</strong>
+<br><code>&lt;br&gt;Use real values, e.g. "5.5", "0", "0.5" or "-10," etc.&lt;br&gt;Don't use: "5 points", "half a point", "5 1/2", etc.&lt;br&gt;</code></td>
+</tr>
+<tr>
+<td>Handicap</td>
+<td>HA[]</td>
+<td>Number of handicap stones<br><strong>Mandatory format:</strong>
+<br><code>&lt;br&gt;Use integer values greater zero, e.g. "1", "5" or "9"&lt;br&gt;Don't use: "2 stones", "three"&lt;br&gt;</code></td>
+</tr>
+<tr>
+<td>Time</td>
+<td>TM[]</td>
+<td>Regular playing time for each side<br><strong>Mandatory
+format:</strong>
+<br><code>&lt;br&gt;Time is given in seconds as a real value, e.g. "4600", "300"&lt;br&gt;Don't use: "1 hour"&lt;br&gt;</code><br>It’s
+a little bit awkward if your application doesn’t transform<br>the real
+value into a somewhat more human-readable form. But please use<br>real
+values!</td>
+</tr>
+<tr>
+<td>Date</td>
+<td>DT[]</td>
+<td>Date when game was played<br><strong>Mandatory format:</strong>
+<br><code>&lt;br&gt;Use the ISO-standard format "YYYY-MM-DD"&lt;br&gt;Do not use other separators such as "/" or " " or ".".&lt;br&gt;Example: a game played on the 5th March 1997&lt;br&gt;         would be encoded as: 1997-03-05&lt;br&gt;</code><br>A
+more <a href="https://red-bean.com/sgf/properties.html#DT">detailed
+description</a> is available.</td>
+</tr>
+<tr>
+<td>Event</td>
+<td>EV[]</td>
+<td>Name of event (e.g. tournament name)</td>
+</tr>
+<tr>
+<td>Round</td>
+<td>RO[]</td>
+<td>Number of tournament round</td>
+</tr>
+<tr>
+<td>Place</td>
+<td>PC[]</td>
+<td>Name of place (e.g. city, country) where game took place</td>
+</tr>
+<tr>
+<td>Rules</td>
+<td>RU[]</td>
+<td>Name of rule set used (e.g. Japanese, Chinese, AGA, GOE, etc.)</td>
+</tr>
+<tr>
+<td>Game name</td>
+<td>GN[]</td>
+<td>Name of the game</td>
+</tr>
+<tr>
+<td>Opening</td>
+<td>ON[]</td>
+<td>Describes the opening played (e.g. san-ren-sei)</td>
+</tr>
+<tr>
+<td>Game comment</td>
+<td>GC[]</td>
+<td>General comment about the game</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>SO[]</td>
+<td>Name of the source (e.g. book, journal, etc.)</td>
+</tr>
+<tr>
+<td>User</td>
+<td>US[]</td>
+<td>Name of user (or program) who entered the game record</td>
+</tr>
+<tr>
+<td>Annotation</td>
+<td>AN[]</td>
+<td>Name of the person who made the annotations</td>
+</tr>
+<tr>
+<td>Copyright</td>
+<td>CP[]</td>
+<td>Any copyright information</td>
+</tr>
+</tbody>
+</table>
+<p><a href="https://red-bean.com/sgf/user_guide/index.html#toc">back to
+top</a></p>
+<hr />
+<h1 data-number="27" id="general-sgf-ff4-example-file"><span
+class="header-section-number">27</span> 1. General SGF FF[4] Example
+File</h1>
+<h2 data-number="27.1" id="purpose"><span
+class="header-section-number">27.1</span> Purpose</h2>
+<p>The example SGF file and the GIF pictures should illustrate some of
+the features of SGF FF[4] and give application coders an impression how
+to draw or represent various properties.</p>
+<p><strong>Note:</strong> The colors chosen, the screen structure
+(seperate window for variations &amp; other information, seperate
+comment window) etc. are specific to Primiview, the application used to
+create these pictures.</p>
+<p>Your application doesn’t have to look the same.</p>
+<p>You are free to choose whatever colors, structures etc. you want.
+Same goes for representation of advanced markup such as DD (dimmed
+points).</p>
+<h2 data-number="27.2" id="general-comments"><span
+class="header-section-number">27.2</span> General comments</h2>
+<p>Primiview’s node numbering starts with zero (0) (just like MGT). Node
+numbering is done in the order the nodes appear in the SGF file.</p>
+<p>If your application can’t handle SGF collections then you have to
+extract the second part using a split utility or a text editor.</p>
+<hr />
+<h2 data-number="27.3" id="download-example-sgf-file"><span
+class="header-section-number">27.3</span> <a
+href="https://red-bean.com/sgf/examples/ff4_ex.sgf">Download example SGF
+file</a></h2>
+<hr />
+<h2 data-number="27.4" id="gametree-1-properties"><span
+class="header-section-number">27.4</span> Gametree 1: properties</h2>
+<h3 data-number="27.4.1"
+id="variation-a-moves-comments-annotations"><span
+class="header-section-number">27.4.1</span> Variation A: (Moves,
+comments, annotations)</h3>
+<ul>
+<li><p><strong>Nodes:</strong> 1-13</p></li>
+<li><p><strong>Pictures:</strong></p>
+<ul>
+<li><a href="https://red-bean.com/sgf/examples/ex01.gif">ex01.gif</a>:
+B, W (node 11)</li>
+</ul></li>
+</ul>
+<p>There’s nothing special about these nodes.</p>
+<p>Note the new (FF[4]) way to write pass moves: “B[]”, “W[]” (nodes 12,
+13)</p>
+<h3 data-number="27.4.2" id="variation-b-setup"><span
+class="header-section-number">27.4.2</span> Variation B: (Setup)</h3>
+<ul>
+<li><p><strong>Nodes:</strong> 14-17</p></li>
+<li><p><strong>Pictures:</strong></p>
+<ul>
+<li><p><a
+href="https://red-bean.com/sgf/examples/ex02.gif">ex02.gif</a>: AB,AW
+(node 14)</p></li>
+<li><p><a
+href="https://red-bean.com/sgf/examples/ex03.gif">ex03.gif</a>: AE (node
+15)</p></li>
+</ul></li>
+</ul>
+<p>This variation illustrates how to use AB, AW, AE &amp; PL.</p>
+<p>Here compressed point lists are used for the first time. Have a look
+at the SGF specification and the two pictures to get the idea.</p>
+<h3 data-number="27.4.3" id="variation-c-markup"><span
+class="header-section-number">27.4.3</span> Variation C: (Markup)</h3>
+<ul>
+<li><strong>Nodes: 18-21</strong></li>
+<li><strong>Pictures:</strong>
+<ul>
+<li><p><a
+href="https://red-bean.com/sgf/examples/ex04.gif">ex04.gif</a>: MA, TR,
+CR, SQ, SL, TB, TW (node 19)</p></li>
+<li><p><a
+href="https://red-bean.com/sgf/examples/ex05.gif">ex05.gif</a>: LB (node
+20)</p></li>
+<li><p><a
+href="https://red-bean.com/sgf/examples/ex06.gif">ex06.gif</a>: LB,
+different ways of handling long labels (node 20)</p></li>
+<li><p><a
+href="https://red-bean.com/sgf/examples/ex07.gif">ex07.gif</a>: AR, LN,
+DD (node 21)</p></li>
+<li><p><a
+href="https://red-bean.com/sgf/examples/ex08.gif">ex08.gif</a>: VW (node
+19)</p></li>
+</ul></li>
+</ul>
+<p>Node 19 shows various kind of board markup.</p>
+<p>Node 20 shows labels. Label length are from 1-8 chars. There are two
+pictures: the second one shows different ways of handling long
+labels.</p>
+<p>Node 21 shows three new FF[4] properties: DD (dimmed points), AR
+(arrows) and LN (lines)</p>
+<p>The picture ex08.gif illustartes how VW (view) works.</p>
+<p>The VW property isn’t directly encoded into the SGF file. The picture
+shows node 19 and gives two examples of a restricted view.</p>
+<h3 data-number="27.4.4" id="variation-d-style-text-type"><span
+class="header-section-number">27.4.4</span> Variation D: (Style &amp;
+text type)</h3>
+<ul>
+<li><p><strong>Nodes:</strong> 22-32</p></li>
+<li><p><strong>Pictures:</strong></p>
+<ul>
+<li><p><a
+href="https://red-bean.com/sgf/examples/ex09.gif">ex09.gif</a>: ST[2]
+(children / no board markup) (node 23)</p></li>
+<li><p><a
+href="https://red-bean.com/sgf/examples/ex10.gif">ex10.gif</a>: ST[1]
+(siblings / auto-board markup) (node 23)</p></li>
+</ul></li>
+</ul>
+<p>Node 22 contains a comment text which serves as example for hard and
+soft linebreaks and for different encodings of linebreaks.</p>
+<p>Note that ex09.gif &amp; ex10.gif are both taken from the same node
+(#23). They only differ in the ST (style) used. The example itself
+doesn’t contain a ST property. The picture just illustrates the use of
+ST.</p>
+<h3 data-number="27.4.5"
+id="variation-e-time-limits-captures-move-numbers"><span
+class="header-section-number">27.4.5</span> Variation E: (Time limits,
+captures &amp; move numbers)</h3>
+<ul>
+<li><p><strong>Nodes:</strong> 33-53</p></li>
+<li><p><strong>Pictures:</strong> -</p></li>
+</ul>
+<p>This variation shows the use of BL, WL, OB, OW, MN.</p>
+<p>It also contains a suicidal move (and capture).</p>
+<h2 data-number="27.5" id="gametree-2-game-info"><span
+class="header-section-number">27.5</span> Gametree 2: Game-info</h2>
+<p>This game-tree shows how game-info properties may be stored, if there
+are several games merged into a single gametree. See the comment texts
+for what the game-info should look like.</p>
+<h1 data-number="28" id="print-example-files"><span
+class="header-section-number">28</span> 2. Print Example Files</h1>
+<p>SGF provides some properties for storing print and layout
+information. These properties are: FG, VW, PM and MN.</p>
+<p>The following files contain two games from GoWorld 78 (of course, the
+commentary isn’t included, but all the board-markup is). You should have
+this magazine to verify the layout with the example files.</p>
+<ul>
+<li><p><a
+href="https://red-bean.com/sgf/examples/print1.sgf">print1.sgf</a> -
+21st Mejin, game 2</p></li>
+<li><p><a
+href="https://red-bean.com/sgf/examples/print2.sgf">print2.sgf</a> -
+51st Honinbo, game 5</p></li>
+</ul>
+<p>(;FF[4]AP[Primiview:3.1]GM[1]SZ[19]GN[Gametree 1: properties]US[Arno
+Hollosi]</p>
+<p>(;B[pd]N[Moves, comments, annotations] C[Nodename set to: “Moves,
+comments, annotations”];W[dp]GW[1] C[Marked as “Good for
+White”];B[pp]GB[2] C[Marked as “Very good for Black”];W[dc]GW[2]
+C[Marked as “Very good for White”];B[pj]DM[1] C[Marked as “Even
+position”];W[ci]UC[1] C[Marked as “Unclear position”];B[jd]TE[1]
+C[Marked as “Tesuji” or “Good move”];W[jp]BM[2] C[Marked as “Very bad
+move”];B[gd]DO[] C[Marked as “Doubtful move”];W[de]IT[] C[Marked as
+“Interesting move”];B[jj]; C[White “Pass” move]W[]; C[Black “Pass”
+move]B[tt])</p>
+<p>(;AB[dd][de][df][dg][do:gq] AW[jd][je][jf][jg][kn:lq][pn:pq]
+N[Setup]C[Black &amp; white stones at the top are added as single
+stones.<br />
+<br />
+Black &amp; white stones at the bottom are added using compressed point
+lists.] ;AE[ep][fp][kn][lo][lq][pn:pq] C[AddEmpty<br />
+<br />
+Black stones &amp; stones of left white group are erased in FF[3\]
+way.<br />
+<br />
+White stones at bottom right were erased using compressed point list.]
+;AB[pd]AW[pp]PL[B]C[Added two stones.<br />
+<br />
+Node marked with “Black to play”.];PL[W] C[Node marked with “White to
+play”])</p>
+<p>(;AB[dd][de][df][dg][dh][di][dj][nj][ni][nh][nf][ne][nd][ij][ii][ih][hq]
+[gq][fq][eq][dr][ds][dq][dp][cp][bp][ap][iq][ir][is][bo][bn][an][ms][mr]
+AW[pd][pe][pf][pg][ph][pi][pj][fd][fe][ff][fh][fi][fj][kh][ki][kj][os][or]
+[oq][op][pp][qp][rp][sp][ro][rn][sn][nq][mq][lq][kq][kr][ks][fs][gs][gr]
+[er]N[Markup]C[Position set up without compressed point lists.]</p>
+<p>;TR[dd][de][df][ed][ee][ef][fd:ff] MA[dh][di][dj][ej][ei][eh][fh:fj]
+CR[nd][ne][nf][od][oe][of][pd:pf] SQ[nh][ni][nj][oh][oi][oj][ph:pj]
+SL[ih][ii][ij][jj][ji][jh][kh:kj] TW[pq:ss][so][lr:ns]
+TB[aq:cs][er:hs][ao] C[Markup at top partially using compressed point
+lists (for markup on white stones); listed clockwise, starting at upper
+left:<br />
+- TR (triangle)<br />
+- CR (circle)<br />
+- SQ (square)<br />
+- SL (selected points)<br />
+- MA (‘X’)<br />
+<br />
+Markup at bottom: black &amp; white territory (using compressed point
+lists)] ;LB[dc:1][fc:2][nc:3][pc:4][dj:a][fj:b][nj:c]
+[pj:d][gs:ABCDEFGH][gr:ABCDEFG][gq:ABCDEF][gp:ABCDE][go:ABCD][gn:ABC][gm:AB]
+[mm:12][mn:123][mo:1234][mp:12345][mq:123456][mr:1234567][ms:12345678]
+C[Label (LB property)<br />
+<br />
+Top: 8 single char labels (1-4, a-d)<br />
+<br />
+Bottom: Labels up to 8 char length.]</p>
+<p>;DD[kq:os][dq:hs] AR[aa:sc][sa:ac][aa:sa][aa:ac][cd:cj]
+[gd:md][fh:ij][kj:nh] LN[pj:pd][nf:ff][ih:fj][kh:nj] C[Arrows, lines and
+dimmed points.])</p>
+<p>(;B[qd]N[Style &amp; text type] C[There are hard linebreaks &amp;
+soft linebreaks.<br />
+Soft linebreaks are linebreaks preceeded by ’\' like this one &gt;o\
+k&lt;. Hard line breaks are all other linebreaks.<br />
+Soft linebreaks are converted to &gt;nothing&lt;, i.e. removed.<br />
+<br />
+Note that linebreaks are coded differently on different systems.<br />
+<br />
+Examples (&gt;ok&lt; shouldn’t be split):<br />
+<br />
+linebreak 1 “\”: &gt;o\ k&lt;<br />
+linebreak 2 “\\: &gt;o\<br />
+k&lt;<br />
+linebreak 3”\“: &gt;o\ k&lt;<br />
+linebreak 4”\: &gt;o\ k&lt;]</p>
+<p>(;W[dd]N[W d16]C[Variation C is better.](;B[pp]N[B q4]) (;B[dp]N[B
+d4]) (;B[pq]N[B q3]) (;B[oq]N[B p3]) ) (;W[dp]N[W d4]) (;W[pp]N[W q4])
+(;W[cc]N[W c17]) (;W[cq]N[W c3]) (;W[qq]N[W r3]) )</p>
+<p>(;B[qr]N[Time limits, captures &amp; move numbers] BL[120.0]C[Black
+time left: 120 sec];W[rr] WL[300]C[White time left: 300 sec];B[rq]
+BL[105.6]OB[10]C[Black time left: 105.6 sec<br />
+Black stones left (in this byo-yomi period): 10];W[qq]
+WL[200]OW[2]C[White time left: 200 sec<br />
+White stones left: 2];B[sr] BL[87.00]OB[9]C[Black time left: 87
+sec<br />
+Black stones left: 9];W[qs] WL[13.20]OW[1]C[White time left: 13.2
+sec<br />
+White stones left: 1];B[rs] C[One white stone at s2
+captured];W[ps];B[pr];W[or] MN[2]C[Set move number to 2];B[os] C[Two
+white stones captured<br />
+(at q1 &amp; r1)] ;MN[112]W[pq]C[Set move number to
+112];B[sq];W[rp];B[ps] ;W[ns];B[ss];W[nr] ;B[rr];W[sp];B[qs]C[Suicide
+move<br />
+(all B stones get captured)]) )</p>
+<p>(;FF[4]AP[Primiview:3.1]GM[1]SZ[19]C[Gametree 2: game-info<br />
+<br />
+Game-info properties are usually stored in the root node.<br />
+If games are merged into a single game-tree, they are stored in the
+node\ where the game first becomes distinguishable from all other games
+in\ the tree.] ;B[pd] (;PW[W. Hite]WR[6d]RO[2]RE[W+3.5] PB[B.
+Lack]BR[5d]PC[London]EV[Go Congress]W[dp] C[Game-info:<br />
+Black: B. Lack, 5d<br />
+White: W. Hite, 6d<br />
+Place: London<br />
+Event: Go Congress<br />
+Round: 2<br />
+Result: White wins by 3.5]) (;PW[T. Suji]WR[7d]RO[1]RE[W+Resign] PB[B.
+Lack]BR[5d]PC[London]EV[Go Congress]W[cp] C[Game-info:<br />
+Black: B. Lack, 5d<br />
+White: T. Suji, 7d<br />
+Place: London<br />
+Event: Go Congress<br />
+Round: 1<br />
+Result: White wins by resignation]) (;W[ep];B[pp] (;PW[S.
+Abaki]WR[1d]RO[3]RE[B+63.5] PB[B. Lack]BR[5d]PC[London]EV[Go
+Congress]W[ed] C[Game-info:<br />
+Black: B. Lack, 5d<br />
+White: S. Abaki, 1d<br />
+Place: London<br />
+Event: Go Congress<br />
+Round: 3<br />
+Result: Balck wins by 63.5]) (;PW[A. Tari]WR[12k]KM[-59.5]RO[4]RE[B+R]
+PB[B. Lack]BR[5d]PC[London]EV[Go Congress]W[cd] C[Game-info:<br />
+Black: B. Lack, 5d<br />
+White: A. Tari, 12k<br />
+Place: London<br />
+Event: Go Congress<br />
+Round: 4<br />
+Komi: -59.5 points<br />
+Result: Black wins by resignation]) ))</p>
+<p>(;FF[4]GM[1]SZ[19]FG[257:Figure 1]PM[1] PB[Takemiya Masaki]BR[9
+dan]PW[Cho Chikun] WR[9
+dan]RE[W+Resign]KM[5.5]TM[28800]DT[1996-10-18,19] EV[21st Meijin]RO[2
+(final)]SO[Go World #78]US[Arno Hollosi]
+;B[pd];W[dp];B[pp];W[dd];B[pj];W[nc];B[oe];W[qc];B[pc];W[qd]
+(;B[qf];W[rf];B[rg];W[re];B[qg];W[pb];B[ob];W[qb]
+(;B[mp];W[fq];B[ci];W[cg];B[dl];W[cn];B[qo];W[ec];B[jp];W[jd]
+;B[ei];W[eg];B[kk]LB[qq:a][dj:b][ck:c][qp:d]N[Figure 1]</p>
+<p>;W[me]FG[257:Figure 2];B[kf];W[ke];B[lf];W[jf];B[jg]
+(;W[mf];B[if];W[je];B[ig];W[mg];B[mj];W[mq];B[lq];W[nq]
+(;B[lr];W[qq];B[pq];W[pr];B[rq];W[rr];B[rp];W[oq];B[mr];W[oo];B[mn]
+(;W[nr];B[qp]LB[kd:a][kh:b]N[Figure 2]</p>
+<p>;W[pk]FG[257:Figure
+3];B[pm];W[oj];B[ok];W[qr];B[os];W[ol];B[nk];W[qj]
+;B[pi];W[pl];B[qm];W[ns];B[sr];W[om];B[op];W[qi];B[oi]
+(;W[rl];B[qh];W[rm];B[rn];W[ri];B[ql];W[qk];B[sm];W[sk];B[sh];W[og]
+;B[oh];W[np];B[no];W[mm];B[nn];W[lp];B[kp];W[lo];B[ln];W[ko];B[mo]
+;W[jo];B[km]N[Figure 3])</p>
+<p>(;W[ql]VW[ja:ss]FG[257:Dia.
+6]MN[1];B[rm];W[ph];B[oh];W[pg];B[og];W[pf]
+;B[qh];W[qe];B[sh];W[of];B[sj]TR[oe][pd][pc][ob]LB[pe:a][sg:b][si:c]
+N[Diagram 6]))</p>
+<p>(;W[no]VW[jj:ss]FG[257:Dia. 5]MN[1];B[pn]N[Diagram 5]))</p>
+<p>(;B[pr]FG[257:Dia.
+4]MN[1];W[kq];B[lp];W[lr];B[jq];W[jr];B[kp];W[kr];B[ir]
+;W[hr]LB[is:a][js:b][or:c]N[Diagram 4]))</p>
+<p>(;W[if]FG[257:Dia. 3]MN[1];B[mf];W[ig];B[jh]LB[ki:a]N[Diagram
+3]))</p>
+<p>(;W[oc]VW[aa:sk]FG[257:Dia. 2]MN[1];B[md];W[mc];B[ld]N[Diagram
+2]))</p>
+<p>(;B[qe]VW[aa:sj]FG[257:Dia.
+1]MN[1];W[re];B[qf];W[rf];B[qg];W[pb];B[ob] ;W[qb]LB[rg:a]N[Diagram
+1]))</p>
+<p>(;FF[4]GM[1]SZ[19]FG[257:Figure 1]PM[2] PB[Cho Chikun]BR[9 dan]PW[Ryu
+Shikun]WR[9 dan]RE[W+2.5]KM[5.5] DT[1996-08]EV[51st Honinbo]RO[5
+(final)]SO[Go World #78]US[Arno Hollosi]
+;B[qd];W[dd];B[fc];W[df];B[pp];W[dq];B[kc];W[cn];B[pj];W[jp];B[lq];W[oe]
+;B[pf];W[ke];B[id];W[lc];B[lb];W[kb];B[jb];W[kd];B[ka];W[jc];B[ic];W[kb]
+;B[mc];W[qc]N[Figure 1]</p>
+<p>;B[pd]FG[257:Figure
+2];W[pc];B[od];W[oc];B[kc];W[nd];B[nc];W[kb];B[rd];W[pe]
+(;B[rf];W[md];B[kc];W[qe];B[re];W[kb];B[mb];W[qf];B[qg];W[pg];B[qh];W[kc]
+;B[hb];W[nf];B[ch];W[cj];B[eh];W[ob] (;B[cc];W[dc];B[db];W[bf];B[bb]
+;W[bh]LB[of:a][mf:b][rc:c][di:d][ja:e]N[Figure 2]</p>
+<p>;B[qp]FG[257:Figure 3];W[lo];B[ej];W[oq] (;B[np];W[mq];B[mp];W[lp]
+(;B[kq];W[nq];B[op];W[jq];B[mr];W[nr];B[lr];W[qr];B[jr];W[ir];B[hr];W[iq]
+;B[is];W[ks];B[js];W[gq];B[gr];W[fq];B[pq];W[pr];B[ns];W[or];B[rq];W[hq]
+;B[rr];W[cl];B[cg];W[bg];B[og];W[ng]
+(;B[ci];W[bi];B[dj];W[dk];B[mm];W[gk];B[gi];W[mn];B[nm];W[kl];B[nh];W[mh]
+;B[mi];W[li];B[lh];W[mg];B[ek];W[el];B[ik]LB[kr:a]N[Figure 3]</p>
+<p>;W[ki]FG[257:Figure
+4];B[fl];W[fk];B[gl];W[hk];B[hl];W[hj];B[jl];W[kk];B[km]
+;W[lm];B[ll];W[jm];B[jj];W[ji];B[kj];W[lj];B[ij];W[hi];B[em];W[dl];B[ii]
+;W[hh];B[ih];W[hg];B[ln];W[kn];B[lm];W[im];B[il];W[fg];B[lk];W[ni];B[ef]
+;W[eg];B[dg];W[ff];B[oh];W[of];B[oj];W[ph];B[oi];W[mj];B[ee];W[fe];B[de]
+;W[ed];B[ce];W[cf];B[rb];W[rc];B[sc];W[qb];B[sb];W[la];B[ma];W[na];B[ja]
+;W[nb];B[la];W[pa];B[be];W[fd];B[bj];W[ck];B[ec];W[hs];B[gs];W[fr];B[os]
+;W[ps];B[ms];W[nk];B[ok];W[kp];B[fo];W[fs];B[qq];W[hs];B[do];W[co];B[ig]
+;W[gc];B[gb];W[jf];B[di];W[fi];B[hf];W[gf];B[af];W[mo];B[he];W[kr];B[qs]
+;W[no];B[oo];W[nn];B[on];W[nl];B[ol];W[gn];B[fn];W[in];B[nj];W[mk];B[jg]
+;W[kg];B[mi];W[jh];B[ag];W[bk];B[ah];W[aj];B[fh];W[fj];B[gd];W[ra];B[dp]
+;W[cp];B[go];W[gm];B[fm];W[sd];B[se];W[ho];B[hm];W[hn];B[ep];W[eq];B[cd]
+;W[ei];B[dn];W[gp];B[pi];W[pf];B[dm];W[cm];B[je];W[jd];B[if];W[ie];B[ko]
+;W[jo];B[je];W[kf];B[ni];W[dh];B[ge];W[ie];B[rg];W[je]N[Figure 4])</p>
+<p>(;B[dk]FG[257:Dia. 6]MN[1];W[ck];B[gk]N[Diagram 6]))</p>
+<p>(;B[nq]VW[ai:ss]FG[257:Dia. 5]MN[1];W[mr];B[nr];W[lr]TR[oq]N[Diagram
+5]))</p>
+<p>(;B[mp]VW[ai:ss]FG[257:Dia.
+4]MN[1];W[op];B[oo];W[no];B[mo];W[on];B[po]
+;W[mn];B[np];W[nn];B[or]N[Diagram 4]))</p>
+<p>(;B[rc]VW[aa:sj]FG[257:Dia.
+2]MN[1];W[rb];B[sb];W[la];B[ma];W[na];B[ja] ;W[pa]N[Diagram 2])</p>
+<p>(;B[rb]VW[aa:sj]FG[257:Dia.
+3]MN[1];W[rc];B[sc];W[qb];B[pa];W[sb];B[sa] ;W[sd];B[qa]N[Diagram
+3]))</p>
+<p>(;B[qf]VW[aa:sj]FG[257:Dia.
+1]MN[1];W[mb];B[kc];W[qe];B[ne];W[kb];B[md]
+;W[la];B[nb];W[eb]LB[ob:a][na:b][rc:c][sd:d]N[Diagram 1]))</p>
+</body>
+</html>

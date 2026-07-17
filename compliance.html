@@ -1012,6 +1012,232 @@
             font-family: "Geist", sans-serif;
         }
 
+        /* ══════════ FF[4] MAXIMIZATION CARD ══════════ */
+        .maximize-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: var(--shadow-sm);
+            width: 100%;
+            box-sizing: border-box;
+            position: relative;
+            z-index: 2;
+            margin-top: 30px;
+        }
+
+        .maximize-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .maximize-header h2 {
+            margin: 0 0 6px 0;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-color);
+        }
+
+        .maximize-header p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        /* Circular score gauge */
+        .score-gauge {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 24px auto;
+            position: relative;
+        }
+
+        .score-gauge svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .score-gauge circle {
+            fill: none;
+            stroke-width: 10;
+            cx: 70;
+            cy: 70;
+            r: 60;
+        }
+
+        .score-gauge .gauge-bg {
+            stroke: #e2e8f0;
+        }
+
+        .score-gauge .gauge-fill {
+            stroke: #2563eb;
+            stroke-dasharray: 376.99;
+            stroke-dashoffset: 376.99;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .score-gauge .score-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--text-color);
+            z-index: 1;
+            line-height: 1;
+        }
+
+        .score-gauge .score-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            z-index: 1;
+        }
+
+        /* Category bars */
+        .cat-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 28px;
+        }
+
+        .cat-bar-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .cat-bar-name {
+            width: 160px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #475569;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .cat-bar-track {
+            flex-grow: 1;
+            height: 8px;
+            background-color: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .cat-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .cat-bar-fill.high   { background-color: #22c55e; }
+        .cat-bar-fill.medium { background-color: #eab308; }
+        .cat-bar-fill.low    { background-color: #ef4444; }
+
+        .cat-bar-pct {
+            width: 38px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #475569;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        /* Two-column strengths / opportunities */
+        .maximize-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .maximize-col-header {
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .maximize-col-header.strength  { color: #166534; }
+        .maximize-col-header.improve   { color: #b25e00; }
+
+        .maximize-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .maximize-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            line-height: 1.4;
+        }
+
+        .maximize-item.strength {
+            background-color: #f0fdf4;
+            color: #166534;
+        }
+
+        .maximize-item.opportunity {
+            background-color: #fff9db;
+            color: #92400e;
+        }
+
+        .maximize-item .mi-icon {
+            flex-shrink: 0;
+            font-size: 0.85rem;
+            margin-top: 1px;
+        }
+
+        .maximize-item .mi-text {
+            flex-grow: 1;
+        }
+
+        .maximize-item .mi-tag {
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 3px;
+            text-transform: uppercase;
+            flex-shrink: 0;
+            letter-spacing: 0.3px;
+        }
+
+        .maximize-item .mi-tag.recommended { background: #dcfce7; color: #166534; }
+        .maximize-item .mi-tag.mandatory    { background: #fee2e2; color: #991b1b; }
+        .maximize-item .mi-tag.optional     { background: #e0f2fe; color: #0369a1; }
+        .maximize-item .mi-tag.structural   { background: #f3e8ff; color: #7c3aed; }
+        .maximize-item .mi-tag.conditional  { background: #fef3c7; color: #92400e; }
+
+        .maximize-empty {
+            padding: 30px;
+            text-align: center;
+            color: #64748b;
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 768px) {
+            .maximize-columns { grid-template-columns: 1fr; }
+            .cat-bar-name { width: 110px; font-size: 0.72rem; }
+        }
+
         /* ══════════ RESPONSIVE ══════════ */
         @media (max-width: 768px) {
             .top-header { padding: 0 16px; }
@@ -1084,7 +1310,7 @@
                 <span>You're currently auditing <span class="filename-pixel" id="header-filename">game.sgf</span> file.</span>
             </div>
         </div>
-        <div class="header-version">v=0.0.033 (2026-07-16 20:30:00)</div>
+        <div class="header-version">v=0.0.034 (2026-07-16 21:15:00)</div>
     </header>
 
     <div class="main-container" id="main-container" style="display: none;">
@@ -1096,14 +1322,21 @@
 
         <!-- Play Button, Stepper Card and Status Banner Section -->
         <div class="play-section-container">
-            <!-- Stepper Card (single step) -->
+            <!-- Stepper Card -->
             <div class="stepper-card">
-                <div class="stepper-line" style="display: none;"></div>
+                <div class="stepper-line"></div>
                 <div class="stepper-step active" id="step-node-1">
                     <div class="step-label">SGFC<br>Diagnostic</div>
                     <div class="step-indicator">
                         <span class="check-icon">✓</span>
                         <span class="step-number">1</span>
+                    </div>
+                </div>
+                <div class="stepper-step" id="step-node-2">
+                    <div class="step-label">FF[4]<br>Maximization</div>
+                    <div class="step-indicator">
+                        <span class="check-icon">✓</span>
+                        <span class="step-number">2</span>
                     </div>
                 </div>
             </div>
@@ -1203,6 +1436,41 @@
                 </div>
             </div>
         </div>
+
+        <!-- FF[4] Maximization Results Card (reveals after Step 2) -->
+        <div class="detailed-results-wrapper" id="maximize-wrapper">
+            <div class="maximize-card">
+                <div class="maximize-header">
+                    <h2>FF[4] Maximization Audit</h2>
+                    <p>How well does this file leverage the SGF FF[4] specification?</p>
+                </div>
+
+                <!-- Score Gauge -->
+                <div class="score-gauge" id="score-gauge">
+                    <svg viewBox="0 0 140 140">
+                        <circle class="gauge-bg"></circle>
+                        <circle class="gauge-fill" id="gauge-fill"></circle>
+                    </svg>
+                    <span class="score-value" id="score-value">0%</span>
+                    <span class="score-label">Coverage</span>
+                </div>
+
+                <!-- Category Bars -->
+                <div class="cat-bars" id="cat-bars"></div>
+
+                <!-- Two-Column Strengths / Opportunities -->
+                <div class="maximize-columns">
+                    <div>
+                        <div class="maximize-col-header strength">✓ Strengths <span id="strength-count"></span></div>
+                        <div class="maximize-list" id="strengths-list"></div>
+                    </div>
+                    <div>
+                        <div class="maximize-col-header improve">+ Opportunities <span id="opportunity-count"></span></div>
+                        <div class="maximize-list" id="opportunities-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Empty State -->
@@ -1222,6 +1490,7 @@
         let isWasmLoaded = false;
         let diagnosticsRunning = false;
         let correctedSgfContent = null;
+        let currentStep = 1;
 
         window.onload = function() {
             sgfContent = sessionStorage.getItem('sgf_content');
@@ -1423,7 +1692,11 @@
             playBtn.classList.add('running');
             stepBar.classList.add('running');
 
-            runPhase1SyntaxChecker();
+            if (currentStep === 1) {
+                runPhase1SyntaxChecker();
+            } else if (currentStep === 2) {
+                runStep2Maximization();
+            }
         }
 
         // ── Phase 1.1: Execute SGFC Syntax Checker (animated playback of WASM results) ──
@@ -1586,19 +1859,231 @@
             runStep();
         }
 
-        // ── Finish: update stepper, show banner, enable results ──
+        // ── Finish Step 1: if PASS → transition to Step 2; if FAIL → show results ──
         function finishDiagnostics() {
             const stepNode1 = document.getElementById('step-node-1');
             stepNode1.classList.remove('active');
             stepNode1.classList.add('completed');
-
-            document.getElementById('step1-text').textContent = "SGF Diagnostics Completed!";
 
             displayDetailedResults();
 
             diagnosticsRunning = false;
             document.getElementById('play-btn').classList.remove('running');
             document.getElementById('step1-bar').classList.remove('running');
+
+            // If Step 1 passed (no errors), auto-transition to Step 2
+            const hasErrors = auditResult.issues.some(i => i.severity === 'error');
+            if (!hasErrors) {
+                setTimeout(() => transitionToStep2(), 600);
+            } else {
+                document.getElementById('step1-text').textContent = "SGF Diagnostics Completed — Errors Found";
+            }
+        }
+
+        // ── Transition UI to Step 2 ──
+        function transitionToStep2() {
+            const stepNode2 = document.getElementById('step-node-2');
+            stepNode2.classList.add('active');
+
+            const stepBar = document.getElementById('step1-bar');
+            const playBtn = document.getElementById('play-btn');
+
+            stepBar.classList.add('fade-out');
+
+            setTimeout(() => {
+                document.getElementById('step-bar-badge').textContent = "STEP 2";
+                document.getElementById('step1-text').textContent = "Run FF[4] Maximization Audit";
+
+                document.getElementById('progress-fill').style.width = '0%';
+                document.getElementById('progress-text').textContent = '0%';
+
+                const logBox = document.getElementById('code-log-box');
+                logBox.innerHTML = '';
+                const line1 = document.createElement('div');
+                line1.className = 'code-box-line';
+                line1.textContent = '- Step 1 SGFC Diagnostic complete — PASS!';
+                const line2 = document.createElement('div');
+                line2.className = 'code-box-line';
+                line2.textContent = '- Ready for Step 2: FF[4] Maximization Audit.';
+                const line3 = document.createElement('div');
+                line3.className = 'code-box-line';
+                line3.textContent = '- Press PLAY or click "Run FF[4] Maximization Audit" to start.';
+                logBox.appendChild(line1);
+                logBox.appendChild(line2);
+                logBox.appendChild(line3);
+                logBox.scrollTop = logBox.scrollHeight;
+
+                stepBar.classList.remove('fade-out');
+
+                currentStep = 2;
+                diagnosticsRunning = false;
+                playBtn.classList.remove('running');
+                stepBar.classList.remove('running');
+            }, 300);
+        }
+
+        // ── Step 2: FF[4] Maximization Audit ──
+        function runStep2Maximization() {
+            document.getElementById('step1-text').textContent = "Running FF[4] Maximization Audit ...";
+
+            const logBox = document.getElementById('code-log-box');
+            logBox.innerHTML = '';
+
+            const fill = document.getElementById('progress-fill');
+            const text = document.getElementById('progress-text');
+
+            // Run the maximization audit
+            let maxResult = { score: 0, categories: [], strengths: [], opportunities: [] };
+            if (typeof SGFAuditor !== 'undefined' && SGFAuditor.maximizeSGF) {
+                maxResult = SGFAuditor.maximizeSGF(sgfContent);
+            }
+
+            const steps = [
+                { percent: 10, text: `[INIT] Analyzing SGF against all ${58} FF[4] properties...`, type: 'info' },
+                { percent: 25, text: `[SCAN] Checking Game Identity properties (PB, PW, BR, WR, RE, DT, KM, RU, EV, TM)...`, type: 'text' },
+                { percent: 40, text: `[SCAN] Checking Root Configuration (AP, CA, ST)...`, type: 'text' },
+                { percent: 50, text: `[SCAN] Checking Game Tree Structure (variations, node names)...`, type: 'text' },
+                { percent: 60, text: `[SCAN] Checking Move Annotations (C, TE, BM, IT, DO, HO)...`, type: 'text' },
+                { percent: 70, text: `[SCAN] Checking Position Annotations (DM, GB, GW, UC, V)...`, type: 'text' },
+                { percent: 80, text: `[SCAN] Checking Board Markup (CR, TR, SQ, MA, LB, AR, LN, DD, SL, TB, TW)...`, type: 'text' },
+                { percent: 90, text: `[SCAN] Checking Timing (BL, WL, OB, OW) and Miscellaneous (FG, PM, VW, MN)...`, type: 'text' }
+            ];
+
+            steps.push({
+                percent: 100,
+                text: `[COMPLETE] Maximization score: ${maxResult.score}% — ${maxResult.strengths.length} strength(s), ${maxResult.opportunities.length} opportunity(ies).`,
+                type: 'info'
+            });
+
+            let currentIdx = 0;
+
+            function runStep() {
+                if (currentIdx >= steps.length) {
+                    finishStep2(maxResult);
+                    return;
+                }
+
+                const step = steps[currentIdx];
+                fill.style.width = `${step.percent}%`;
+                text.textContent = `${step.percent}%`;
+
+                const line = document.createElement('div');
+                line.className = 'code-box-line';
+                if (step.type === 'error') line.classList.add('error-line');
+                else if (step.type === 'warning') line.classList.add('warn-line');
+                else if (step.type === 'info') line.classList.add('info-line');
+                line.textContent = step.text;
+                logBox.appendChild(line);
+                logBox.scrollTop = logBox.scrollHeight;
+
+                currentIdx++;
+                let delay = 180;
+                if (step.percent >= 80) delay = 220;
+                if (step.percent === 100) delay = 400;
+                setTimeout(runStep, delay);
+            }
+
+            runStep();
+        }
+
+        // ── Finish Step 2: show maximization results ──
+        function finishStep2(maxResult) {
+            const stepNode2 = document.getElementById('step-node-2');
+            stepNode2.classList.remove('active');
+            stepNode2.classList.add('completed');
+
+            document.getElementById('step1-text').textContent = "FF[4] Maximization Audit Completed!";
+
+            displayMaximizationResults(maxResult);
+
+            diagnosticsRunning = false;
+            document.getElementById('play-btn').classList.remove('running');
+            document.getElementById('step1-bar').classList.remove('running');
+        }
+
+        // ── Render the maximization results card ──
+        function displayMaximizationResults(maxResult) {
+            // Score gauge
+            const circumference = 2 * Math.PI * 60; // r=60
+            const offset = circumference - (maxResult.score / 100) * circumference;
+            const gaugeFill = document.getElementById('gauge-fill');
+            gaugeFill.style.strokeDashoffset = offset;
+
+            // Color the gauge based on score
+            if (maxResult.score >= 70) gaugeFill.style.stroke = '#22c55e';
+            else if (maxResult.score >= 40) gaugeFill.style.stroke = '#eab308';
+            else gaugeFill.style.stroke = '#ef4444';
+
+            document.getElementById('score-value').textContent = maxResult.score + '%';
+
+            // Category bars
+            const catBarsEl = document.getElementById('cat-bars');
+            catBarsEl.innerHTML = '';
+            for (let cat of maxResult.categories) {
+                const row = document.createElement('div');
+                row.className = 'cat-bar-row';
+
+                let barClass = 'low';
+                if (cat.score >= 70) barClass = 'high';
+                else if (cat.score >= 40) barClass = 'medium';
+
+                row.innerHTML = `
+                    <span class="cat-bar-name">${cat.name}</span>
+                    <div class="cat-bar-track">
+                        <div class="cat-bar-fill ${barClass}" style="width: 0%;" data-target="${cat.score}"></div>
+                    </div>
+                    <span class="cat-bar-pct">${cat.score}%</span>
+                `;
+                catBarsEl.appendChild(row);
+            }
+
+            // Animate bars after a short delay
+            setTimeout(() => {
+                catBarsEl.querySelectorAll('.cat-bar-fill').forEach(el => {
+                    el.style.width = el.dataset.target + '%';
+                });
+            }, 100);
+
+            // Strengths list
+            const strList = document.getElementById('strengths-list');
+            strList.innerHTML = '';
+            document.getElementById('strength-count').textContent = `(${maxResult.strengths.length})`;
+            if (maxResult.strengths.length === 0) {
+                strList.innerHTML = '<div class="maximize-empty">No strengths found.</div>';
+            } else {
+                for (let s of maxResult.strengths) {
+                    const item = document.createElement('div');
+                    item.className = 'maximize-item strength';
+                    item.innerHTML = `
+                        <span class="mi-icon">✓</span>
+                        <span class="mi-text">${s.desc} <small style="opacity:0.7">(${s.id === '__branches__' ? 'tree' : s.id === '__nodeNames__' ? 'N' : s.id === '__rootComment__' ? 'C' : s.id})</small></span>
+                        <span class="mi-tag ${s.tag}">${s.tag}</span>
+                    `;
+                    strList.appendChild(item);
+                }
+            }
+
+            // Opportunities list
+            const oppList = document.getElementById('opportunities-list');
+            oppList.innerHTML = '';
+            document.getElementById('opportunity-count').textContent = `(${maxResult.opportunities.length})`;
+            if (maxResult.opportunities.length === 0) {
+                oppList.innerHTML = '<div class="maximize-empty">Full FF[4] coverage achieved!</div>';
+            } else {
+                for (let o of maxResult.opportunities) {
+                    const item = document.createElement('div');
+                    item.className = 'maximize-item opportunity';
+                    item.innerHTML = `
+                        <span class="mi-icon">+</span>
+                        <span class="mi-text">${o.desc} <small style="opacity:0.7">(${o.id === '__branches__' ? 'tree' : o.id === '__nodeNames__' ? 'N' : o.id === '__rootComment__' ? 'C' : o.id})</small></span>
+                        <span class="mi-tag ${o.tag}">${o.tag}</span>
+                    `;
+                    oppList.appendChild(item);
+                }
+            }
+
+            // Slide the maximize card into view
+            document.getElementById('maximize-wrapper').classList.add('visible');
         }
 
         // Populates detailed results cards and rolls them into view
