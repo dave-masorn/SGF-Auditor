@@ -1470,6 +1470,9 @@
                     <button class="autofix-btn" id="fix-all-btn" style="display: none;" onclick="fixAllIssues()">
                         Fix All Issues
                     </button>
+                    <button class="autofix-btn" id="recheck-btn" style="display: none;" onclick="reCheckAudit()">
+                        Re-Check SGF Compliance
+                    </button>
                     <button class="autofix-btn" id="autofix-download-btn" style="display: none;" onclick="downloadCorrectedSgf()">
                         Auto-Fix &amp; Download SGF
                     </button>
@@ -2215,6 +2218,12 @@
 
             displayMaximizationResults(maxResult);
 
+            // After Step 2 completes, show the Download button
+            const dlBtn = document.getElementById('autofix-download-btn');
+            dlBtn.style.display = 'block';
+            dlBtn.textContent = 'Download Audited SGF';
+            document.getElementById('recheck-btn').style.display = 'none';
+
             diagnosticsRunning = false;
             document.getElementById('play-btn').classList.remove('running');
             document.getElementById('step1-bar').classList.remove('running');
@@ -2360,12 +2369,15 @@
             // Toggle Fix All button (visible when errors exist)
             const fixAllBtn = document.getElementById('fix-all-btn');
             const autofixBtn = document.getElementById('autofix-download-btn');
+            const recheckBtn = document.getElementById('recheck-btn');
             if (errors.length > 0 || warnings.length > 0) {
                 fixAllBtn.style.display = 'block';
                 autofixBtn.style.display = 'none';
+                recheckBtn.style.display = 'none';
             } else {
                 fixAllBtn.style.display = 'none';
                 autofixBtn.style.display = 'none';
+                recheckBtn.style.display = 'none';
             }
 
             renderIssuesList();
@@ -2467,6 +2479,33 @@
                 `;
                 wrapper.appendChild(editPanel);
 
+                // Re-inject FIXED indicator if this issue was previously fixed (survives re-render)
+                if (fixedIssuesMap[issue.message]) {
+                    const fixedRow = document.createElement('div');
+                    fixedRow.className = 'fixed-indicator';
+                    const steps = fixedIssuesMap[issue.message].map(function(step) {
+                        return '<div class="fixed-step">' + step + '</div>';
+                    }).join('');
+                    fixedRow.innerHTML = `
+                        <div class="fixed-header">
+                            <span class="fixed-tag">FIXED</span>
+                        </div>
+                        <div class="fixed-steps">${steps}</div>
+                    `;
+                    wrapper.appendChild(fixedRow);
+                    // Auto-update action bar to state-3 (Auto-Fixed)
+                    const abar = wrapper.querySelector('.issue-action-bar');
+                    if (abar) {
+                        const s1el = abar.querySelector('.state-1');
+                        const s3el = abar.querySelector('.state-3');
+                        if (s1el) s1el.classList.remove('active');
+                        if (s3el) {
+                            s3el.querySelector('.ias-progress-text').textContent = 'Auto-Fixed';
+                            s3el.classList.add('active');
+                        }
+                    }
+                }
+
                 container.appendChild(wrapper);
             });
         }
@@ -2553,6 +2592,37 @@
             }
         }
 
+        // ── Re-Check: re-run full diagnostic on working copy after Fix All ──
+        function reCheckAudit() {
+            // Hide results, reset UI, re-run Phase 1 from scratch
+            document.getElementById('results-wrapper').classList.remove('visible');
+            document.getElementById('recheck-btn').style.display = 'none';
+            document.getElementById('fix-all-btn').style.display = 'none';
+            document.getElementById('autofix-download-btn').style.display = 'none';
+
+            // Reset right banner
+            const rightBanner = document.getElementById('right-banner');
+            rightBanner.className = 'right-status-banner';
+
+            // Reset step indicator
+            const stepNode1 = document.getElementById('step-node-1');
+            stepNode1.classList.remove('completed');
+            stepNode1.classList.add('active');
+
+            // Reset progress
+            document.getElementById('progress-fill').style.width = '0%';
+            document.getElementById('progress-text').textContent = '0%';
+            document.getElementById('code-log-box').innerHTML = '';
+            document.getElementById('step-bar-badge').textContent = "STEP 1";
+
+            // Reset audit state for a fresh run
+            fixedIssuesMap = {};
+            currentStep = 1;
+
+            // Re-run full diagnostic pipeline on current working copy (sgfContent)
+            startDiagnostics();
+        }
+
         // ── Shared: re-audit working copy, filter SGFC "corrected" noise, re-render ──
         function reAuditWorkingCopy(onComplete) {
             wasmOutput = [];
@@ -2632,7 +2702,7 @@
                     }
 
                     var originalStillPresent = origOutput.some(function(line) {
-                        return line.indexOf(msg) !== -1 || msg.indexOf(line) !== -1;
+                        return line.indexOf(msg) !== -1;
                     });
 
                     if (!originalStillPresent) {
@@ -2703,9 +2773,9 @@
                 }
             }
 
-            // Store explanation
+            // Store explanation — keyed by message so renderIssuesList can re-inject after re-render
             if (fixed && fixExplanation.length > 0) {
-                fixedIssuesMap[idx] = fixExplanation;
+                fixedIssuesMap[msg] = fixExplanation;
             }
 
             // 2 → 3 after processing delay, then re-run audit on working copy
@@ -2716,24 +2786,8 @@
                 s3.classList.add('active');
 
                 if (fixed) {
-                    // Inject green FIXED indicator into the wrapper DOM
-                    const wrapper = bar.closest('.issue-item-wrapper');
-                    if (wrapper && fixedIssuesMap[idx]) {
-                        const fixedRow = document.createElement('div');
-                        fixedRow.className = 'fixed-indicator';
-                        const steps = fixedIssuesMap[idx].map(function(step) {
-                            return '<div class="fixed-step">' + step + '</div>';
-                        }).join('');
-                        fixedRow.innerHTML = `
-                            <div class="fixed-header">
-                                <span class="fixed-tag">FIXED</span>
-                            </div>
-                            <div class="fixed-steps">${steps}</div>
-                        `;
-                        wrapper.appendChild(fixedRow);
-                    }
-
                     // Re-audit working copy, filter "corrected" noise, re-render
+                    // FIXED indicators are re-injected by renderIssuesList from fixedIssuesMap
                     reAuditWorkingCopy();
                 }
             }, 1400);
@@ -2822,11 +2876,10 @@
                         }
                     });
 
-                    // Hide Fix All, show Download
+                    // Hide Fix All, show Re-Check
                     document.getElementById('fix-all-btn').style.display = 'none';
-                    const dlBtn = document.getElementById('autofix-download-btn');
-                    dlBtn.style.display = 'block';
-                    dlBtn.textContent = 'Download Audited SGF';
+                    document.getElementById('recheck-btn').style.display = 'block';
+                    document.getElementById('autofix-download-btn').style.display = 'none';
                 });
             } catch (e) {
                 console.error('fixAllIssues error:', e);
