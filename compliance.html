@@ -2470,8 +2470,81 @@
             });
         }
 
+        // Describe what an SGFC error means in plain language
+        function describeSGFError(msg) {
+            if (/unknown property/i.test(msg)) {
+                var prop = msg.match(/<([A-Z]+)>/);
+                return 'The property ' + (prop ? '&#39;' + prop[1] + '&#39;' : 'in question') + ' is not defined in any SGF specification (FF[1]\u2013FF[4]). Unknown properties are ignored by compliant parsers but may cause unexpected behavior in strict validators.';
+            }
+            if (/illegal char/i.test(msg)) {
+                return 'Invalid characters were found in the SGF text (likely stray interface text, smart quotes, or leaked UI elements from the Go server). These break SGF syntax parsers.';
+            }
+            if (/expects compose type/i.test(msg)) {
+                var prop2 = msg.match(/<([A-Z]+)>/);
+                return 'The property ' + (prop2 ? '&#39;' + prop2[1] + '&#39;' : 'in question') + ' expects a compose type value (Name[Version] format, e.g. &#39;SGFAuditor[1.0]&#39;). The provided value does not match this format.';
+            }
+            if (/illegal.*value/i.test(msg) && /corrected/i.test(msg)) {
+                return 'A property value violates the SGF FF[4] format specification. SGFC will normalize it to a compliant value.';
+            }
+            if (/illegal.*value.*deleted/i.test(msg)) {
+                return 'A property value violates the SGF FF[4] format specification and cannot be automatically corrected, so SGFC removed it.';
+            }
+            if (/already exists/i.test(msg)) {
+                return 'A property appears more than once in the same node, which violates SGF FF[4]. Each property should appear at most once per node.';
+            }
+            if (/outside game-info/i.test(msg)) {
+                return 'A game-info property was found outside the root node. SGF FF[4] requires game-info properties to be placed in the first (root) node.';
+            }
+            if (/without any values/i.test(msg)) {
+                return 'A property identifier was found without an accompanying value. Every SGF property must have a value enclosed in square brackets.';
+            }
+            if (/board size/i.test(msg)) {
+                return 'The board size specified is invalid or unsupported. SGF FF[4] supports board sizes from 1x1 to 52x52.';
+            }
+            if (/illegal.*format/i.test(msg)) {
+                return 'A property value does not conform to the format required by SGF FF[4]. The value will be normalized to a compliant format.';
+            }
+            return 'This issue was flagged by the SGFC compliance engine. SGFC will attempt to correct it automatically.';
+        }
+
+        // Run SGFC with -c flag (correction mode) — returns corrected SGF or null
+        function runSgfcCorrect(inputSgf) {
+            if (!wasmModule) return null;
+            try {
+                try { wasmModule.FS.unlink('/input.sgf'); } catch(e) {}
+                try { wasmModule.FS.unlink('/output.sgf'); } catch(e) {}
+
+                wasmModule.FS.writeFile('/input.sgf', inputSgf);
+
+                // Capture SGFC output for explanation
+                var correctOutput = [];
+                var origPrint = wasmModule.print;
+                var origPrintErr = wasmModule.printErr;
+                wasmModule.print = function(text) { correctOutput.push(text); };
+                wasmModule.printErr = function(text) { correctOutput.push(text); };
+
+                try {
+                    wasmModule.callMain(['-c', '-U', '/input.sgf', '/output.sgf']);
+                } catch(e) {}
+
+                wasmModule.print = origPrint;
+                wasmModule.printErr = origPrintErr;
+
+                // Check if output was generated
+                try {
+                    wasmModule.FS.stat('/output.sgf');
+                    var corrected = wasmModule.FS.readFile('/output.sgf', { encoding: 'utf8' });
+                    return { corrected: corrected, messages: correctOutput };
+                } catch(e) {
+                    return null;
+                }
+            } catch(e) {
+                return null;
+            }
+        }
+
         // Transition issue bar: State 1 → 2 → 3
-        // Also performs the actual fix for known fixable issue types
+        // Uses SGFC -c mode as primary fixer, falls back to custom sanitizer
         function autoFixIssue(idx) {
             const bar = document.getElementById(`action-bar-${idx}`);
             if (!bar) return;
@@ -2492,46 +2565,71 @@
 
             const issue = auditResult.issues[idx];
             let fixed = false;
+            let fixExplanation = [];
+
             if (issue && issue.message) {
                 const msg = issue.message;
 
-                // ── Category 1: Unknown property → strip it ──
-                const unknownPropMatch = msg.match(/unknown property\s+<([A-Z]+)>/i);
-                if (unknownPropMatch && !fixed) {
-                    const propName = unknownPropMatch[1];
-                    const propRegex = new RegExp(propName + '\\s*\\[[^\\]]*\\]', 'g');
-                    const before = sgfContent.length;
-                    sgfContent = sgfContent.replace(propRegex, '');
-                    if (sgfContent.length < before) {
+                // ── Step 1: Try SGFC -c mode (authoritative fixer) ──
+                // SGFC can correct: illegal values (TM, DT, RE, etc.), format issues,
+                // duplicate properties, misplaced properties, board size errors, etc.
+                var sgfcResult = runSgfcCorrect(sgfContent);
+                if (sgfcResult && sgfcResult.corrected) {
+                    // Re-run read-only on the corrected file to check if THIS error is gone
+                    var origOutput = [];
+                    var origPrint2 = wasmModule.print;
+                    var origPrintErr2 = wasmModule.printErr;
+                    wasmModule.print = function(t) { origOutput.push(t); };
+                    wasmModule.printErr = function(t) { origOutput.push(t); };
+
+                    try { wasmModule.FS.writeFile('/input.sgf', sgfcResult.corrected); } catch(e) {}
+                    try { wasmModule.callMain(['/input.sgf']); } catch(e) {}
+
+                    wasmModule.print = origPrint2;
+                    wasmModule.printErr = origPrintErr2;
+
+                    // Check if the original error is gone in the corrected version
+                    var originalStillPresent = origOutput.some(function(line) {
+                        return line.indexOf(msg) !== -1 || msg.indexOf(line) !== -1;
+                    });
+
+                    if (!originalStillPresent) {
+                        // SGFC fixed this error
+                        sgfContent = sgfcResult.corrected;
                         sessionStorage.setItem('sgf_content', sgfContent);
                         fixed = true;
-                        fixedIssuesMap[idx] = [
-                            '<span class="step-label">Why:</span> The property &#39;' + propName + '&#39; is not defined in any SGF specification (FF[1]\u2013FF[4]). Unknown properties are ignored by compliant parsers but may cause unexpected behavior in strict validators.' +
-                            '<br><span class="step-label">Fix:</span> Stripped all instances of &#39;' + propName + '&#39;[...] from the file.'
-                        ];
+
+                        // Build explanation from SGFC's correction messages
+                        var correctionMsgs = sgfcResult.messages.filter(function(m) {
+                            return /corrected|deleted|removed|inserted/i.test(m) && !/will not get/i.test(m);
+                        });
+
+                        fixExplanation.push(
+                            '<span class="step-label">Why:</span> ' + describeSGFError(msg) +
+                            '<br><span class="step-label">Fix:</span> SGFC corrected this automatically. ' +
+                            (correctionMsgs.length > 0
+                                ? 'SGFC reported: &#39;' + correctionMsgs[0].replace(/</g, '&lt;').substring(0, 200) + '&#39;'
+                                : 'The corrected version passes SGFC validation for this issue.')
+                        );
                     }
                 }
 
-                // ── Category 2: Brackets / Stray artifacts / Phantom properties / TM errors → full sanitizer ──
-                // These errors are interconnected: stray text causes phantom props, which causes bracket errors.
-                // Running the full sanitizer resolves ALL of them at once.
+                // ── Step 2: Fallback — custom sanitizer for issues SGFC can't fix ──
+                // (stray non-ASCII artifacts, leaked UI text, phantom properties)
                 if (!fixed) {
-                    const isBracketError   = /illegal char\(s\)\s+found/i.test(msg) && /"?\]"?/.test(msg);
-                    const isStrayArtifact  = /illegal char\(s\)\s+found/i.test(msg);
+                    const isBracketError   = /illegal char\(s\)\s+found/i.test(msg);
                     const isPhantomProp    = /without any values/i.test(msg);
-                    const isTMFormat       = /illegal format/i.test(msg) && /<TM>/i.test(msg);
-                    const isTMDup          = /already exists/i.test(msg) && /<TM>/i.test(msg);
-                    const isTMPlaced       = /outside game-info/i.test(msg) && /<TM>/i.test(msg);
 
-                    if (isBracketError || isStrayArtifact || isPhantomProp || isTMFormat || isTMDup || isTMPlaced) {
+                    if (isBracketError || isPhantomProp) {
                         if (typeof SGFAuditor !== 'undefined' && SGFAuditor.sanitizeSGFStream) {
                             try {
+                                var beforeSgf = sgfContent;
                                 var result = SGFAuditor.sanitizeSGFStream(sgfContent);
-                                if (result.archive && result.archive.length > 0) {
+                                if (result.archive && result.archive.length > 0 && sgfContent !== beforeSgf) {
                                     sgfContent = result.fixed;
                                     sessionStorage.setItem('sgf_content', sgfContent);
                                     fixed = true;
-                                    fixedIssuesMap[idx] = result.archive;
+                                    fixExplanation = result.archive;
                                 }
                             } catch (e) {
                                 console.error('sanitizeSGFStream error:', e);
@@ -2539,6 +2637,11 @@
                         }
                     }
                 }
+            }
+
+            // Store explanation
+            if (fixed && fixExplanation.length > 0) {
+                fixedIssuesMap[idx] = fixExplanation;
             }
 
             // 2 → 3 after processing delay, then re-run audit if we actually changed the SGF
