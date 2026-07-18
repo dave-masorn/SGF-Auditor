@@ -2996,8 +2996,11 @@
                 if (!fixed) {
                     const isBracketError = /illegal char\(s\)\s+found/i.test(msg);
                     const isPhantomProp  = /without any values/i.test(msg);
+                    const isTmFormat     = /property.*<TM>.*illegal format/i.test(msg) ||
+                                           /property.*<TM>.*illegal value/i.test(msg) ||
+                                           /TM.*illegal/i.test(msg);
 
-                    if (isBracketError || isPhantomProp) {
+                    if (isBracketError || isPhantomProp || isTmFormat) {
                         if (typeof SGFAuditor !== 'undefined' && SGFAuditor.sanitizeSGFStream) {
                             try {
                                 var result = SGFAuditor.sanitizeSGFStream(sgfContent);
