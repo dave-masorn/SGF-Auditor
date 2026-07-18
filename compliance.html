@@ -2080,7 +2080,7 @@
             stepNode1.classList.remove('active');
             stepNode1.classList.add('completed');
 
-            displayDetailedResults();
+            try { displayDetailedResults(); } catch (e) { console.error('displayDetailedResults error:', e); }
 
             diagnosticsRunning = false;
             document.getElementById('play-btn').classList.remove('running');
@@ -2425,6 +2425,8 @@
                 row.appendChild(msg);
                 wrapper.appendChild(row);
 
+                const realIdx = wrapper.getAttribute('data-issue-idx');
+
                 // 3-State action bar
                 const actionBar = document.createElement('div');
                 actionBar.className = 'issue-action-bar';
@@ -2452,7 +2454,6 @@
                 wrapper.appendChild(actionBar);
 
                 // Inline edit panel (hidden by default)
-                const realIdx = wrapper.getAttribute('data-issue-idx');
                 const editPanel = document.createElement('div');
                 editPanel.className = 'issue-edit-panel';
                 editPanel.id = `edit-panel-${realIdx}`;
@@ -2516,19 +2517,23 @@
 
                 wasmModule.FS.writeFile('/input.sgf', inputSgf);
 
-                // Capture SGFC output for explanation
+                // Capture SGFC output for explanation using a separate output array
+                // Save and restore print functions in a finally block to prevent corruption
                 var correctOutput = [];
                 var origPrint = wasmModule.print;
                 var origPrintErr = wasmModule.printErr;
-                wasmModule.print = function(text) { correctOutput.push(text); };
-                wasmModule.printErr = function(text) { correctOutput.push(text); };
-
                 try {
-                    wasmModule.callMain(['-c', '-U', '/input.sgf', '/output.sgf']);
-                } catch(e) {}
+                    wasmModule.print = function(text) { correctOutput.push(text); };
+                    wasmModule.printErr = function(text) { correctOutput.push(text); };
 
-                wasmModule.print = origPrint;
-                wasmModule.printErr = origPrintErr;
+                    try {
+                        wasmModule.callMain(['-c', '-U', '/input.sgf', '/output.sgf']);
+                    } catch(e) {}
+                } finally {
+                    // ALWAYS restore — even if callMain throws
+                    wasmModule.print = origPrint;
+                    wasmModule.printErr = origPrintErr;
+                }
 
                 // Check if output was generated
                 try {
@@ -2539,6 +2544,11 @@
                     return null;
                 }
             } catch(e) {
+                // Safety: ensure print functions are restored even on unexpected error
+                if (wasmModule) {
+                    try { wasmModule.print = function(text) { wasmOutput.push(text); }; } catch(e2) {}
+                    try { wasmModule.printErr = function(text) { wasmOutput.push(text); }; } catch(e2) {}
+                }
                 return null;
             }
         }
@@ -2579,14 +2589,16 @@
                     var origOutput = [];
                     var origPrint2 = wasmModule.print;
                     var origPrintErr2 = wasmModule.printErr;
-                    wasmModule.print = function(t) { origOutput.push(t); };
-                    wasmModule.printErr = function(t) { origOutput.push(t); };
+                    try {
+                        wasmModule.print = function(t) { origOutput.push(t); };
+                        wasmModule.printErr = function(t) { origOutput.push(t); };
 
-                    try { wasmModule.FS.writeFile('/input.sgf', sgfcResult.corrected); } catch(e) {}
-                    try { wasmModule.callMain(['/input.sgf']); } catch(e) {}
-
-                    wasmModule.print = origPrint2;
-                    wasmModule.printErr = origPrintErr2;
+                        try { wasmModule.FS.writeFile('/input.sgf', sgfcResult.corrected); } catch(e) {}
+                        try { wasmModule.callMain(['/input.sgf']); } catch(e) {}
+                    } finally {
+                        wasmModule.print = origPrint2;
+                        wasmModule.printErr = origPrintErr2;
+                    }
 
                     // Check if the original error is gone in the corrected version
                     var originalStillPresent = origOutput.some(function(line) {
