@@ -1818,13 +1818,28 @@
         // This prevents SGFC from auto-correcting values. Our own sanitizer handles fixes.
         function runWasmAuditReadOnly(callback) {
             wasmOutput = [];
+            correctedSgfContent = null;
             try {
+                // Delete old output file to prevent stale results
+                try { wasmModule.FS.unlink('/output.sgf'); } catch(e) {}
+
                 wasmModule.FS.writeFile('/input.sgf', sgfContent);
+
+                // Run WITH -c -U so we get both diagnostics AND corrected output
+                // in a single callMain invocation. (Emscripten WASM can only call
+                // main() once — subsequent callMain calls hang the engine.)
                 try {
-                    // Run WITHOUT -c (no output file) and WITHOUT -U (no auto-correction)
-                    wasmModule.callMain(['/input.sgf']);
+                    wasmModule.callMain(['-c', '-U', '/input.sgf', '/output.sgf']);
                 } catch (e) {
                     // Normal exit exception
+                }
+
+                // Capture corrected output if SGFC produced one
+                try {
+                    wasmModule.FS.stat('/output.sgf');
+                    correctedSgfContent = wasmModule.FS.readFile('/output.sgf', { encoding: 'utf8' });
+                } catch (e) {
+                    correctedSgfContent = null;
                 }
 
                 const report = wasmOutput.join('\n');
@@ -1896,7 +1911,6 @@
                     isWasm: true
                 };
 
-                correctedSgfContent = null;
                 populateImmediateStats(auditResult);
                 if (callback) callback();
             } catch (err) {
@@ -2722,112 +2736,168 @@
 
         // Run SGFC with -c flag (correction mode) — returns corrected SGF or null
         function runSgfcCorrect(inputSgf) {
-            if (!wasmModule) return null;
-            try {
-                try { wasmModule.FS.unlink('/input.sgf'); } catch(e) {}
-                try { wasmModule.FS.unlink('/output.sgf'); } catch(e) {}
-
-                wasmModule.FS.writeFile('/input.sgf', inputSgf);
-
-                // Capture SGFC output for explanation using a separate output array
-                // Save and restore print functions in a finally block to prevent corruption
-                var correctOutput = [];
-                var origPrint = wasmModule.print;
-                var origPrintErr = wasmModule.printErr;
-                try {
-                    wasmModule.print = function(text) { correctOutput.push(text); };
-                    wasmModule.printErr = function(text) { correctOutput.push(text); };
-
-                    try {
-                        wasmModule.callMain(['-c', '-U', '/input.sgf', '/output.sgf']);
-                    } catch(e) {}
-                } finally {
-                    // ALWAYS restore — even if callMain throws
-                    wasmModule.print = origPrint;
-                    wasmModule.printErr = origPrintErr;
-                }
-
-                // Check if output was generated
-                try {
-                    wasmModule.FS.stat('/output.sgf');
-                    var corrected = wasmModule.FS.readFile('/output.sgf', { encoding: 'utf8' });
-                    return { corrected: corrected, messages: correctOutput };
-                } catch(e) {
-                    return null;
-                }
-            } catch(e) {
-                // Safety: ensure print functions are restored even on unexpected error
-                if (wasmModule) {
-                    try { wasmModule.print = function(text) { wasmOutput.push(text); }; } catch(e2) {}
-                    try { wasmModule.printErr = function(text) { wasmOutput.push(text); }; } catch(e2) {}
-                }
-                return null;
+            // Use the pre-computed corrected content from the initial audit.
+            // Emscripten WASM can only call main() once per lifecycle —
+            // calling it again hangs the engine. The initial runWasmAuditReadOnly
+            // already ran with -c -U and captured both diagnostics and corrected output.
+            if (correctedSgfContent && correctedSgfContent !== inputSgf) {
+                return { corrected: correctedSgfContent, messages: wasmOutput.slice() };
             }
+            return null;
         }
 
-        // ── Re-Check: re-run full diagnostic on working copy after Fix All ──
+        // ── Re-Check: re-audit working copy after Fix All (JS-only, no second callMain) ──
         function reCheckAudit() {
-            // Hide results, reset UI, re-run Phase 1 from scratch
             document.getElementById('results-wrapper').classList.remove('visible');
             document.getElementById('recheck-btn').style.display = 'none';
             document.getElementById('fix-all-btn').style.display = 'none';
             document.getElementById('autofix-download-btn').style.display = 'none';
 
-            // Reset right banner
             const rightBanner = document.getElementById('right-banner');
             rightBanner.className = 'right-status-banner';
 
-            // Reset step indicator
             const stepNode1 = document.getElementById('step-node-1');
             stepNode1.classList.remove('completed');
             stepNode1.classList.add('active');
 
-            // Reset progress
             document.getElementById('progress-fill').style.width = '0%';
             document.getElementById('progress-text').textContent = '0%';
             document.getElementById('code-log-box').innerHTML = '';
             document.getElementById('step-bar-badge').textContent = "STEP 1";
 
-            // Reset audit state for a fresh run
+            // Reset fixed tracking for the re-check
             fixedIssuesMap = {};
-            currentStep = 1;
 
-            // Re-run full diagnostic pipeline on current working copy (sgfContent)
-            startDiagnostics();
-        }
+            // Show progress animation
+            var logBox = document.getElementById('code-log-box');
+            var fill = document.getElementById('progress-fill');
+            var text = document.getElementById('progress-text');
 
-        // ── Shared: re-audit working copy, filter SGFC "corrected" noise, re-render ──
-        function reAuditWorkingCopy(onComplete) {
-            wasmOutput = [];
-            runWasmAuditReadOnly(() => {
-                // Filter out SGFC "corrected" messages — these are -c notifications, not file errors
-                auditResult.issues = auditResult.issues.filter(function(i) {
-                    return !/corrected;\s*new value/i.test(i.message);
-                });
+            var steps = [
+                { percent: 20, text: "[RE-CHECK] Re-validating working copy (JS-only)...", type: "info" },
+                { percent: 50, text: "[RE-CHECK] Running properties validation on corrected content...", type: "text" },
+                { percent: 80, text: "[RE-CHECK] Updating issue list...", type: "text" }
+            ];
 
-                // Re-run properties validation and merge results
-                if (typeof SGFAuditor !== 'undefined' && SGFAuditor.validateSGFProperties) {
-                    let propResult = SGFAuditor.validateSGFProperties(sgfContent);
-                    (propResult.warnings || []).forEach(w => {
-                        auditResult.issues.push({ severity: 'warning', message: w.msg, position: null });
+            var stepIdx = 0;
+            function runRecheckStep() {
+                if (stepIdx >= steps.length) {
+                    // Complete: run JS-only re-audit
+                    reAuditWorkingCopy(function() {
+                        var errs  = auditResult.issues.filter(i => i.severity === 'error').length;
+                        var warns = auditResult.issues.filter(i => i.severity === 'warning').length;
+                        var pass = errs === 0;
+
+                        var finalLine = document.createElement('div');
+                        finalLine.className = 'code-box-line ' + (pass ? 'info-line' : 'error-line');
+                        finalLine.textContent = pass
+                            ? "[RE-CHECK DONE] All " + warns + " warning(s) remaining — PASS"
+                            : "[RE-CHECK DONE] " + errs + " error(s), " + warns + " warning(s) remaining — FAIL";
+                        logBox.appendChild(finalLine);
+                        logBox.scrollTop = logBox.scrollHeight;
+
+                        fill.style.width = "100%";
+                        text.textContent = "100%";
+
+                        // Transition to step 1 completed, show results
+                        stepNode1.classList.remove('active');
+                        stepNode1.classList.add('completed');
+                        document.getElementById('results-wrapper').classList.add('visible');
+
+                        // Update right-side banner
+                        const rb = document.getElementById('right-banner');
+                        const ri = document.getElementById('right-banner-icon');
+                        const rt = document.getElementById('right-banner-title');
+                        const rd = document.getElementById('right-banner-desc');
+                        if (pass && warns === 0) {
+                            rb.className = 'right-status-banner pass visible';
+                            ri.textContent = '✓';
+                            rt.textContent = '100% Compliant';
+                            rd.innerHTML = 'This SGF file is fully compliant with the SGF FF[4] standard for Go.';
+                        } else if (pass) {
+                            rb.className = 'right-status-banner warning visible';
+                            ri.textContent = '⚠';
+                            rt.textContent = 'Compliant (Warnings)';
+                            rd.innerHTML = 'Functionally compliant with ' + warns + ' warning(s).';
+                        } else {
+                            rb.className = 'right-status-banner fail visible';
+                            ri.textContent = '✗';
+                            rt.textContent = 'Non-Compliant';
+                            rd.innerHTML = 'Found ' + errs + ' error(s) and ' + warns + ' warning(s).';
+                        }
+                        document.getElementById('step-bar-badge').textContent = "STEP 1";
+
+                        if (pass) {
+                            document.getElementById('recheck-btn').style.display = 'none';
+                            document.getElementById('fix-all-btn').style.display = 'none';
+                            document.getElementById('autofix-download-btn').style.display = 'block';
+                        } else {
+                            document.getElementById('fix-all-btn').style.display = 'block';
+                            document.getElementById('recheck-btn').style.display = 'none';
+                            document.getElementById('autofix-download-btn').style.display = 'none';
+                        }
                     });
-                    (propResult.errors || []).forEach(e => {
-                        auditResult.issues.push({ severity: 'error', message: e.msg, position: null });
-                    });
+                    return;
                 }
 
-                // Refresh banner counts
-                const errs  = auditResult.issues.filter(i => i.severity === 'error').length;
-                const warns = auditResult.issues.filter(i => i.severity === 'warning').length;
-                document.getElementById('filter-all-count').textContent   = errs + warns;
-                document.getElementById('filter-error-count').textContent = errs;
-                document.getElementById('filter-warning-count').textContent = warns;
+                var step = steps[stepIdx];
+                fill.style.width = step.percent + "%";
+                text.textContent = step.percent + "%";
 
-                // Re-render the issues list DOM
-                renderIssuesList();
+                var line = document.createElement('div');
+                line.className = 'code-box-line ' + (step.type === 'error' ? 'error-line' : step.type === 'warning' ? 'warn-line' : 'info-line');
+                line.textContent = step.text;
+                logBox.appendChild(line);
+                logBox.scrollTop = logBox.scrollHeight;
 
-                if (onComplete) onComplete();
+                stepIdx++;
+                setTimeout(runRecheckStep, 200);
+            }
+            runRecheckStep();
+        }
+
+        // ── Shared: re-audit working copy after fix, JS-only (no second callMain) ──
+        function reAuditWorkingCopy(onComplete) {
+            // CAN'T call callMain again — Emscripten WASM only supports one invocation.
+            // Instead, we filter the existing auditResult (remove fixed issues) and
+            // re-run property validation on the updated content.
+
+            // 1. Remove issues that were fixed (tracked in fixedIssuesMap)
+            auditResult.issues = auditResult.issues.filter(function(i) {
+                return !fixedIssuesMap[i.message];
             });
+
+            // 2. Also filter out SGFC "corrected" notifications
+            auditResult.issues = auditResult.issues.filter(function(i) {
+                return !/corrected;\s*new value/i.test(i.message);
+            });
+
+            // 3. Re-run properties validation and merge results
+            if (typeof SGFAuditor !== 'undefined' && SGFAuditor.validateSGFProperties) {
+                let propResult = SGFAuditor.validateSGFProperties(sgfContent);
+                (propResult.warnings || []).forEach(w => {
+                    auditResult.issues.push({ severity: 'warning', message: w.msg, position: null });
+                });
+                (propResult.errors || []).forEach(e => {
+                    auditResult.issues.push({ severity: 'error', message: e.msg, position: null });
+                });
+            }
+
+            // 4. Update stats from current content
+            const moveCount = (sgfContent.match(/[BW]\[/g) || []).length;
+            auditResult.stats.moves = moveCount;
+
+            // 5. Refresh banner counts
+            const errs  = auditResult.issues.filter(i => i.severity === 'error').length;
+            const warns = auditResult.issues.filter(i => i.severity === 'warning').length;
+            document.getElementById('filter-all-count').textContent   = errs + warns;
+            document.getElementById('filter-error-count').textContent = errs;
+            document.getElementById('filter-warning-count').textContent = warns;
+
+            // 6. Re-render the issues list DOM
+            renderIssuesList();
+
+            if (onComplete) onComplete();
         }
 
         // ── Per-Issue Auto-Fix: SGFC -c as primary, custom sanitizer as fallback ──
@@ -3076,7 +3146,6 @@
         function applyEdit(idx) {
             const ta = document.getElementById(`edit-textarea-${idx}`);
             if (!ta || !ta.value.trim()) return;
-            // Preserve original on first edit
             if (!originalSgfContent) {
                 originalSgfContent = sgfContent;
                 sessionStorage.setItem('sgf_original', originalSgfContent);
@@ -3084,11 +3153,8 @@
             sgfContent = ta.value.trim();
             sessionStorage.setItem('sgf_content', sgfContent);
             document.getElementById(`edit-panel-${idx}`).style.display = 'none';
-            // Re-run read-only audit with updated content
-            wasmOutput = [];
-            runWasmAuditReadOnly(() => {
-                renderIssuesList();
-            });
+            // Re-audit JS-only (can't call WASM again)
+            reAuditWorkingCopy();
         }
 
         function closeEdit(idx) {
