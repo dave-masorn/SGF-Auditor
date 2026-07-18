@@ -2553,8 +2553,41 @@
             }
         }
 
-        // Transition issue bar: State 1 → 2 → 3
-        // Uses SGFC -c mode as primary fixer, falls back to custom sanitizer
+        // ── Shared: re-audit working copy, filter SGFC "corrected" noise, re-render ──
+        function reAuditWorkingCopy(onComplete) {
+            wasmOutput = [];
+            runWasmAuditReadOnly(() => {
+                // Filter out SGFC "corrected" messages — these are -c notifications, not file errors
+                auditResult.issues = auditResult.issues.filter(function(i) {
+                    return !/corrected;\s*new value/i.test(i.message);
+                });
+
+                // Re-run properties validation and merge results
+                if (typeof SGFAuditor !== 'undefined' && SGFAuditor.validateSGFProperties) {
+                    let propResult = SGFAuditor.validateSGFProperties(sgfContent);
+                    (propResult.warnings || []).forEach(w => {
+                        auditResult.issues.push({ severity: 'warning', message: w.msg, position: null });
+                    });
+                    (propResult.errors || []).forEach(e => {
+                        auditResult.issues.push({ severity: 'error', message: e.msg, position: null });
+                    });
+                }
+
+                // Refresh banner counts
+                const errs  = auditResult.issues.filter(i => i.severity === 'error').length;
+                const warns = auditResult.issues.filter(i => i.severity === 'warning').length;
+                document.getElementById('filter-all-count').textContent   = errs + warns;
+                document.getElementById('filter-error-count').textContent = errs;
+                document.getElementById('filter-warning-count').textContent = warns;
+
+                // Re-render the issues list DOM
+                renderIssuesList();
+
+                if (onComplete) onComplete();
+            });
+        }
+
+        // ── Per-Issue Auto-Fix: SGFC -c as primary, custom sanitizer as fallback ──
         function autoFixIssue(idx) {
             const bar = document.getElementById(`action-bar-${idx}`);
             if (!bar) return;
@@ -2567,8 +2600,8 @@
             s1.classList.add('exit');
             s2.classList.add('active');
 
-            // Preserve original on first fix
-            if (!originalSgfContent || originalSgfContent !== sessionStorage.getItem('sgf_original')) {
+            // Preserve original (untouched) on first fix attempt
+            if (!originalSgfContent) {
                 originalSgfContent = sgfContent;
                 sessionStorage.setItem('sgf_original', originalSgfContent);
             }
@@ -2580,12 +2613,10 @@
             if (issue && issue.message) {
                 const msg = issue.message;
 
-                // ── Step 1: Try SGFC -c mode (authoritative fixer) ──
-                // SGFC can correct: illegal values (TM, DT, RE, etc.), format issues,
-                // duplicate properties, misplaced properties, board size errors, etc.
+                // ── Step 1: SGFC -c mode (authoritative fixer for syntax/value errors) ──
                 var sgfcResult = runSgfcCorrect(sgfContent);
                 if (sgfcResult && sgfcResult.corrected) {
-                    // Re-run read-only on the corrected file to check if THIS error is gone
+                    // Verify THIS specific error is gone in the corrected version
                     var origOutput = [];
                     var origPrint2 = wasmModule.print;
                     var origPrintErr2 = wasmModule.printErr;
@@ -2600,37 +2631,59 @@
                         wasmModule.printErr = origPrintErr2;
                     }
 
-                    // Check if the original error is gone in the corrected version
                     var originalStillPresent = origOutput.some(function(line) {
                         return line.indexOf(msg) !== -1 || msg.indexOf(line) !== -1;
                     });
 
                     if (!originalStillPresent) {
-                        // SGFC fixed this error
+                        // Working copy updated — original stays untouched
                         sgfContent = sgfcResult.corrected;
                         sessionStorage.setItem('sgf_content', sgfContent);
                         fixed = true;
 
-                        // Build explanation from SGFC's correction messages
+                        // Detect ALL corrections SGFC made (targeted + side effects)
                         var correctionMsgs = sgfcResult.messages.filter(function(m) {
                             return /corrected|deleted|removed|inserted/i.test(m) && !/will not get/i.test(m);
                         });
 
+                        // Separate: the correction that matches our target issue vs. side effects
+                        var targetedCorrections = correctionMsgs.filter(function(m) {
+                            return m.indexOf(msg) !== -1 || msg.indexOf(m) !== -1;
+                        });
+                        var sideEffectCorrections = correctionMsgs.filter(function(m) {
+                            return m.indexOf(msg) === -1 && msg.indexOf(m) === -1;
+                        });
+
                         fixExplanation.push(
-                            '<span class="step-label">Why:</span> ' + describeSGFError(msg) +
-                            '<br><span class="step-label">Fix:</span> SGFC corrected this automatically. ' +
-                            (correctionMsgs.length > 0
-                                ? 'SGFC reported: &#39;' + correctionMsgs[0].replace(/</g, '&lt;').substring(0, 200) + '&#39;'
-                                : 'The corrected version passes SGFC validation for this issue.')
+                            '<span class="step-label">Why:</span> ' + describeSGFError(msg)
                         );
+
+                        if (targetedCorrections.length > 0) {
+                            fixExplanation.push(
+                                '<span class="step-label">Fix:</span> SGFC corrected this issue. ' +
+                                'Reported: &#39;' + targetedCorrections[0].replace(/</g, '&lt;').substring(0, 200) + '&#39;'
+                            );
+                        } else {
+                            fixExplanation.push(
+                                '<span class="step-label">Fix:</span> SGFC corrected this issue. The corrected version passes validation.'
+                            );
+                        }
+
+                        // Log side-effect corrections as informational (not errors)
+                        if (sideEffectCorrections.length > 0) {
+                            fixExplanation.push(
+                                '<span class="step-label">Side Effects:</span> SGFC also corrected ' +
+                                sideEffectCorrections.length + ' other issue(s) as a side effect: &#39;' +
+                                sideEffectCorrections[0].replace(/</g, '&lt;').substring(0, 200) + '&#39;'
+                            );
+                        }
                     }
                 }
 
                 // ── Step 2: Fallback — custom sanitizer for issues SGFC can't fix ──
-                // (stray non-ASCII artifacts, leaked UI text, phantom properties)
                 if (!fixed) {
-                    const isBracketError   = /illegal char\(s\)\s+found/i.test(msg);
-                    const isPhantomProp    = /without any values/i.test(msg);
+                    const isBracketError = /illegal char\(s\)\s+found/i.test(msg);
+                    const isPhantomProp  = /without any values/i.test(msg);
 
                     if (isBracketError || isPhantomProp) {
                         if (typeof SGFAuditor !== 'undefined' && SGFAuditor.sanitizeSGFStream) {
@@ -2656,7 +2709,7 @@
                 fixedIssuesMap[idx] = fixExplanation;
             }
 
-            // 2 → 3 after processing delay, then re-run audit if we actually changed the SGF
+            // 2 → 3 after processing delay, then re-run audit on working copy
             setTimeout(() => {
                 s2.classList.remove('active');
                 s2.classList.add('exit');
@@ -2664,7 +2717,7 @@
                 s3.classList.add('active');
 
                 if (fixed) {
-                    // Inject green FIXED indicator directly into the wrapper DOM
+                    // Inject green FIXED indicator into the wrapper DOM
                     const wrapper = bar.closest('.issue-item-wrapper');
                     if (wrapper && fixedIssuesMap[idx]) {
                         const fixedRow = document.createElement('div');
@@ -2681,115 +2734,101 @@
                         wrapper.appendChild(fixedRow);
                     }
 
-                    // Re-run read-only audit with the corrected SGF
-                    wasmOutput = [];
-                    runWasmAuditReadOnly(() => {
-                        // Re-run properties validation and merge results
-                        if (typeof SGFAuditor !== 'undefined' && SGFAuditor.validateSGFProperties) {
-                            let propResult = SGFAuditor.validateSGFProperties(sgfContent);
-                            (propResult.warnings || []).forEach(w => {
-                                auditResult.issues.push({ severity: 'warning', message: w.msg, position: null });
-                            });
-                            (propResult.errors || []).forEach(e => {
-                                auditResult.issues.push({ severity: 'error', message: e.msg, position: null });
-                            });
-                        }
-                        // Refresh banner counts
-                        const errs  = auditResult.issues.filter(i => i.severity === 'error').length;
-                        const warns = auditResult.issues.filter(i => i.severity === 'warning').length;
-                        document.getElementById('filter-all-count').textContent   = errs + warns;
-                        document.getElementById('filter-error-count').textContent = errs;
-                        document.getElementById('filter-warning-count').textContent = warns;
-                    });
+                    // Re-audit working copy, filter "corrected" noise, re-render
+                    reAuditWorkingCopy();
                 }
             }, 1400);
         }
 
-        // ── Fix All Issues: run the full sanitizer on the working copy ──
+        // ── Fix All Issues: SGFC -c first, then custom sanitizer ──
         function fixAllIssues() {
-            if (typeof SGFAuditor === 'undefined' || !SGFAuditor.sanitizeSGFStream) {
-                alert('Sanitizer not loaded.');
-                return;
-            }
-
-            // Ensure original is preserved on first fix
-            if (!originalSgfContent || originalSgfContent !== sessionStorage.getItem('sgf_original')) {
+            // Preserve original (untouched) on first fix attempt
+            if (!originalSgfContent) {
                 originalSgfContent = sgfContent;
                 sessionStorage.setItem('sgf_original', originalSgfContent);
             }
 
             try {
-                var result = SGFAuditor.sanitizeSGFStream(sgfContent);
-                if (result.archive && result.archive.length > 0) {
-                    sgfContent = result.fixed;
-                    sessionStorage.setItem('sgf_content', sgfContent);
+                var archive = [];
+                var fixedAny = false;
 
-                    // Snapshot old issues for comparison after re-audit
-                    const oldIssueMessages = auditResult.issues.map(i => i.message);
+                // Phase A: SGFC -c (handles syntax/value errors: TM, DT, RE, duplicates, etc.)
+                if (wasmModule && isWasmLoaded) {
+                    var sgfcResult = runSgfcCorrect(sgfContent);
+                    if (sgfcResult && sgfcResult.corrected && sgfcResult.corrected !== sgfContent) {
+                        sgfContent = sgfcResult.corrected;
+                        sessionStorage.setItem('sgf_content', sgfContent);
+                        fixedAny = true;
 
-                    // Re-run audit with corrected content to find which issues actually resolved
-                    wasmOutput = [];
-                    runWasmAuditReadOnly(() => {
-                        if (typeof SGFAuditor !== 'undefined' && SGFAuditor.validateSGFProperties) {
-                            let propResult = SGFAuditor.validateSGFProperties(sgfContent);
-                            (propResult.warnings || []).forEach(w => {
-                                auditResult.issues.push({ severity: 'warning', message: w.msg, position: null });
-                            });
-                            (propResult.errors || []).forEach(e => {
-                                auditResult.issues.push({ severity: 'error', message: e.msg, position: null });
-                            });
+                        var correctionMsgs = sgfcResult.messages.filter(function(m) {
+                            return /corrected|deleted|removed|inserted/i.test(m) && !/will not get/i.test(m);
+                        });
+                        if (correctionMsgs.length > 0) {
+                            archive.push(
+                                '<span class="step-label">SGFC:</span> Corrected ' + correctionMsgs.length + ' issue(s) via SGFC compliance engine.'
+                            );
                         }
+                    }
+                }
 
-                        // Build set of issues that still exist after fix
-                        const newIssueMessages = auditResult.issues.map(i => i.message);
-                        const stillPresent = new Set(newIssueMessages);
+                // Phase B: Custom sanitizer (handles stray non-ASCII, phantom props, etc.)
+                if (typeof SGFAuditor !== 'undefined' && SGFAuditor.sanitizeSGFStream) {
+                    var sanResult = SGFAuditor.sanitizeSGFStream(sgfContent);
+                    if (sanResult.archive && sanResult.archive.length > 0 && sanResult.fixed !== sgfContent) {
+                        sgfContent = sanResult.fixed;
+                        sessionStorage.setItem('sgf_content', sgfContent);
+                        fixedAny = true;
+                        archive = archive.concat(sanResult.archive);
+                    }
+                }
 
-                        // Mark only actually-fixed issues as fixed in the UI
-                        const wrappers = document.querySelectorAll('.issue-item-wrapper');
-                        wrappers.forEach((wrapper, idx) => {
-                            const oldMsg = oldIssueMessages[idx];
-                            // Only mark as fixed if this issue is NO LONGER present after fix
-                            if (oldMsg && !stillPresent.has(oldMsg)) {
-                                const bar = wrapper.querySelector('.issue-action-bar');
-                                if (bar) {
-                                    const s1 = bar.querySelector('.state-1');
-                                    const s3 = bar.querySelector('.state-3');
-                                    if (s1) s1.classList.remove('active');
-                                    if (s3) {
-                                        s3.querySelector('.ias-progress-text').textContent = 'Auto-Fixed';
-                                        s3.classList.add('active');
-                                    }
-                                }
-                                const existingFixed = wrapper.querySelector('.fixed-indicator');
-                                if (!existingFixed) {
-                                    const fixedRow = document.createElement('div');
-                                    fixedRow.className = 'fixed-indicator';
-                                    fixedRow.innerHTML = `
-                                        <div class="fixed-header">
-                                            <span class="fixed-tag">FIXED</span>
-                                        </div>
-                                        <div class="fixed-steps"><div class="fixed-step">This issue was resolved by the sanitizer as a side effect of fixing other errors.</div></div>
-                                    `;
-                                    wrapper.appendChild(fixedRow);
+                if (!fixedAny) {
+                    alert('No fixable issues found.');
+                    return;
+                }
+
+                // Snapshot old issue messages for comparison
+                const oldIssueMessages = auditResult.issues.map(i => i.message);
+
+                // Re-audit working copy, filter "corrected" noise, re-render
+                reAuditWorkingCopy(function() {
+                    // Build set of issues that still exist after fix
+                    const newIssueMessages = auditResult.issues.map(i => i.message);
+                    const stillPresent = new Set(newIssueMessages);
+
+                    // Mark only actually-fixed issues in the DOM
+                    const wrappers = document.querySelectorAll('.issue-item-wrapper');
+                    wrappers.forEach(function(wrapper, i) {
+                        const oldMsg = oldIssueMessages[i];
+                        if (oldMsg && !stillPresent.has(oldMsg)) {
+                            const abar = wrapper.querySelector('.issue-action-bar');
+                            if (abar) {
+                                const s1 = abar.querySelector('.state-1');
+                                const s3 = abar.querySelector('.state-3');
+                                if (s1) s1.classList.remove('active');
+                                if (s3) {
+                                    s3.querySelector('.ias-progress-text').textContent = 'Auto-Fixed';
+                                    s3.classList.add('active');
                                 }
                             }
-                        });
-                        // Refresh counts
-                        const errs  = auditResult.issues.filter(i => i.severity === 'error').length;
-                        const warns = auditResult.issues.filter(i => i.severity === 'warning').length;
-                        document.getElementById('filter-all-count').textContent   = errs + warns;
-                        document.getElementById('filter-error-count').textContent = errs;
-                        document.getElementById('filter-warning-count').textContent = warns;
-
-                        // Hide Fix All, show Download
-                        document.getElementById('fix-all-btn').style.display = 'none';
-                        const dlBtn = document.getElementById('autofix-download-btn');
-                        dlBtn.style.display = 'block';
-                        dlBtn.textContent = 'Download Corrected SGF';
+                            const existingFixed = wrapper.querySelector('.fixed-indicator');
+                            if (!existingFixed) {
+                                const fixedRow = document.createElement('div');
+                                fixedRow.className = 'fixed-indicator';
+                                fixedRow.innerHTML =
+                                    '<div class="fixed-header"><span class="fixed-tag">FIXED</span></div>' +
+                                    '<div class="fixed-steps"><div class="fixed-step">This issue was resolved automatically.</div></div>';
+                                wrapper.appendChild(fixedRow);
+                            }
+                        }
                     });
-                } else {
-                    alert('No fixable issues found by the sanitizer.');
-                }
+
+                    // Hide Fix All, show Download
+                    document.getElementById('fix-all-btn').style.display = 'none';
+                    const dlBtn = document.getElementById('autofix-download-btn');
+                    dlBtn.style.display = 'block';
+                    dlBtn.textContent = 'Download Corrected SGF';
+                });
             } catch (e) {
                 console.error('fixAllIssues error:', e);
                 alert('Error during auto-fix: ' + e.message);
