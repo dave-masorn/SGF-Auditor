@@ -2688,9 +2688,8 @@
                     if (isBracketError || isPhantomProp) {
                         if (typeof SGFAuditor !== 'undefined' && SGFAuditor.sanitizeSGFStream) {
                             try {
-                                var beforeSgf = sgfContent;
                                 var result = SGFAuditor.sanitizeSGFStream(sgfContent);
-                                if (result.archive && result.archive.length > 0 && sgfContent !== beforeSgf) {
+                                if (result.archive && result.archive.length > 0 && result.fixed !== sgfContent) {
                                     sgfContent = result.fixed;
                                     sessionStorage.setItem('sgf_content', sgfContent);
                                     fixed = true;
@@ -2827,7 +2826,7 @@
                     document.getElementById('fix-all-btn').style.display = 'none';
                     const dlBtn = document.getElementById('autofix-download-btn');
                     dlBtn.style.display = 'block';
-                    dlBtn.textContent = 'Download Corrected SGF';
+                    dlBtn.textContent = 'Download Audited SGF';
                 });
             } catch (e) {
                 console.error('fixAllIssues error:', e);
@@ -2853,7 +2852,7 @@
             const ta = document.getElementById(`edit-textarea-${idx}`);
             if (!ta || !ta.value.trim()) return;
             // Preserve original on first edit
-            if (!originalSgfContent || originalSgfContent !== sessionStorage.getItem('sgf_original')) {
+            if (!originalSgfContent) {
                 originalSgfContent = sgfContent;
                 sessionStorage.setItem('sgf_original', originalSgfContent);
             }
@@ -2912,7 +2911,7 @@
             
             const originalName = sessionStorage.getItem('sgf_filename') || 'game.sgf';
             const baseName = originalName.substring(0, originalName.lastIndexOf('.')) || originalName;
-            a.download = `corrected_${baseName}.sgf`;
+            a.download = `${baseName}-audited.sgf`;
             
             a.href = url;
             document.body.appendChild(a);
