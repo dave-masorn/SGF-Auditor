@@ -2400,6 +2400,7 @@
                 // Outer wrapper (issue row + action bar + edit panel)
                 const wrapper = document.createElement('div');
                 wrapper.className = 'issue-item-wrapper';
+                wrapper.setAttribute('data-issue-idx', auditResult.issues.indexOf(issue));
 
                 // Issue row
                 const row = document.createElement('div');
@@ -2427,13 +2428,13 @@
                 // 3-State action bar
                 const actionBar = document.createElement('div');
                 actionBar.className = 'issue-action-bar';
-                actionBar.id = `action-bar-${idx}`;
+                actionBar.id = `action-bar-${realIdx}`;
                 actionBar.innerHTML = `
                     <div class="issue-action-state state-1 active">
                         <span class="ias-num">1</span>
                         <div class="ias-actions">
-                            <button class="ias-edit-btn" onclick="editIssue(${idx})">Edit / FIY</button>
-                            <button class="ias-fix-btn" onclick="autoFixIssue(${idx})">Auto-Fix</button>
+                            <button class="ias-edit-btn" onclick="editIssue(${wrapper.getAttribute('data-issue-idx')})">Edit / FIY</button>
+                            <button class="ias-fix-btn" onclick="autoFixIssue(${wrapper.getAttribute('data-issue-idx')})">Auto-Fix</button>
                         </div>
                         <div class="ias-icon">⚠</div>
                     </div>
@@ -2451,15 +2452,16 @@
                 wrapper.appendChild(actionBar);
 
                 // Inline edit panel (hidden by default)
+                const realIdx = wrapper.getAttribute('data-issue-idx');
                 const editPanel = document.createElement('div');
                 editPanel.className = 'issue-edit-panel';
-                editPanel.id = `edit-panel-${idx}`;
+                editPanel.id = `edit-panel-${realIdx}`;
                 editPanel.style.display = 'none';
                 editPanel.innerHTML = `
-                    <textarea class="issue-edit-textarea" id="edit-textarea-${idx}" placeholder="Edit the SGF content manually and click Apply to re-check..."></textarea>
+                    <textarea class="issue-edit-textarea" id="edit-textarea-${realIdx}" placeholder="Edit the SGF content manually and click Apply to re-check..."></textarea>
                     <div class="issue-edit-actions">
-                        <button class="ias-cancel-btn" onclick="closeEdit(${idx})">Cancel</button>
-                        <button class="ias-apply-btn" onclick="applyEdit(${idx})">Apply &amp; Re-check</button>
+                        <button class="ias-cancel-btn" onclick="closeEdit(${realIdx})">Cancel</button>
+                        <button class="ias-apply-btn" onclick="applyEdit(${realIdx})">Apply &amp; Re-check</button>
                     </div>
                 `;
                 wrapper.appendChild(editPanel);
