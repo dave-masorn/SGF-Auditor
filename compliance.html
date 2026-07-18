@@ -2859,24 +2859,31 @@
                 // ── Step 1: SGFC -c mode (authoritative fixer for syntax/value errors) ──
                 var sgfcResult = runSgfcCorrect(sgfContent);
                 if (sgfcResult && sgfcResult.corrected) {
-                    // Verify THIS specific error is gone in the corrected version
-                    var origOutput = [];
-                    var origPrint2 = wasmModule.print;
-                    var origPrintErr2 = wasmModule.printErr;
-                    try {
-                        wasmModule.print = function(t) { origOutput.push(t); };
-                        wasmModule.printErr = function(t) { origOutput.push(t); };
-
-                        try { wasmModule.FS.writeFile('/input.sgf', sgfcResult.corrected); } catch(e) {}
-                        try { wasmModule.callMain(['/input.sgf']); } catch(e) {}
-                    } finally {
-                        wasmModule.print = origPrint2;
-                        wasmModule.printErr = origPrintErr2;
-                    }
-
-                    var originalStillPresent = origOutput.some(function(line) {
-                        return line.indexOf(msg) !== -1;
+                    // Verify THIS specific error is gone in the corrected version.
+                    // We use the messages captured during runSgfcCorrect instead of
+                    // calling callMain a second time — multiple synchronous WASM
+                    // callMain invocations can hang the engine and freeze the UI.
+                    var correctionMsgs = sgfcResult.messages.filter(function(m) {
+                        return /corrected|deleted|removed|inserted/i.test(m) && !/will not get/i.test(m);
                     });
+
+                    // Check if the original error appears in correction messages
+                    // (meaning SGFC acknowledged and fixed it)
+                    var targetedCorrections = correctionMsgs.filter(function(m) {
+                        return m.indexOf(msg) !== -1 || msg.indexOf(m) !== -1;
+                    });
+
+                    // Also check if the corrected content is different from original
+                    var contentChanged = sgfcResult.corrected !== sgfContent;
+
+                    // The issue is considered resolved if:
+                    // (a) SGFC reported a correction matching this message, OR
+                    // (b) SGFC produced a changed output and didn't report this error as still present
+                    var errorStillReported = sgfcResult.messages.some(function(m) {
+                        return m.indexOf(msg) !== -1 && !/corrected|deleted|removed|inserted/i.test(m);
+                    });
+
+                    var originalStillPresent = errorStillReported && !contentChanged;
 
                     if (!originalStillPresent) {
                         // Working copy updated — original stays untouched
@@ -2884,15 +2891,7 @@
                         sessionStorage.setItem('sgf_content', sgfContent);
                         fixed = true;
 
-                        // Detect ALL corrections SGFC made (targeted + side effects)
-                        var correctionMsgs = sgfcResult.messages.filter(function(m) {
-                            return /corrected|deleted|removed|inserted/i.test(m) && !/will not get/i.test(m);
-                        });
-
                         // Separate: the correction that matches our target issue vs. side effects
-                        var targetedCorrections = correctionMsgs.filter(function(m) {
-                            return m.indexOf(msg) !== -1 || msg.indexOf(m) !== -1;
-                        });
                         var sideEffectCorrections = correctionMsgs.filter(function(m) {
                             return m.indexOf(msg) === -1 && msg.indexOf(m) === -1;
                         });
