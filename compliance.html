@@ -2607,38 +2607,10 @@
                     sgfContent = result.fixed;
                     sessionStorage.setItem('sgf_content', sgfContent);
 
-                    // Mark all fixable issues as fixed in the UI
-                    const wrappers = document.querySelectorAll('.issue-item-wrapper');
-                    wrappers.forEach((wrapper, idx) => {
-                        const bar = wrapper.querySelector('.issue-action-bar');
-                        if (bar) {
-                            const s1 = bar.querySelector('.state-1');
-                            const s3 = bar.querySelector('.state-3');
-                            if (s1) s1.classList.remove('active');
-                            if (s3) {
-                                s3.querySelector('.ias-progress-text').textContent = 'Auto-Fixed';
-                                s3.classList.add('active');
-                            }
-                        }
-                        // Add green FIXED indicator
-                        const existingFixed = wrapper.querySelector('.fixed-indicator');
-                        if (!existingFixed) {
-                            const fixedRow = document.createElement('div');
-                            fixedRow.className = 'fixed-indicator';
-                            const fixSteps = result.archive.map(function(step) {
-                                return '<div class="fixed-step">' + step + '</div>';
-                            }).join('');
-                            fixedRow.innerHTML = `
-                                <div class="fixed-header">
-                                    <span class="fixed-tag">FIXED</span>
-                                </div>
-                                <div class="fixed-steps">${fixSteps}</div>
-                            `;
-                            wrapper.appendChild(fixedRow);
-                        }
-                    });
+                    // Snapshot old issues for comparison after re-audit
+                    const oldIssueMessages = auditResult.issues.map(i => i.message);
 
-                    // Re-run audit with corrected content
+                    // Re-run audit with corrected content to find which issues actually resolved
                     wasmOutput = [];
                     runWasmAuditReadOnly(() => {
                         if (typeof SGFAuditor !== 'undefined' && SGFAuditor.validateSGFProperties) {
@@ -2650,6 +2622,41 @@
                                 auditResult.issues.push({ severity: 'error', message: e.msg, position: null });
                             });
                         }
+
+                        // Build set of issues that still exist after fix
+                        const newIssueMessages = auditResult.issues.map(i => i.message);
+                        const stillPresent = new Set(newIssueMessages);
+
+                        // Mark only actually-fixed issues as fixed in the UI
+                        const wrappers = document.querySelectorAll('.issue-item-wrapper');
+                        wrappers.forEach((wrapper, idx) => {
+                            const oldMsg = oldIssueMessages[idx];
+                            // Only mark as fixed if this issue is NO LONGER present after fix
+                            if (oldMsg && !stillPresent.has(oldMsg)) {
+                                const bar = wrapper.querySelector('.issue-action-bar');
+                                if (bar) {
+                                    const s1 = bar.querySelector('.state-1');
+                                    const s3 = bar.querySelector('.state-3');
+                                    if (s1) s1.classList.remove('active');
+                                    if (s3) {
+                                        s3.querySelector('.ias-progress-text').textContent = 'Auto-Fixed';
+                                        s3.classList.add('active');
+                                    }
+                                }
+                                const existingFixed = wrapper.querySelector('.fixed-indicator');
+                                if (!existingFixed) {
+                                    const fixedRow = document.createElement('div');
+                                    fixedRow.className = 'fixed-indicator';
+                                    fixedRow.innerHTML = `
+                                        <div class="fixed-header">
+                                            <span class="fixed-tag">FIXED</span>
+                                        </div>
+                                        <div class="fixed-steps"><div class="fixed-step">This issue was resolved by the sanitizer as a side effect of fixing other errors.</div></div>
+                                    `;
+                                    wrapper.appendChild(fixedRow);
+                                }
+                            }
+                        });
                         // Refresh counts
                         const errs  = auditResult.issues.filter(i => i.severity === 'error').length;
                         const warns = auditResult.issues.filter(i => i.severity === 'warning').length;
