@@ -1,0 +1,3 @@
+winsocket.o: winsocket.c winsocket.h ../config.h
+winsocket.h:
+../config.h:

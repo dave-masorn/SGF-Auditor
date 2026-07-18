@@ -228,30 +228,42 @@
     // Core SGF Parser (Parses collection of GameTrees)
     function parseSGF(sgfText) {
         let index = 0;
+        let line = 1;
+        let col = 1;
+
+        function advanceChar() {
+            if (sgfText[index] === '\n') {
+                line++;
+                col = 1;
+            } else {
+                col++;
+            }
+            index++;
+        }
         
         function skipWhitespace() {
             while (index < sgfText.length && /\s/.test(sgfText[index])) {
-                index++;
+                advanceChar();
             }
         }
         
         function parseValue() {
             if (sgfText[index] !== '[') return null;
-            index++; // skip '['
+            advanceChar(); // skip '['
             let value = "";
             while (index < sgfText.length) {
                 if (sgfText[index] === '\\') {
-                    index++;
+                    advanceChar();
                     if (index < sgfText.length) {
                         value += sgfText[index];
-                        index++;
+                        advanceChar();
                     }
                 } else if (sgfText[index] === ']') {
-                    index++; // skip ']'
+                    advanceChar(); // skip ']'
                     return value;
                 } else {
                     value += sgfText[index];
-                    index++;
+                    advanceChar();
                 }
             }
             throw new Error("Unclosed property value bracket at index " + index);
@@ -262,7 +274,7 @@
             let propIdent = "";
             while (index < sgfText.length && /[A-Z]/.test(sgfText[index])) {
                 propIdent += sgfText[index];
-                index++;
+                advanceChar();
             }
             if (!propIdent) return null;
             
@@ -284,9 +296,11 @@
         function parseNode() {
             skipWhitespace();
             if (sgfText[index] !== ';') return null;
-            index++; // skip ';'
+            let nodeLine = line;
+            let nodeCol = col;
+            advanceChar(); // skip ';'
             
-            let node = { properties: {} };
+            let node = { properties: {}, location: { line: nodeLine, column: nodeCol, offset: index } };
             while (index < sgfText.length) {
                 let prop = parseProperty();
                 if (!prop) break;
@@ -315,7 +329,7 @@
             if (sgfText[index] !== '(') {
                 throw new Error("GameTree must start with '(' at index " + index);
             }
-            index++; // skip '('
+            advanceChar(); // skip '('
             
             let sequence = parseSequence();
             let children = [];
@@ -329,7 +343,7 @@
             if (sgfText[index] !== ')') {
                 throw new Error("GameTree must end with ')' at index " + index);
             }
-            index++; // skip ')'
+            advanceChar(); // skip ')'
             
             if (sequence.length === 0) {
                 throw new Error("Empty sequence in GameTree at index " + index);
