@@ -942,6 +942,23 @@
             flex-shrink: 0;
         }
 
+        .row-fixed-orph {
+            background-color: var(--color-success-bg) !important;
+            cursor: default;
+            opacity: 0.85;
+        }
+        .fixed-orph-tag {
+            background-color: var(--color-success);
+            color: #fff;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            padding: 2px 8px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-6px); }
             to   { opacity: 1; transform: translateY(0); }
@@ -2746,6 +2763,32 @@
 
                 container.appendChild(wrapper);
             });
+
+            // Render orphaned fixed issues (fixed issues that no longer appear in audit results)
+            var renderedMessages = {};
+            filtered.forEach(function(issue) { renderedMessages[issue.message] = true; });
+            Object.keys(fixedIssuesMap).forEach(function(msg) {
+                if (!renderedMessages[msg] && fixedIssuesMap[msg].length > 0) {
+                    var orphan = document.createElement('div');
+                    orphan.className = 'issue-item-wrapper';
+                    var steps = fixedIssuesMap[msg].map(function(step) {
+                        return '<div class="fixed-step">' + step + '</div>';
+                    }).join('');
+                    orphan.innerHTML = `
+                        <div class="issue-row row-fixed-orph">
+                            <span class="issue-tag fixed-orph-tag">RESOLVED</span>
+                            <span class="issue-msg">${msg}</span>
+                        </div>
+                        <div class="fixed-indicator">
+                            <div class="fixed-header">
+                                <span class="fixed-tag">FIXED</span>
+                            </div>
+                            <div class="fixed-steps">${steps}</div>
+                        </div>
+                    `;
+                    container.appendChild(orphan);
+                }
+            });
         }
 
         // Describe what an SGFC error means in plain language
@@ -2982,6 +3025,13 @@
 
             // For "deleted" messages that mention a property: already fixed
             if (/deleted/i.test(msg) && /corrected/i.test(msg)) return false;
+
+            // For "illegal format" issues: check if the original bad value still exists
+            var formatValMatch = msg.match(/illegal\s+format[^[]*\[([^\]]+)\]/i);
+            if (formatValMatch) {
+                var badValue = formatValMatch[1];
+                return content.indexOf(badValue) !== -1;
+            }
 
             // Fallback: check if the property name still exists in the content
             return content.indexOf(propName + '[') !== -1;
