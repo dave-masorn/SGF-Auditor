@@ -2648,7 +2648,7 @@
                 filtered = auditResult.issues.filter(i => i.severity === 'warning');
             }
 
-            if (filtered.length === 0) {
+            if (filtered.length === 0 && Object.keys(fixedIssuesMap).length === 0) {
                 container.innerHTML = `
                     <div class="no-issues">
                         <div class="no-issues-icon">✓</div>
