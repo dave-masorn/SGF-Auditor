@@ -1495,6 +1495,62 @@
         return { fixed: fixed, archive: archive };
     }
 
+    // ── Auto-Fix: Strip non-FF[4] server-injected properties (FoxWq: TT, RL, TC, AP) ──
+    function autoFixFoxwqProps(sgfText, issueMessage) {
+        if (!sgfText) return { fixed: sgfText, changes: 0, archive: [] };
+        var fixed = sgfText;
+        var archive = [];
+        var changes = 0;
+
+        // Strip TT[...] — unknown property
+        var ttMatch = fixed.match(/\s*TT\s*\[[^\]]*\]/);
+        if (ttMatch) {
+            fixed = fixed.replace(ttMatch[0], '');
+            changes++;
+            archive.push(
+                '<span class="step-label">Why:</span> TT is not defined in any SGF specification (FF[1]–FF[4]). It is a FoxWq server-injected property for proprietary time tracking.' +
+                '<br><span class="step-label">Fix:</span> Removed TT[' + (ttMatch[0].match(/\[([^\]]*)\]/) || [])[1] + '] from root node.'
+            );
+        }
+
+        // Strip RL[...] — unknown property
+        var rlMatch = fixed.match(/\s*RL\s*\[[^\]]*\]/);
+        if (rlMatch) {
+            fixed = fixed.replace(rlMatch[0], '');
+            changes++;
+            archive.push(
+                '<span class="step-label">Why:</span> RL is not defined in any SGF specification (FF[1]–FF[4]). It is a FoxWq server-injected property for replay/list metadata.' +
+                '<br><span class="step-label">Fix:</span> Removed RL[' + (rlMatch[0].match(/\[([^\]]*)\]/) || [])[1] + '] from root node.'
+            );
+        }
+
+        // Strip TC[...] — not defined in FF[4]
+        var tcMatch = fixed.match(/\s*TC\s*\[[^\]]*\]/);
+        if (tcMatch) {
+            fixed = fixed.replace(tcMatch[0], '');
+            changes++;
+            archive.push(
+                '<span class="step-label">Why:</span> TC is not defined in SGF FF[4]. It is a FoxWq server-injected property for timing correction metadata.' +
+                '<br><span class="step-label">Fix:</span> Removed TC[' + (tcMatch[0].match(/\[([^\]]*)\]/) || [])[1] + '] from root node.'
+            );
+        }
+
+        // Fix AP[foxwq] → AP[SGF Aud:' + version + '] (compose type: Name[Version])
+        var apMatch = fixed.match(/AP\s*\[foxwq\]/i);
+        if (apMatch) {
+            var ver = (typeof window !== 'undefined' && window.VERSION) ? window.VERSION : '0.1.005';
+            var replacement = 'AP[SGF Aud:' + ver + ']';
+            fixed = fixed.replace(apMatch[0], replacement);
+            changes++;
+            archive.push(
+                '<span class="step-label">Why:</span> AP (Application) expects a compose type value in Name[Version] format per SGF FF[4]. The value "[foxwq]" is not a valid compose type.' +
+                '<br><span class="step-label">Fix:</span> Replaced AP[foxwq] with ' + replacement + '.'
+            );
+        }
+
+        return { fixed: fixed, changes: changes, archive: archive };
+    }
+
     // Expose APIs
     global.SGFAuditor = {
         parseSGF,
@@ -1510,7 +1566,8 @@
         fixStrayNonASCII,
         fixStrayPropertyNames,
         fixDuplicateTM,
-        autoFixTMFormat
+        autoFixTMFormat,
+        autoFixFoxwqProps
     };
 
 })(typeof window !== 'undefined' ? window : global);

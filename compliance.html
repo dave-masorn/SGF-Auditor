@@ -2953,6 +2953,30 @@
                         }
                     }
                 }
+
+                // ── Step 3: Fallback — strip non-FF[4] server-injected properties (FoxWq: TT, RL, TC, AP) ──
+                if (!fixed) {
+                    const isFoxwqProp = /unknown property/i.test(msg) && /<(TT|RL|TC)>/i.test(msg) ||
+                                        /not defined in FF\[4\]/i.test(msg) && /<(TT|RL|TC)>/i.test(msg) ||
+                                        /<AP>.*expects compose type/i.test(msg) ||
+                                        /<AP>.*value deleted/i.test(msg);
+
+                    if (isFoxwqProp) {
+                        if (typeof SGFAuditor !== 'undefined' && SGFAuditor.autoFixFoxwqProps) {
+                            try {
+                                var foxwqResult = SGFAuditor.autoFixFoxwqProps(sgfContent, msg);
+                                if (foxwqResult.archive && foxwqResult.archive.length > 0 && foxwqResult.fixed !== sgfContent) {
+                                    sgfContent = foxwqResult.fixed;
+                                    sessionStorage.setItem('sgf_content', sgfContent);
+                                    fixed = true;
+                                    fixExplanation = foxwqResult.archive;
+                                }
+                            } catch (e) {
+                                console.error('autoFixFoxwqProps error:', e);
+                            }
+                        }
+                    }
+                }
             }
 
             // Store explanation — keyed by message so renderIssuesList can re-inject after re-render
@@ -3014,6 +3038,17 @@
                         sessionStorage.setItem('sgf_content', sgfContent);
                         fixedAny = true;
                         archive = archive.concat(sanResult.archive);
+                    }
+                }
+
+                // Phase C: Strip non-FF[4] server-injected properties (FoxWq: TT, RL, TC, AP)
+                if (typeof SGFAuditor !== 'undefined' && SGFAuditor.autoFixFoxwqProps) {
+                    var foxwqResult = SGFAuditor.autoFixFoxwqProps(sgfContent, '');
+                    if (foxwqResult.archive && foxwqResult.archive.length > 0 && foxwqResult.fixed !== sgfContent) {
+                        sgfContent = foxwqResult.fixed;
+                        sessionStorage.setItem('sgf_content', sgfContent);
+                        fixedAny = true;
+                        archive = archive.concat(foxwqResult.archive);
                     }
                 }
 
