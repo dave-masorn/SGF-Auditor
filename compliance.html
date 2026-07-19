@@ -2954,8 +2954,8 @@
                     }
                 }
 
-                // ── Step 3: Fallback — strip non-FF[4] server-injected properties (FoxWq: TT, RL, TC, AP) ──
-                if (!fixed) {
+                // ── Step 3: Always run for non-FF[4] server-injected properties (FoxWq: TT, RL, TC, AP) ──
+                {
                     const isFoxwqProp = /unknown property/i.test(msg) && /<(TT|RL|TC)>/i.test(msg) ||
                                         /not defined in FF\[4\]/i.test(msg) && /<(TT|RL|TC)>/i.test(msg) ||
                                         /<AP>.*expects compose type/i.test(msg) ||
