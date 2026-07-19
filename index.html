@@ -8,20 +8,20 @@
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Geist+Pixel&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Geist:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #f5f5f7;
-            --text-color: #333333;
-            --box-bg-left: #8ed2f5;
-            --box-bg-right: #75c5f0;
-            --badge-bg: #323da5;
+            --bg-color: #FFFFFF;
+            --text-color: #111111;
+            --border: #D8D8D8;
+            --primary: #1E4ED8;
+            --primary-hover: #1A43B8;
+            --danger: #C62828;
         }
 
         body {
-            font-family: "Geist", sans-serif;
+            font-family: "Inter Tight", sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             display: flex;
@@ -34,13 +34,12 @@
             box-sizing: border-box;
         }
 
-        /* Top Header (fixed viewport wide header) */
         .top-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 0 40px;
-            background-color: #0b0f19; /* Rich dark black/slate */
+            background-color: #111111;
             color: white;
             height: 60px;
             width: 100%;
@@ -49,59 +48,43 @@
             left: 0;
             z-index: 1000;
             box-sizing: border-box;
-            transition: height 0.3s ease, padding 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
 
         .top-header.scrolled {
             height: 48px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
         }
 
         .header-logo {
-            font-family: "Geist Pixel", sans-serif;
-            font-optical-sizing: auto;
-            font-weight: 400;
-            font-style: normal;
-            font-variation-settings: "ELSH" 0;
+            font-family: "Inter Tight", sans-serif;
+            font-weight: 700;
             font-size: 1.15rem;
             color: white;
             text-decoration: none;
         }
 
         .header-version {
-            font-family: "Geist Mono", monospace;
-            font-size: 0.78rem;
-            color: rgba(255, 255, 255, 0.8);
+            font-family: "IBM Plex Mono", monospace;
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.6);
         }
 
         h1 {
-            font-family: "Geist Pixel", sans-serif;
-            font-optical-sizing: auto;
-            font-weight: 400;
-            font-style: normal;
-            font-variation-settings: "ELSH" 0;
+            font-family: "Inter Tight", sans-serif;
+            font-weight: 700;
             font-size: 2.8rem;
             margin-top: 0;
             margin-bottom: 50px;
-            letter-spacing: normal;
         }
 
         .upload-container {
             display: flex;
-            background-color: var(--box-bg-left);
-            border-radius: 20px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border);
+            border-radius: 4px;
             overflow: hidden;
             width: 100%;
             max-width: 600px;
             margin-bottom: 50px;
-            box-shadow: 0 8px 24px rgba(117, 197, 240, 0.25);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        
-        .upload-container:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 28px rgba(117, 197, 240, 0.35);
         }
 
         .drop-zone {
@@ -110,65 +93,61 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
+            color: var(--text-color);
             font-size: 1.25rem;
             font-weight: 500;
             text-align: center;
-            transition: background-color 0.3s ease;
+            border-right: 1px dashed var(--border);
         }
-        
+
         .drop-zone.dragover {
-            background-color: rgba(255, 255, 255, 0.2);
+            background-color: #F5F5F5;
         }
 
         .browse-zone {
             flex: 1;
-            background-color: var(--box-bg-right);
+            background-color: #F5F5F5;
             padding: 50px 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            color: white;
+            color: var(--text-color);
             cursor: pointer;
             font-weight: 500;
             font-size: 1.1rem;
-            transition: background-color 0.3s ease;
         }
-        
+
         .browse-zone:hover {
-            background-color: #69bdee;
+            background-color: #EBEBEB;
         }
 
         .folder-icon {
             width: 65px;
             height: 65px;
-            transition: transform 0.2s ease;
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
-        }
-        
-        .browse-zone:hover .folder-icon {
-            transform: scale(1.1) translateY(-2px);
         }
 
-        /* FoxWq Fetch Section */
+        .browse-zone:hover .folder-icon {
+            opacity: 0.7;
+        }
+
         .foxwq-section {
             max-width: 600px;
             width: 100%;
-            margin-bottom: 50px;
-            background: white;
-            border-radius: 16px;
-            padding: 20px 24px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            margin-bottom: 12px;
+            background: var(--bg-color);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 12px 16px;
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 12px;
         }
 
         .foxwq-logo {
-            width: 36px;
-            height: 36px;
-            border-radius: 6px;
+            width: 32px;
+            height: 32px;
+            border-radius: 2px;
             flex-shrink: 0;
         }
 
@@ -182,53 +161,50 @@
 
         .foxwq-input {
             flex: 1;
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
+            padding: 6px 10px;
+            border: 1px solid var(--border);
+            border-radius: 2px;
             font-size: 0.85rem;
-            font-family: "Geist Mono", monospace;
+            font-family: "IBM Plex Mono", monospace;
             outline: none;
-            transition: border-color 0.2s;
             min-width: 0;
         }
 
         .foxwq-input:focus {
-            border-color: #75c5f0;
+            border-color: var(--primary);
         }
 
         .foxwq-input::placeholder {
-            color: #bbb;
+            color: #B0B0B0;
         }
 
         .foxwq-btn {
-            padding: 8px 16px;
-            background: #323da5;
+            padding: 6px 16px;
+            background: #111111;
             color: white;
-            border: none;
-            border-radius: 8px;
+            border: 1px solid #111111;
+            border-radius: 2px;
             font-size: 0.82rem;
             font-weight: 600;
             cursor: pointer;
             white-space: nowrap;
-            transition: background-color 0.2s, transform 0.15s;
             flex-shrink: 0;
         }
 
         .foxwq-btn:hover {
-            background: #262e82;
-            transform: translateY(-1px);
+            background: #333333;
+            border-color: #333333;
         }
 
         .foxwq-btn:disabled {
-            background: #aaa;
+            background: #B0B0B0;
+            border-color: #B0B0B0;
             cursor: wait;
-            transform: none;
         }
 
         .foxwq-status {
             font-size: 0.78rem;
             color: #999;
-            margin-top: -36px;
             margin-bottom: 36px;
             max-width: 600px;
             width: 100%;
@@ -236,21 +212,21 @@
         }
 
         .foxwq-status.error {
-            color: #ef4444;
+            color: var(--danger);
         }
 
         .foxwq-status.ok {
-            color: #22c55e;
+            color: #2E7D32;
         }
 
         .info-list {
             max-width: 640px;
             margin-bottom: 80px;
-            color: #4a4a4a;
+            color: #444;
             line-height: 1.6;
             font-size: 0.95rem;
         }
-        
+
         .info-list ol {
             padding-left: 20px;
             margin: 0;
@@ -263,48 +239,28 @@
         .badge-link {
             margin-bottom: 30px;
             display: inline-block;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        
-        .badge-link:hover {
-            transform: translateY(-2px);
         }
 
         .badge-image {
             display: block;
             max-width: 100%;
             height: auto;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border: 1px solid var(--border);
             border-radius: 2px;
         }
 
         .footer-text {
-            color: #b0b0b0;
+            color: #999;
             font-style: italic;
             font-size: 0.9rem;
         }
 
-        
         #file-input {
             display: none;
         }
 
-        .geist-regular {
-            font-family: "Geist", sans-serif;
-            font-optical-sizing: auto;
-            font-weight: 400;
-            font-style: normal;
-        }
-
-        .geist-mono-regular {
-            font-family: "Geist Mono", monospace;
-            font-optical-sizing: auto;
-            font-weight: 400;
-            font-style: normal;
-        }
-
         .red-subheader {
-            color: #ef4444;
+            color: var(--danger);
             font-size: 0.95rem;
             margin-top: -45px;
             margin-bottom: 45px;
@@ -316,36 +272,35 @@
             position: absolute;
             bottom: 30px;
             left: 30px;
-            background-color: #000000;
-            color: #ffd600;
+            background-color: #111111;
+            color: #FFFFFF;
             text-decoration: none;
-            padding: 8px 18px;
-            border-radius: 20px;
+            padding: 6px 16px;
+            border-radius: 2px;
+            border: 1px solid #111111;
             font-size: 0.85rem;
-            font-weight: 700;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s, background-color 0.2s;
+            font-weight: 600;
             z-index: 100;
         }
 
         .tech-log-btn:hover {
-            transform: scale(1.05);
-            background-color: #1a1a1a;
+            background-color: #333333;
+            border-color: #333333;
         }
 
-        /* ══════════ RESPONSIVE ══════════ */
         @media (max-width: 640px) {
             body { padding: 80px 16px 40px 16px; }
             h1 { font-size: 2rem; margin-bottom: 30px; }
             .red-subheader { margin-top: -25px; margin-bottom: 30px; }
             .upload-container {
                 flex-direction: column;
-                border-radius: 16px;
             }
             .drop-zone {
                 padding: 40px 20px;
                 font-size: 1.05rem;
                 min-height: 120px;
+                border-right: none;
+                border-bottom: 1px dashed var(--border);
             }
             .browse-zone {
                 padding: 28px 20px;
@@ -412,6 +367,7 @@
         Work best in desktop setting ...
     </div>
 
+    <script src="foxwq-sgf.js"></script>
     <script>
         const dropZone = document.getElementById('drop-zone');
         const fileInput = document.getElementById('file-input');
@@ -546,7 +502,6 @@
             if (e.key === 'Enter') fetchFoxwq();
         });
     </script>
-    <script src="foxwq-sgf.js"></script>
     <script src="version.js"></script>
 </body>
 </html>

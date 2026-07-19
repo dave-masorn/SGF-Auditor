@@ -88,8 +88,13 @@
     };
 
     // ── Helpers ──
-    function httpGet(url) {
-        return fetch(url).then(function (res) {
+    var CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+
+    function httpGet(url, useProxy) {
+        var target = (useProxy && typeof window !== 'undefined')
+            ? CORS_PROXY + encodeURIComponent(url)
+            : url;
+        return fetch(target).then(function (res) {
             if (!res.ok) throw new Error('HTTP ' + res.status);
             return res.text();
         });
@@ -115,7 +120,7 @@
         var encoded = encodeURIComponent(text);
         var api = 'https://translate.googleapis.com/translate_a/single'
                 + '?client=gtx&sl=auto&tl=en&dt=t&q=' + encoded;
-        return httpGet(api).then(function (body) {
+        return httpGet(api, false).then(function (body) {
             try {
                 var data = JSON.parse(body);
                 if (data && data[0] && data[0][0] && data[0][0][0]) {
@@ -187,7 +192,7 @@
             return Promise.reject(new Error('Not a valid foxwq game URL'));
         }
 
-        return httpGet(url).then(function (html) {
+        return httpGet(url, true).then(function (html) {
             var sgf = extractSGF(html);
             if (!sgf || sgf.substring(0, 2) !== '(;)') {
                 throw new Error('Could not extract SGF from page');
