@@ -14,12 +14,33 @@
     <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Code:ital,wght,MONO@0,300..800,1;1,300..800,1&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #FFFFFF;
-            --text-color: #111111;
-            --border: #D8D8D8;
-            --primary: #1E4ED8;
-            --primary-hover: #1A43B8;
-            --danger: #C62828;
+            /* ── Semantic Color Tokens ── */
+            --color-primary: #1F6B2E;
+            --color-primary-hover: #1A5726;
+            --color-accent: #EFC55A;
+            --color-accent-hover: #DDB04E;
+            --color-secondary: #8A4705;
+            --color-info: #3C8B87;
+            --color-header: #2E5961;
+            --color-danger: #C62828;
+            --color-success: #1F6B2E;
+            --color-warning: #8A4705;
+
+            /* ── Neutral Palette ── */
+            --color-bg: #FAFAF8;
+            --color-surface: #FFFFFF;
+            --color-surface-muted: #F0F0ED;
+            --color-border: #D5D5D0;
+            --color-text: #202020;
+            --color-muted: #6A6A6A;
+
+            /* ── Semantic Aliases (backward compat) ── */
+            --bg-color: var(--color-bg);
+            --text-color: var(--color-text);
+            --border: var(--color-border);
+            --primary: var(--color-primary);
+            --primary-hover: var(--color-primary-hover);
+            --danger: var(--color-danger);
         }
 
         body {
@@ -41,7 +62,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 0 40px;
-            background-color: #111111;
+            background-color: var(--color-header);
             color: white;
             height: 60px;
             width: 100%;
@@ -103,12 +124,12 @@
         }
 
         .drop-zone.dragover {
-            background-color: #F5F5F5;
+            background-color: var(--color-surface-muted);
         }
 
         .browse-zone {
             flex: 1;
-            background-color: #F5F5F5;
+            background-color: var(--color-surface-muted);
             padding: 50px 20px;
             display: flex;
             flex-direction: column;
@@ -121,7 +142,7 @@
         }
 
         .browse-zone:hover {
-            background-color: #EBEBEB;
+            background-color: var(--color-border);
         }
 
         .folder-icon {
@@ -175,14 +196,14 @@
         }
 
         .foxwq-input::placeholder {
-            color: #B0B0B0;
+            color: var(--color-muted);
         }
 
         .foxwq-btn {
             padding: 6px 16px;
-            background: #111111;
+            background: var(--color-header);
             color: white;
-            border: 1px solid #111111;
+            border: 1px solid var(--color-header);
             border-radius: 2px;
             font-size: 0.82rem;
             font-weight: 600;
@@ -192,19 +213,19 @@
         }
 
         .foxwq-btn:hover {
-            background: #333333;
-            border-color: #333333;
+            background: var(--color-primary-hover);
+            border-color: var(--color-primary-hover);
         }
 
         .foxwq-btn:disabled {
-            background: #B0B0B0;
-            border-color: #B0B0B0;
+            background: var(--color-muted);
+            border-color: var(--color-muted);
             cursor: wait;
         }
 
         .foxwq-status {
             font-size: 0.78rem;
-            color: #999;
+            color: var(--color-muted);
             margin-bottom: 36px;
             max-width: 600px;
             width: 100%;
@@ -216,7 +237,7 @@
         }
 
         .foxwq-status.ok {
-            color: #2E7D32;
+            color: var(--color-success);
         }
 
         .foxwq-browse {
@@ -227,13 +248,13 @@
 
         .foxwq-browse span {
             font-size: 0.82rem;
-            color: #1E4ED8;
+            color: var(--color-primary);
             text-decoration: none;
             cursor: pointer;
         }
 
         .foxwq-browse a:hover {
-            color: #111111;
+            color: var(--color-text);
         }
 
         .foxwq-gamelist {
@@ -257,13 +278,13 @@
         .foxwq-gamelist thead th {
             position: sticky;
             top: 0;
-            background: #F5F5F5;
+            background: var(--color-surface-muted);
             border-bottom: 1px solid var(--border);
             padding: 6px 10px;
             text-align: left;
             font-weight: 700;
             font-size: 0.78rem;
-            color: #666;
+            color: var(--color-muted);
             text-transform: uppercase;
             letter-spacing: 0.03em;
         }
@@ -278,23 +299,23 @@
         }
 
         .foxwq-gamelist tbody tr:hover {
-            background: #F5F5F5;
+            background: var(--color-surface-muted);
         }
 
         .foxwq-gamelist td {
             padding: 7px 10px;
-            color: #333;
+            color: var(--color-text);
             vertical-align: top;
         }
 
         .foxwq-gamelist td.game-eng {
-            color: #666;
+            color: var(--color-muted);
         }
 
         .info-list {
             max-width: 640px;
             margin-bottom: 80px;
-            color: #444;
+            color: var(--color-text);
             line-height: 1.6;
             font-size: 0.95rem;
         }
@@ -322,7 +343,7 @@
         }
 
         .footer-text {
-            color: #999;
+            color: var(--color-muted);
             font-style: italic;
             font-size: 0.9rem;
         }
@@ -344,20 +365,20 @@
             position: absolute;
             bottom: 30px;
             left: 30px;
-            background-color: #111111;
+            background-color: var(--color-header);
             color: #FFFFFF;
             text-decoration: none;
             padding: 6px 16px;
             border-radius: 2px;
-            border: 1px solid #111111;
+            border: 1px solid var(--color-header);
             font-size: 0.85rem;
             font-weight: 600;
             z-index: 100;
         }
 
         .tech-log-btn:hover {
-            background-color: #333333;
-            border-color: #333333;
+            background-color: var(--color-primary-hover);
+            border-color: var(--color-primary-hover);
         }
 
         @media (max-width: 640px) {
@@ -644,7 +665,7 @@
                 div.style.textAlign = 'center';
                 div.style.marginTop = '8px';
                 div.style.cursor = 'pointer';
-                div.style.color = '#1E4ED8';
+                div.style.color = 'var(--color-primary)';
                 div.style.fontSize = '0.82rem';
                 div.textContent = 'Fetch more games?';
                 div.onclick = function() { fetchMoreFoxwqGames(); };
@@ -674,7 +695,7 @@
                         appendBatch();
                     })
                     .catch(function() {
-                        if (moreDiv) { moreDiv.textContent = 'No more games'; moreDiv.style.cursor = 'default'; moreDiv.style.color = '#999'; }
+                        if (moreDiv) { moreDiv.textContent = 'No more games'; moreDiv.style.cursor = 'default'; moreDiv.style.color = 'var(--color-muted)'; }
                     });
             } else {
                 appendBatch();

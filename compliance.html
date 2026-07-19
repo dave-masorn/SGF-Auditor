@@ -14,16 +14,46 @@
     <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Code:ital,wght,MONO@0,300..800,1;1,300..800,1&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #1E4ED8;
-            --primary-hover: #1A43B8;
-            --bg-color: #FFFFFF;
-            --text-color: #111111;
-            --card-bg: #FFFFFF;
-            --border-color: #D8D8D8;
-            --danger: #C62828;
-            --success: #2E7D32;
-            --warning: #E6A400;
-            --muted: #666666;
+            /* ── Semantic Color Tokens ── */
+            --color-primary: #1F6B2E;
+            --color-primary-hover: #1A5726;
+            --color-accent: #EFC55A;
+            --color-accent-hover: #DDB04E;
+            --color-secondary: #8A4705;
+            --color-info: #3C8B87;
+            --color-header: #2E5961;
+            --color-danger: #C62828;
+            --color-success: #1F6B2E;
+            --color-warning: #8A4705;
+
+            /* ── Neutral Palette ── */
+            --color-bg: #FAFAF8;
+            --color-surface: #FFFFFF;
+            --color-surface-muted: #F0F0ED;
+            --color-border: #D5D5D0;
+            --color-text: #202020;
+            --color-muted: #6A6A6A;
+
+            /* ── Semantic State Sub-tokens ── */
+            --color-success-bg: var(--color-success-bg);
+            --color-success-text: var(--color-success-text);
+            --color-success-border: var(--color-success-border);
+            --color-warning-bg: var(--color-warning-bg);
+            --color-warning-border: #FFF3CD;
+            --color-danger-bg: var(--color-danger-bg);
+            --color-danger-text: var(--color-danger-text);
+
+            /* ── Semantic Aliases (backward compat) ── */
+            --primary-color: var(--color-primary);
+            --primary-hover: var(--color-primary-hover);
+            --bg-color: var(--color-bg);
+            --text-color: var(--color-text);
+            --card-bg: var(--color-surface);
+            --border-color: var(--color-border);
+            --danger: var(--color-danger);
+            --success: var(--color-success);
+            --warning: var(--color-warning);
+            --muted: var(--color-muted);
         }
 
         body {
@@ -45,7 +75,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 0 40px;
-            background-color: var(--primary-color);
+            background-color: var(--color-header);
             color: white;
             height: 60px;
             width: 100%;
@@ -86,18 +116,18 @@
 
         .header-pill {
             background-color: rgba(255, 255, 255, 0.95);
-            color: #1E4ED8;
+            color: var(--color-primary);
             padding: 6px 16px;
             border-radius: 2px;
             font-size: 0.85rem;
             font-weight: 500;
             display: flex;
             align-items: center;
-            border: 1px solid #D8D8D8;
+            border: 1px solid var(--color-border);
         }
 
         .header-pill span {
-            color: #1E4ED8;
+            color: var(--color-primary);
         }
 
         .header-download-btn {
@@ -109,7 +139,7 @@
             margin-left: 10px;
             border: none;
             border-radius: 4px;
-            background-color: #1E4ED8;
+            background-color: var(--color-primary);
             color: white;
             cursor: pointer;
             padding: 0;
@@ -117,13 +147,13 @@
         }
 
         .header-download-btn:hover {
-            background-color: #1a3db8;
+            background-color: var(--color-primary-hover);
         }
 
         .header-pill .filename-pixel {
             font-family: "Inter", sans-serif;
             font-weight: 700;
-            color: #d6771d;
+            color: var(--color-secondary);
         }
 
         /* Container */
@@ -185,7 +215,7 @@
             top: 32px;
             bottom: 32px;
             width: 2px;
-            background-color: #E0E0E0;
+            background-color: var(--color-border);
             z-index: 1;
         }
 
@@ -203,13 +233,13 @@
             height: 24px;
             border-radius: 50%;
             background-color: var(--card-bg);
-            border: 2px solid #B0B0B0;
+            border: 2px solid var(--color-border);
             display: flex;
             justify-content: center;
             align-items: center;
             font-size: 0.8rem;
             font-weight: 700;
-            color: #666;
+            color: var(--color-muted);
             flex-shrink: 0;
         }
 
@@ -242,7 +272,7 @@
         .step-label {
             font-size: 0.8rem;
             font-weight: 600;
-            color: #666;
+            color: var(--color-muted);
             text-align: right;
         }
 
@@ -252,7 +282,7 @@
         }
 
         .stepper-step.completed .step-label {
-            color: #444;
+            color: var(--color-text);
         }
 
         /* Right Section Status Banner */
@@ -281,21 +311,21 @@
         }
 
         .right-status-banner.pass {
-            background-color: #E8F5E9;
-            border: 1px solid var(--success);
-            color: #1B5E20;
+            background-color: var(--color-success-bg);
+            border: 1px solid var(--color-success);
+            color: var(--color-success-text);
         }
 
         .right-status-banner.warning {
-            background-color: #FFF8E1;
-            border: 1px solid var(--warning);
-            color: #8D6E00;
+            background-color: var(--color-warning-bg);
+            border: 1px solid var(--color-accent);
+            color: var(--color-secondary);
         }
 
         .right-status-banner.fail {
-            background-color: #FFEBEE;
+            background-color: var(--color-danger-bg);
             border: 1px solid var(--danger);
-            color: #B71C1C;
+            color: var(--color-danger-text);
         }
 
         .autofix-btn {
@@ -425,7 +455,7 @@
         }
 
         .diagnostic-bar:hover {
-            background-color: #F5F5F5;
+            background-color: var(--color-surface-muted);
         }
 
         .diagnostic-bar.running {
@@ -546,19 +576,19 @@
         .code-box-line {
             margin: 0;
             white-space: pre-wrap;
-            color: #2E7D32;
+            color: var(--color-success);
         }
 
         .code-box-line.error-line {
-            color: #C62828;
+            color: var(--danger);
         }
 
         .code-box-line.warn-line {
-            color: #E6A400;
+            color: var(--color-secondary);
         }
 
         .code-box-line.info-line {
-            color: #1E4ED8;
+            color: var(--color-primary);
         }
 
         /* Detailed Results Container */
@@ -594,21 +624,21 @@
         }
 
         .status-banner.pass {
-            background-color: #E8F5E9;
-            border: 1px solid #2E7D32;
-            color: #1B5E20;
+            background-color: var(--color-success-bg);
+            border: 1px solid var(--color-success);
+            color: var(--color-success-text);
         }
 
         .status-banner.warning {
-            background-color: #FFF8E1;
-            border: 1px solid #E6A400;
-            color: #8D6E00;
+            background-color: var(--color-warning-bg);
+            border: 1px solid var(--color-accent);
+            color: var(--color-secondary);
         }
 
         .status-banner.fail {
-            background-color: #FFEBEE;
-            border: 1px solid #C62828;
-            color: #B71C1C;
+            background-color: var(--color-danger-bg);
+            border: 1px solid var(--danger);
+            color: var(--color-danger-text);
         }
 
         .status-icon {
@@ -700,7 +730,7 @@
         }
 
         .filter-btn:hover {
-            background-color: #F5F5F5;
+            background-color: var(--color-surface-muted);
         }
 
         .filter-btn.active {
@@ -752,12 +782,12 @@
 
         .issue-tag.error {
             background-color: #FFCDD2;
-            color: #B71C1C;
+            color: var(--color-danger-text);
         }
 
         .issue-tag.warning {
             background-color: #FFF9C4;
-            color: #8D6E00;
+            color: var(--color-secondary);
         }
 
         .issue-pos {
@@ -791,7 +821,7 @@
 
         /* Raw Terminal Report */
         .terminal-report {
-            background-color: #111111;
+            background-color: #1a2332;
             color: #F5F5F5;
             border-radius: 4px;
             padding: 24px;
@@ -800,7 +830,7 @@
             line-height: 1.6;
             overflow-x: auto;
             white-space: pre-wrap;
-            border: 1px solid #333333;
+            border: 1px solid #2a3a4a;
         }
 
         /* Empty State */
@@ -860,8 +890,8 @@
             flex-direction: column;
             gap: 8px;
             padding: 12px 20px;
-            background-color: #E8F5E9;
-            border-top: 1px solid #A5D6A7;
+            background-color: var(--color-success-bg);
+            border-top: 1px solid var(--color-success-border);
             font-size: 0.85rem;
             line-height: 1.5;
         }
@@ -871,8 +901,8 @@
             gap: 8px;
         }
         .fixed-indicator .fixed-tag {
-            background: #A5D6A7;
-            color: #1B5E20;
+            background: var(--color-success-border);
+            color: var(--color-success-text);
             font-size: 0.72rem;
             font-weight: 700;
             padding: 3px 8px;
@@ -882,7 +912,7 @@
             flex-shrink: 0;
         }
         .fixed-indicator .fixed-detail {
-            color: #1B5E20;
+            color: var(--color-success-text);
             font-family: "Google Sans Code", monospace;
             font-size: 0.82rem;
             word-break: break-all;
@@ -893,21 +923,21 @@
             gap: 6px;
             margin-top: 2px;
             padding-left: 4px;
-            border-left: 2px solid #A5D6A7;
+            border-left: 2px solid var(--color-success-border);
             margin-left: 2px;
         }
         .fixed-indicator .fixed-step {
-            color: #1B5E20;
+            color: var(--color-success-text);
             font-family: "Google Sans Code", monospace;
             font-size: 0.8rem;
             line-height: 1.6;
         }
         .fixed-indicator .fixed-step .step-label {
             font-weight: 700;
-            color: #2E7D32;
+            color: var(--color-success);
         }
         .fixed-indicator .fixed-arrow {
-            color: #2E7D32;
+            color: var(--color-success);
             font-weight: 700;
             flex-shrink: 0;
         }
@@ -938,9 +968,9 @@
             opacity: 0;
             pointer-events: none;
         }
-        .state-1 { background: #FFF8E1; border-top: 1px solid #E6A400; }
-        .state-2 { background: #E3F2FD; border-top: 1px solid #1E4ED8; }
-        .state-3 { background: #E8F5E9; border-top: 1px solid #2E7D32; }
+        .state-1 { background: var(--color-warning-bg); border-top: 1px solid var(--color-accent); }
+        .state-2 { background: #E3F2FD; border-top: 1px solid var(--color-info); }
+        .state-3 { background: var(--color-success-bg); border-top: 1px solid var(--color-success); }
         .ias-num {
             font-weight: 800;
             font-size: 0.95rem;
@@ -1003,7 +1033,7 @@
             align-items: center;
             gap: 8px;
             padding: 8px 12px;
-            background: #FFF8E1;
+            background: var(--color-warning-bg);
             border-top: 1px solid var(--border-color);
         }
         .issue-action-state.state-3-fail.active { display: flex; }
@@ -1018,21 +1048,21 @@
             font-family: "Inter", sans-serif;
             font-size: 0.78rem;
             font-weight: 600;
-            color: #1E4ED8;
+            color: var(--color-info);
             background: none;
-            border: 1px solid #1E4ED8;
+            border: 1px solid var(--color-info);
             border-radius: 2px;
             padding: 4px 10px;
             cursor: pointer;
             white-space: nowrap;
         }
         .ias-custom-fix-btn:hover {
-            background: #1E4ED8;
+            background: var(--color-info);
             color: #fff;
         }
         /* Inline edit panel */
         .issue-edit-panel {
-            background: #F5F5F5;
+            background: var(--color-surface-muted);
             border-top: 1px solid var(--border-color);
             padding: 14px 16px;
         }
@@ -1047,7 +1077,7 @@
             box-sizing: border-box;
             resize: vertical;
             color: var(--text-color);
-            background: #fff;
+            background: var(--card-bg);
             margin-bottom: 10px;
         }
         .issue-edit-actions {
@@ -1186,7 +1216,7 @@
             width: 160px;
             font-size: 0.8rem;
             font-weight: 600;
-            color: #444;
+            color: var(--color-text);
             text-align: right;
             flex-shrink: 0;
         }
@@ -1213,7 +1243,7 @@
             width: 38px;
             font-size: 0.78rem;
             font-weight: 700;
-            color: #444;
+            color: var(--color-text);
             text-align: right;
             flex-shrink: 0;
         }
@@ -1234,8 +1264,8 @@
             gap: 6px;
         }
 
-        .maximize-col-header.strength  { color: #1B5E20; }
-        .maximize-col-header.improve   { color: #8D6E00; }
+        .maximize-col-header.strength  { color: var(--color-success); }
+        .maximize-col-header.improve   { color: var(--color-secondary); }
 
         .maximize-list {
             display: flex;
@@ -1254,13 +1284,13 @@
         }
 
         .maximize-item.strength {
-            background-color: #E8F5E9;
-            color: #1B5E20;
+            background-color: var(--color-success-bg);
+            color: var(--color-success-text);
         }
 
         .maximize-item.opportunity {
-            background-color: #FFF8E1;
-            color: #7D5A00;
+            background-color: var(--color-warning-bg);
+            color: var(--color-secondary);
             cursor: pointer;
         }
         .maximize-item.opportunity:hover {
@@ -1279,7 +1309,7 @@
             opacity: 0;
             transition: max-height 0.15s ease, opacity 0.15s ease, margin 0.15s ease;
             margin-top: 0;
-            color: #7D5A00;
+            color: var(--color-secondary);
             font-size: 0.78rem;
             line-height: 1.5;
             border-top: 0px solid transparent;
@@ -1320,11 +1350,11 @@
             letter-spacing: 0.3px;
         }
 
-        .maximize-item .mi-tag.recommended { background: #E8F5E9; color: #1B5E20; }
-        .maximize-item .mi-tag.mandatory    { background: #FFEBEE; color: #B71C1C; }
-        .maximize-item .mi-tag.optional     { background: #E3F2FD; color: #0D47A1; }
+        .maximize-item .mi-tag.recommended { background: var(--color-success-bg); color: var(--color-success); }
+        .maximize-item .mi-tag.mandatory    { background: var(--color-danger-bg); color: var(--color-danger-text); }
+        .maximize-item .mi-tag.optional     { background: #E0F2F1; color: var(--color-info); }
         .maximize-item .mi-tag.structural   { background: #F3E5F5; color: #6A1B9A; }
-        .maximize-item .mi-tag.conditional  { background: #FFF8E1; color: #7D5A00; }
+        .maximize-item .mi-tag.conditional  { background: var(--color-warning-bg); color: var(--color-secondary); }
 
         .maximize-empty {
             padding: 30px;
@@ -2433,9 +2463,9 @@
             gaugeFill.style.strokeDashoffset = offset;
 
             // Color the gauge based on score
-            if (maxResult.score >= 70) gaugeFill.style.stroke = '#22c55e';
-            else if (maxResult.score >= 40) gaugeFill.style.stroke = '#eab308';
-            else gaugeFill.style.stroke = '#ef4444';
+            if (maxResult.score >= 70) gaugeFill.style.stroke = '#1F6B2E';
+            else if (maxResult.score >= 40) gaugeFill.style.stroke = '#EFC55A';
+            else gaugeFill.style.stroke = '#C62828';
 
             document.getElementById('score-value').textContent = maxResult.score + '%';
 
@@ -2921,6 +2951,42 @@
             if (onComplete) onComplete();
         }
 
+        // ── Check if a specific issue's property pattern is still present in content ──
+        function isIssueStillPresent(msg, content) {
+            // Extract property name from message (e.g. "property <B/W>: ..." → "B/W")
+            var propMatch = msg.match(/property\s*<([^>]+)>/i);
+            if (!propMatch) {
+                // Try angle-bracket-only pattern (e.g. "unknown property <TT> found")
+                propMatch = msg.match(/<([A-Z]{2,3})>/i);
+            }
+            if (!propMatch) return true;
+            var propName = propMatch[1];
+
+            // For illegal value issues: check if the property still has that specific value
+            var valMatch = msg.match(/illegal\s+value\s*\[([^\]]+)\]/i);
+            if (valMatch) {
+                return content.indexOf('[' + valMatch[1] + ']') !== -1 &&
+                       content.indexOf(propName + '[') !== -1;
+            }
+
+            // For compose-type / value-type issues (AP): check if property still has problematic value
+            var composeMatch = msg.match(/expects\s+compose\s+type/i) || msg.match(/value\s+type\s+does\s+not\s+match/i);
+            if (composeMatch) {
+                return content.indexOf(propName + '[') !== -1;
+            }
+
+            // For unknown property / not-defined issues: check if property still exists
+            if (/unknown\s+property/i.test(msg) || /not\s+defined/i.test(msg) || /is\s+not\s+defined/i.test(msg)) {
+                return content.indexOf(propName + '[') !== -1;
+            }
+
+            // For "deleted" messages that mention a property: already fixed
+            if (/deleted/i.test(msg) && /corrected/i.test(msg)) return false;
+
+            // Fallback: check if the property name still exists in the content
+            return content.indexOf(propName + '[') !== -1;
+        }
+
         // ── Per-Issue Auto-Fix: SGFC -c as primary, custom sanitizer as fallback ──
         function autoFixIssue(idx) {
             const bar = document.getElementById(`action-bar-${idx}`);
@@ -2947,55 +3013,75 @@
             if (issue && issue.message) {
                 const msg = issue.message;
 
-                // ── SGFC -c mode (authoritative fixer for syntax/value errors) ──
+                // ── Phase 1: SGFC -c mode (authoritative fixer for syntax/value errors) ──
                 var sgfcResult = runSgfcCorrect(sgfContent);
-                if (sgfcResult && sgfcResult.corrected) {
-                    var correctionMsgs = sgfcResult.messages.filter(function(m) {
-                        return /corrected|deleted|removed|inserted/i.test(m) && !/will not get/i.test(m);
-                    });
+                if (sgfcResult && sgfcResult.corrected && sgfcResult.corrected !== sgfContent) {
+                    // SGFC produced a corrected version — check if THIS specific issue is resolved
+                    var issueResolved = !isIssueStillPresent(msg, sgfcResult.corrected);
 
-                    var targetedCorrections = correctionMsgs.filter(function(m) {
-                        return m.indexOf(msg) !== -1 || msg.indexOf(m) !== -1;
-                    });
-
-                    var contentChanged = sgfcResult.corrected !== sgfContent;
-
-                    var errorStillReported = sgfcResult.messages.some(function(m) {
-                        return m.indexOf(msg) !== -1 && !/corrected|deleted|removed|inserted/i.test(m);
-                    });
-
-                    var targetedIsFixed = targetedCorrections.length > 0 || !errorStillReported;
-
-                    if (targetedIsFixed) {
+                    if (issueResolved) {
                         sgfContent = sgfcResult.corrected;
                         sessionStorage.setItem('sgf_content', sgfContent);
                         fixed = true;
 
-                        var sideEffectCorrections = correctionMsgs.filter(function(m) {
-                            return m.indexOf(msg) === -1 && msg.indexOf(m) === -1;
-                        });
-
                         fixExplanation.push(
                             '<span class="step-label">Why:</span> ' + describeSGFError(msg)
                         );
+                        fixExplanation.push(
+                            '<span class="step-label">Fix:</span> SGFC corrected this issue in the output. The corrected version resolves this problem.'
+                        );
+                    }
+                }
 
-                        if (targetedCorrections.length > 0) {
-                            fixExplanation.push(
-                                '<span class="step-label">Fix:</span> SGFC corrected this issue. ' +
-                                'Reported: &#39;' + targetedCorrections[0].replace(/</g, '&lt;').substring(0, 200) + '&#39;'
-                            );
-                        } else {
-                            fixExplanation.push(
-                                '<span class="step-label">Fix:</span> SGFC corrected this issue. The corrected version passes validation.'
-                            );
+                // ── Phase 2: Custom sanitizer (bracket errors, phantom props, TM format) ──
+                if (!fixed) {
+                    var isBracketError = /illegal char\(s\)\s+found/i.test(msg);
+                    var isPhantomProp  = /without any values/i.test(msg);
+                    var isTmFormat     = /property.*<TM>.*illegal format/i.test(msg) ||
+                                       /property.*<TM>.*illegal value/i.test(msg) ||
+                                       /TM.*illegal/i.test(msg);
+
+                    if (isBracketError || isPhantomProp || isTmFormat) {
+                        if (typeof SGFAuditor !== 'undefined' && SGFAuditor.sanitizeSGFStream) {
+                            try {
+                                var result = SGFAuditor.sanitizeSGFStream(sgfContent);
+                                if (result.archive && result.archive.length > 0 && result.fixed !== sgfContent) {
+                                    // Check if THIS specific issue is resolved in the sanitized content
+                                    if (!isIssueStillPresent(msg, result.fixed)) {
+                                        sgfContent = result.fixed;
+                                        sessionStorage.setItem('sgf_content', sgfContent);
+                                        fixed = true;
+                                        fixExplanation = result.archive;
+                                    }
+                                }
+                            } catch (e) {
+                                console.error('sanitizeSGFStream error:', e);
+                            }
                         }
+                    }
+                }
 
-                        if (sideEffectCorrections.length > 0) {
-                            fixExplanation.push(
-                                '<span class="step-label">Side Effects:</span> SGFC also corrected ' +
-                                sideEffectCorrections.length + ' other issue(s) as a side effect: &#39;' +
-                                sideEffectCorrections[0].replace(/</g, '&lt;').substring(0, 200) + '&#39;'
-                            );
+                // ── Phase 3: FoxWq non-FF[4] properties (TT, RL, TC, AP) ──
+                if (!fixed) {
+                    var isFoxwqProp = /unknown property/i.test(msg) && /<(TT|RL|TC)>/i.test(msg) ||
+                                     /not defined in FF\[4\]/i.test(msg) && /<(TT|RL|TC)>/i.test(msg) ||
+                                     /<AP>.*expects compose type/i.test(msg) ||
+                                     /<AP>.*value deleted/i.test(msg) ||
+                                     /property.*<AP>.*does not match/i.test(msg);
+
+                    if (isFoxwqProp) {
+                        if (typeof SGFAuditor !== 'undefined' && SGFAuditor.autoFixFoxwqProps) {
+                            try {
+                                var foxwqResult = SGFAuditor.autoFixFoxwqProps(sgfContent, msg);
+                                if (foxwqResult.archive && foxwqResult.archive.length > 0 && foxwqResult.fixed !== sgfContent) {
+                                    sgfContent = foxwqResult.fixed;
+                                    sessionStorage.setItem('sgf_content', sgfContent);
+                                    fixed = true;
+                                    fixExplanation = foxwqResult.archive;
+                                }
+                            } catch (e) {
+                                console.error('autoFixFoxwqProps error:', e);
+                            }
                         }
                     }
                 }
