@@ -610,7 +610,8 @@
                         }
                     }
                     // Build table with original text
-                    var tableHtml = '<table><thead><tr><th>Original</th><th>English</th></tr></thead><tbody>';
+                    var tableHtml = '<div style="font-size:0.85rem;font-weight:600;color:#6b7280;margin-bottom:6px;">Here are latest 10 game records</div>';
+                    tableHtml += '<table><thead><tr><th>Original</th><th>English</th></tr></thead><tbody>';
                     games.forEach(function(g, i) {
                         tableHtml += '<tr data-idx="' + i + '" onclick="selectFoxwqGame(' + i + ')">';
                         tableHtml += '<td>' + g.title + '</td>';
