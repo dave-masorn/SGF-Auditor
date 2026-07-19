@@ -624,6 +624,8 @@
                     list.classList.add('open');
                     foxwqListLoaded = true;
                     btn.textContent = 'Here are latest 10 game records';
+                    btn.removeAttribute('onclick');
+                    btn.style.cursor = 'default';
                     // Translate all titles via Google Translate API
                     games.forEach(function(g, i) {
                         var enc = encodeURIComponent(g.title);
@@ -648,6 +650,8 @@
                 })
                 .catch(function(err) {
                     btn.textContent = 'or Browse Latest FoxWq Games';
+                    btn.setAttribute('onclick', 'browseFoxwqGames()');
+                    btn.style.cursor = 'pointer';
                     var status = document.getElementById('foxwq-status');
                     status.className = 'foxwq-status error';
                     status.textContent = 'Error loading game list: ' + err.message;
