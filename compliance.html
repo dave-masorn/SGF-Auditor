@@ -3057,11 +3057,11 @@
             }
 
             const issue = auditResult.issues[idx];
+            const msg = issue ? issue.message : '';
             let fixed = false;
             let fixExplanation = [];
 
-            if (issue && issue.message) {
-                const msg = issue.message;
+            if (issue && msg) {
 
                 // ── Phase 1: SGFC -c mode (authoritative fixer for syntax/value errors) ──
                 var sgfcResult = runSgfcCorrect(sgfContent);
@@ -3181,11 +3181,11 @@
             }
 
             const issue = auditResult.issues[idx];
+            const msg = issue ? issue.message : '';
             let fixed = false;
             let fixExplanation = [];
 
-            if (issue && issue.message) {
-                const msg = issue.message;
+            if (issue && msg) {
 
                 // ── Custom sanitizer (bracket errors, phantom props, TM format) ──
                 const isBracketError = /illegal char\(s\)\s+found/i.test(msg);
