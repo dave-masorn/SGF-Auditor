@@ -2428,6 +2428,8 @@
                 });
             }, 100);
 
+            const weightOrder = { mandatory: 0, recommended: 1, optional: 2 };
+
             // Strengths list
             const strList = document.getElementById('strengths-list');
             strList.innerHTML = '';
@@ -2435,7 +2437,10 @@
             if (maxResult.strengths.length === 0) {
                 strList.innerHTML = '<div class="maximize-empty">No strengths found.</div>';
             } else {
-                for (let s of maxResult.strengths) {
+                var sortedStrengths = maxResult.strengths.slice().sort(function(a, b) {
+                    return (weightOrder[a.tag] ?? 3) - (weightOrder[b.tag] ?? 3);
+                });
+                for (let s of sortedStrengths) {
                     const item = document.createElement('div');
                     item.className = 'maximize-item strength';
                     item.innerHTML = `
@@ -2454,7 +2459,10 @@
             if (maxResult.opportunities.length === 0) {
                 oppList.innerHTML = '<div class="maximize-empty">Full FF[4] coverage achieved!</div>';
             } else {
-                for (let o of maxResult.opportunities) {
+                var sortedOpportunities = maxResult.opportunities.slice().sort(function(a, b) {
+                    return (weightOrder[a.tag] ?? 3) - (weightOrder[b.tag] ?? 3);
+                });
+                for (let o of sortedOpportunities) {
                     const item = document.createElement('div');
                     item.className = 'maximize-item opportunity';
                     item.innerHTML = `
