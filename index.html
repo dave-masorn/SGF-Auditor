@@ -15,16 +15,16 @@
     <style>
         :root {
             /* ── Semantic Color Tokens ── */
-            --color-primary: #1F6B2E;
-            --color-primary-hover: #1A5726;
-            --color-accent: #EFC55A;
-            --color-accent-hover: #DDB04E;
-            --color-secondary: #8A4705;
+            --color-primary: #1F4E46;
+            --color-primary-hover: #163B34;
+            --color-accent: #E8AE4F;
+            --color-accent-hover: #D49C44;
+            --color-secondary: #5C2D11;
             --color-info: #3C8B87;
-            --color-header: #2E5961;
-            --color-danger: #C62828;
-            --color-success: #1F6B2E;
-            --color-warning: #8A4705;
+            --color-header: #1F4E46;
+            --color-danger: #BD5A4B;
+            --color-success: #1F4E46;
+            --color-warning: #8B3C18;
 
             /* ── Neutral Palette ── */
             --color-bg: #FAFAF8;
@@ -101,9 +101,9 @@
 
         .upload-container {
             display: flex;
-            background-color: var(--bg-color);
-            border: 1px solid var(--border);
-            border-radius: 4px;
+            background-color: var(--color-surface);
+            border: 1.5px solid var(--color-text);
+            border-radius: 8px;
             overflow: hidden;
             width: 100%;
             max-width: 600px;
@@ -120,7 +120,7 @@
             font-size: 1.25rem;
             font-weight: 500;
             text-align: center;
-            border-right: 1px dashed var(--border);
+            border-right: 1.5px solid var(--color-text);
         }
 
         .drop-zone.dragover {
@@ -129,7 +129,7 @@
 
         .browse-zone {
             flex: 1;
-            background-color: var(--color-surface-muted);
+            background-color: var(--color-accent);
             padding: 50px 20px;
             display: flex;
             flex-direction: column;
@@ -353,11 +353,11 @@
         }
 
         .red-subheader {
-            color: var(--danger);
-            font-size: 0.95rem;
+            color: var(--color-warning);
+            font-size: 1rem;
             margin-top: -45px;
             margin-bottom: 45px;
-            font-weight: 500;
+            font-weight: 600;
             text-align: center;
         }
 
@@ -365,20 +365,20 @@
             position: absolute;
             bottom: 30px;
             left: 30px;
-            background-color: var(--color-header);
+            background-color: var(--color-secondary);
             color: #FFFFFF;
             text-decoration: none;
             padding: 6px 16px;
-            border-radius: 2px;
-            border: 1px solid var(--color-header);
+            border-radius: 4px;
+            border: 1px solid var(--color-secondary);
             font-size: 0.85rem;
             font-weight: 600;
             z-index: 100;
         }
 
         .tech-log-btn:hover {
-            background-color: var(--color-primary-hover);
-            border-color: var(--color-primary-hover);
+            background-color: #45210D;
+            border-color: #45210D;
         }
 
         @media (max-width: 640px) {
@@ -432,7 +432,14 @@
             Drop your SGF file here ...
         </div>
         <div class="browse-zone" onclick="document.getElementById('file-input').click()">
-            <img class="folder-icon" src="img/835643_folder_512x512.png" alt="Folder Icon">
+            <svg class="folder-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="var(--color-text)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 19V5a2 2 0 0 1 2-2h4.5l2 3h5"></path>
+                <path d="M2 19h15"></path>
+                <path d="M2 19l2-8h16l-2 8"></path>
+                <path d="M19 8a3 3 0 1 0-2.14-5.14"></path>
+                <path d="M19 8h-3"></path>
+                <path d="M19 8V5"></path>
+            </svg>
         </div>
         <input type="file" id="file-input" accept=".sgf">
     </div>

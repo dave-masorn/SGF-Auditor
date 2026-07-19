@@ -15,16 +15,16 @@
     <style>
         :root {
             /* ── Semantic Color Tokens ── */
-            --color-primary: #1F6B2E;
-            --color-primary-hover: #1A5726;
-            --color-accent: #EFC55A;
-            --color-accent-hover: #DDB04E;
-            --color-secondary: #8A4705;
+            --color-primary: #1F4E46;
+            --color-primary-hover: #163B34;
+            --color-accent: #E8AE4F;
+            --color-accent-hover: #D49C44;
+            --color-secondary: #5C2D11;
             --color-info: #3C8B87;
-            --color-header: #2E5961;
-            --color-danger: #C62828;
-            --color-success: #1F6B2E;
-            --color-warning: #8A4705;
+            --color-header: #1F4E46;
+            --color-danger: #BD5A4B;
+            --color-success: #1F4E46;
+            --color-warning: #8B3C18;
 
             /* ── Neutral Palette ── */
             --color-bg: #FAFAF8;
@@ -35,13 +35,13 @@
             --color-muted: #6A6A6A;
 
             /* ── Semantic State Sub-tokens ── */
-            --color-success-bg: var(--color-success-bg);
-            --color-success-text: var(--color-success-text);
-            --color-success-border: var(--color-success-border);
-            --color-warning-bg: var(--color-warning-bg);
-            --color-warning-border: #FFF3CD;
-            --color-danger-bg: var(--color-danger-bg);
-            --color-danger-text: var(--color-danger-text);
+            --color-success-bg: #EAF4EA;
+            --color-success-text: #1F4E46;
+            --color-success-border: #1F4E46;
+            --color-warning-bg: #FFF8E1;
+            --color-warning-border: #E8AE4F;
+            --color-danger-bg: #FFFFFF;
+            --color-danger-text: #5C2D11;
 
             /* ── Semantic Aliases (backward compat) ── */
             --primary-color: var(--color-primary);
@@ -324,16 +324,16 @@
 
         .right-status-banner.fail {
             background-color: var(--color-danger-bg);
-            border: 1px solid var(--danger);
+            border: 1px solid var(--color-secondary);
             color: var(--color-danger-text);
         }
 
         .autofix-btn {
-            background-color: var(--primary-color);
+            background-color: var(--color-secondary);
             color: white;
-            border: 1px solid var(--primary-color);
+            border: 1px solid var(--color-secondary);
             padding: 8px 16px;
-            border-radius: 2px;
+            border-radius: 4px;
             font-size: 0.8rem;
             font-weight: 600;
             cursor: pointer;
@@ -347,15 +347,15 @@
         }
 
         .autofix-btn:hover {
-            background-color: var(--primary-hover);
-            border-color: var(--primary-hover);
+            background-color: #45210D;
+            border-color: #45210D;
         }
 
-        /* Play Button — rectangular, flat */
+        /* Play Button — circular */
         .circular-play-btn {
-            width: 130px;
-            height: 60px;
-            border-radius: 4px;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
             background: var(--card-bg);
             border: 2px solid var(--primary-color);
             cursor: pointer;
@@ -381,10 +381,10 @@
         .circular-play-icon {
             width: 0;
             height: 0;
-            border-top: 12px solid transparent;
-            border-bottom: 12px solid transparent;
-            border-left: 20px solid var(--primary-color);
-            margin-left: 4px;
+            border-top: 16px solid transparent;
+            border-bottom: 16px solid transparent;
+            border-left: 24px solid var(--primary-color);
+            margin-left: 6px;
         }
 
         .circular-play-btn.running {
@@ -506,7 +506,7 @@
             height: 0;
             border-top: 7px solid transparent;
             border-bottom: 7px solid transparent;
-            border-left: 11px solid var(--text-color);
+            border-left: 11px solid var(--primary-color);
             margin-left: 2px;
         }
 
@@ -514,8 +514,8 @@
             border: none;
             width: 10px;
             height: 14px;
-            border-left: 3px solid var(--text-color);
-            border-right: 3px solid var(--text-color);
+            border-left: 3px solid var(--primary-color);
+            border-right: 3px solid var(--primary-color);
             margin-left: 0;
         }
 
@@ -734,8 +734,8 @@
         }
 
         .filter-btn.active {
-            background-color: var(--text-color);
-            border-color: var(--text-color);
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
             color: white;
         }
 
@@ -781,8 +781,8 @@
         }
 
         .issue-tag.error {
-            background-color: #FFCDD2;
-            color: var(--color-danger-text);
+            background-color: var(--color-danger);
+            color: white;
         }
 
         .issue-tag.warning {
@@ -986,22 +986,22 @@
             align-items: center;
         }
         .ias-edit-btn {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
+            background: var(--color-accent);
+            border: 1px solid var(--color-accent);
             padding: 5px 13px;
-            border-radius: 2px;
+            border-radius: 4px;
             font-size: 0.8rem;
             font-weight: 600;
             cursor: pointer;
-            color: var(--text-color);
+            color: var(--color-secondary);
             font-family: "Inter", sans-serif;
         }
-        .ias-edit-btn:hover { background: #F5F5F5; }
+        .ias-edit-btn:hover { background: var(--color-accent-hover); }
         .ias-fix-btn {
             background: var(--primary-color);
             border: 1px solid var(--primary-color);
             padding: 5px 13px;
-            border-radius: 2px;
+            border-radius: 4px;
             font-size: 0.8rem;
             font-weight: 600;
             cursor: pointer;
