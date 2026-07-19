@@ -610,14 +610,14 @@
                         }
                     }
                     // Build table with original text
-                    var tableHtml = '<thead><tr><th>Original</th><th>English</th></tr></thead><tbody>';
+                    var tableHtml = '<table><thead><tr><th>Original</th><th>English</th></tr></thead><tbody>';
                     games.forEach(function(g, i) {
                         tableHtml += '<tr data-idx="' + i + '" onclick="selectFoxwqGame(' + i + ')">';
                         tableHtml += '<td>' + g.title + '</td>';
                         tableHtml += '<td class="game-eng" id="foxwq-eng-' + i + '">Translating...</td>';
                         tableHtml += '</tr>';
                     });
-                    tableHtml += '</tbody>';
+                    tableHtml += '</tbody></table>';
                     list.innerHTML = tableHtml;
                     list.classList.add('open');
                     foxwqListLoaded = true;
