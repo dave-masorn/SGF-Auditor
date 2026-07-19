@@ -1,33 +1,60 @@
 /**
  * Cache-busting version layer.
  * MUST load in <head> BEFORE any other local <script> tags.
- * Rewrites all local <script src> and <link href> to append ?v=VERSION,
- * forcing the browser to re-fetch on every version bump.
+ *
+ * Strategy:
+ *  1. Patch HTMLScriptElement.prototype.src so that when the HTML parser
+ *     later encounters <script src="sgf_parser.js"> in <body>, our setter
+ *     appends ?v=VERSION BEFORE the browser starts fetching.
+ *  2. On DOMContentLoaded, also rewrite any <link href> (stylesheets load
+ *     async so DOMContentLoaded catches them).
+ *  3. Expose window.__SGF_VER for navigation URL busting.
  */
 (function () {
-    var VERSION = '0.1.019';
+    var VERSION = '0.1.021';
 
-    /* ── Cache-bust: rewrite local <script> and <link> tags on DOMContentLoaded ── */
-    function bustCache() {
-        var tags = document.querySelectorAll('script[src], link[rel="stylesheet"][href]');
+    /* ── Expose version globally for navigation URL busting ── */
+    window.__SGF_VER = VERSION;
+
+    /* ── 1. Intercept synchronous <script src> via prototype patch ── */
+    var scriptDesc = Object.getOwnPropertyDescriptor(HTMLScriptElement.prototype, 'src');
+    if (scriptDesc && scriptDesc.set) {
+        Object.defineProperty(HTMLScriptElement.prototype, 'src', {
+            set: function (val) {
+                if (val && typeof val === 'string' &&
+                    !/^https?:\/\//.test(val) &&
+                    val.indexOf('?v=') === -1) {
+                    val += '?v=' + VERSION;
+                }
+                return scriptDesc.set.call(this, val);
+            },
+            get: scriptDesc.get,
+            configurable: true,
+            enumerable: true
+        });
+    }
+
+    /* ── 2. Rewrite local <link href> and <a href> on DOMContentLoaded ── */
+    function bustDom() {
+        var tags = document.querySelectorAll('link[rel="stylesheet"][href], a[href]');
         for (var i = 0; i < tags.length; i++) {
-            var el = tags[i];
-            var attr = el.tagName === 'SCRIPT' ? 'src' : 'href';
-            var url  = el.getAttribute(attr);
+            var attr = tags[i].tagName === 'A' ? 'href' : 'href';
+            var url = tags[i].getAttribute(attr);
             if (!url) continue;
             if (/^https?:\/\//.test(url)) continue;
+            if (url.charAt(0) === '#') continue;
             if (url.indexOf('?v=') !== -1) continue;
-            el.setAttribute(attr, url + '?v=' + VERSION);
+            tags[i].setAttribute(attr, url + '?v=' + VERSION);
         }
     }
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', bustCache);
+        document.addEventListener('DOMContentLoaded', bustDom);
     } else {
-        bustCache();
+        bustDom();
     }
 
-    /* ── Version label ── */
+    /* ── 3. Version label ── */
     var now = new Date();
     var pad = function (n) { return n < 10 ? '0' + n : '' + n; };
     var ts  = now.getFullYear() + '-'

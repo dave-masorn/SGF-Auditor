@@ -228,7 +228,7 @@
         .foxwq-browse a {
             font-size: 0.82rem;
             color: #1E4ED8;
-            text-decoration: underline;
+            text-decoration: none;
             cursor: pointer;
         }
 
@@ -518,7 +518,7 @@
                 sessionStorage.setItem('sgf_original', text);
                 sessionStorage.setItem('sgf_filename', file.name);
                 // Redirect to compliance page
-                window.location.href = 'compliance.html';
+                window.location.href = 'compliance.html?v=' + window.__SGF_VER;
             };
             reader.readAsText(file);
         }
@@ -564,7 +564,7 @@
                 status.className = 'foxwq-status ok';
                 status.textContent = 'Loaded: ' + result.filename + ' — redirecting...';
                 setTimeout(function() {
-                    window.location.href = 'compliance.html';
+                    window.location.href = 'compliance.html?v=' + window.__SGF_VER;
                 }, 600);
             }).catch(function(err) {
                 btn.disabled = false;
