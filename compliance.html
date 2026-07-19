@@ -976,6 +976,38 @@
             background: rgba(0,0,0,0.06);
             font-weight: 700;
         }
+        .issue-action-state.state-3-fail {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: #FFF8E1;
+            border-top: 1px solid var(--border-color);
+        }
+        .issue-action-state.state-3-fail.active { display: flex; }
+        .issue-action-state.state-3-fail.exit { display: none; }
+        .ias-fail-text {
+            flex-grow: 1;
+            font-size: 0.82rem;
+            color: #795548;
+            font-weight: 500;
+        }
+        .ias-custom-fix-btn {
+            font-family: "Inter", sans-serif;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #1E4ED8;
+            background: none;
+            border: 1px solid #1E4ED8;
+            border-radius: 2px;
+            padding: 4px 10px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .ias-custom-fix-btn:hover {
+            background: #1E4ED8;
+            color: #fff;
+        }
         /* Inline edit panel */
         .issue-edit-panel {
             background: #F5F5F5;
@@ -2563,7 +2595,7 @@
 
                 const realIdx = wrapper.getAttribute('data-issue-idx');
 
-                // 3-State action bar
+                // 4-State action bar
                 const actionBar = document.createElement('div');
                 actionBar.className = 'issue-action-bar';
                 actionBar.id = `action-bar-${realIdx}`;
@@ -2585,6 +2617,11 @@
                         <span class="ias-num">3</span>
                         <div class="ias-progress-text">Auto-Fixed</div>
                         <div class="ias-icon">✓</div>
+                    </div>
+                    <div class="issue-action-state state-3-fail">
+                        <span class="ias-num">2</span>
+                        <div class="ias-fail-text">Within SGFC, there is no such fix available.</div>
+                        <button class="ias-custom-fix-btn" onclick="autoFixCustomIssue(${wrapper.getAttribute('data-issue-idx')})">Try Custom Fix?</button>
                     </div>
                 `;
                 wrapper.appendChild(actionBar);
@@ -2863,29 +2900,19 @@
             if (issue && issue.message) {
                 const msg = issue.message;
 
-                // ── Step 1: SGFC -c mode (authoritative fixer for syntax/value errors) ──
+                // ── SGFC -c mode (authoritative fixer for syntax/value errors) ──
                 var sgfcResult = runSgfcCorrect(sgfContent);
                 if (sgfcResult && sgfcResult.corrected) {
-                    // Verify THIS specific error is gone in the corrected version.
-                    // We use the messages captured during runSgfcCorrect instead of
-                    // calling callMain a second time — multiple synchronous WASM
-                    // callMain invocations can hang the engine and freeze the UI.
                     var correctionMsgs = sgfcResult.messages.filter(function(m) {
                         return /corrected|deleted|removed|inserted/i.test(m) && !/will not get/i.test(m);
                     });
 
-                    // Check if the original error appears in correction messages
-                    // (meaning SGFC acknowledged and fixed it)
                     var targetedCorrections = correctionMsgs.filter(function(m) {
                         return m.indexOf(msg) !== -1 || msg.indexOf(m) !== -1;
                     });
 
-                    // Also check if the corrected content is different from original
                     var contentChanged = sgfcResult.corrected !== sgfContent;
 
-                    // The issue is considered resolved if:
-                    // (a) SGFC reported a correction matching this message, OR
-                    // (b) SGFC produced a changed output and didn't report this error as still present
                     var errorStillReported = sgfcResult.messages.some(function(m) {
                         return m.indexOf(msg) !== -1 && !/corrected|deleted|removed|inserted/i.test(m);
                     });
@@ -2893,12 +2920,10 @@
                     var originalStillPresent = errorStillReported && !contentChanged;
 
                     if (!originalStillPresent) {
-                        // Working copy updated — original stays untouched
                         sgfContent = sgfcResult.corrected;
                         sessionStorage.setItem('sgf_content', sgfContent);
                         fixed = true;
 
-                        // Separate: the correction that matches our target issue vs. side effects
                         var sideEffectCorrections = correctionMsgs.filter(function(m) {
                             return m.indexOf(msg) === -1 && msg.indexOf(m) === -1;
                         });
@@ -2918,7 +2943,6 @@
                             );
                         }
 
-                        // Log side-effect corrections as informational (not errors)
                         if (sideEffectCorrections.length > 0) {
                             fixExplanation.push(
                                 '<span class="step-label">Side Effects:</span> SGFC also corrected ' +
@@ -2928,34 +2952,83 @@
                         }
                     }
                 }
+            }
 
-                // ── Step 2: Fallback — custom sanitizer for issues SGFC can't fix ──
-                if (!fixed) {
-                    const isBracketError = /illegal char\(s\)\s+found/i.test(msg);
-                    const isPhantomProp  = /without any values/i.test(msg);
-                    const isTmFormat     = /property.*<TM>.*illegal format/i.test(msg) ||
-                                           /property.*<TM>.*illegal value/i.test(msg) ||
-                                           /TM.*illegal/i.test(msg);
+            // Store explanation — keyed by message so renderIssuesList can re-inject after re-render
+            if (fixed && fixExplanation.length > 0) {
+                fixedIssuesMap[msg] = fixExplanation;
+            }
 
-                    if (isBracketError || isPhantomProp || isTmFormat) {
-                        if (typeof SGFAuditor !== 'undefined' && SGFAuditor.sanitizeSGFStream) {
-                            try {
-                                var result = SGFAuditor.sanitizeSGFStream(sgfContent);
-                                if (result.archive && result.archive.length > 0 && result.fixed !== sgfContent) {
-                                    sgfContent = result.fixed;
-                                    sessionStorage.setItem('sgf_content', sgfContent);
-                                    fixed = true;
-                                    fixExplanation = result.archive;
-                                }
-                            } catch (e) {
-                                console.error('sanitizeSGFStream error:', e);
+            // 2 → 3 (or 3-fail) after processing delay
+            setTimeout(() => {
+                s2.classList.remove('active');
+                s2.classList.add('exit');
+
+                if (fixed) {
+                    s3.querySelector('.ias-progress-text').textContent = 'Auto-Fixed';
+                    s3.classList.add('active');
+                    reAuditWorkingCopy();
+                } else {
+                    var s3Fail = bar.querySelector('.state-3-fail');
+                    if (s3Fail) {
+                        s3Fail.classList.add('active');
+                    } else {
+                        s3.querySelector('.ias-progress-text').textContent = 'No Fix Available';
+                        s3.classList.add('active');
+                    }
+                }
+            }, 1400);
+        }
+
+        // ── Custom Fix: fallback when SGFC can't fix (sanitizer + FoxWq props) ──
+        function autoFixCustomIssue(idx) {
+            const bar = document.getElementById(`action-bar-${idx}`);
+            if (!bar) return;
+            const s1 = bar.querySelector('.state-1');
+            const s2 = bar.querySelector('.state-2');
+            const s3 = bar.querySelector('.state-3');
+            const s3Fail = bar.querySelector('.state-3-fail');
+
+            if (s3Fail) s3Fail.classList.remove('active');
+            s2.classList.add('active');
+
+            if (!originalSgfContent) {
+                originalSgfContent = sgfContent;
+                sessionStorage.setItem('sgf_original', originalSgfContent);
+            }
+
+            const issue = auditResult.issues[idx];
+            let fixed = false;
+            let fixExplanation = [];
+
+            if (issue && issue.message) {
+                const msg = issue.message;
+
+                // ── Custom sanitizer (bracket errors, phantom props, TM format) ──
+                const isBracketError = /illegal char\(s\)\s+found/i.test(msg);
+                const isPhantomProp  = /without any values/i.test(msg);
+                const isTmFormat     = /property.*<TM>.*illegal format/i.test(msg) ||
+                                       /property.*<TM>.*illegal value/i.test(msg) ||
+                                       /TM.*illegal/i.test(msg);
+
+                if (isBracketError || isPhantomProp || isTmFormat) {
+                    if (typeof SGFAuditor !== 'undefined' && SGFAuditor.sanitizeSGFStream) {
+                        try {
+                            var result = SGFAuditor.sanitizeSGFStream(sgfContent);
+                            if (result.archive && result.archive.length > 0 && result.fixed !== sgfContent) {
+                                sgfContent = result.fixed;
+                                sessionStorage.setItem('sgf_content', sgfContent);
+                                fixed = true;
+                                fixExplanation = result.archive;
                             }
+                        } catch (e) {
+                            console.error('sanitizeSGFStream error:', e);
                         }
                     }
                 }
 
-                // ── Step 3: Always run for non-FF[4] server-injected properties (FoxWq: TT, RL, TC, AP) ──
-                {
+                // ── FoxWq non-FF[4] properties (TT, RL, TC, AP) ──
+                if (!fixed) {
                     const isFoxwqProp = /unknown property/i.test(msg) && /<(TT|RL|TC)>/i.test(msg) ||
                                         /not defined in FF\[4\]/i.test(msg) && /<(TT|RL|TC)>/i.test(msg) ||
                                         /<AP>.*expects compose type/i.test(msg) ||
@@ -2979,12 +3052,10 @@
                 }
             }
 
-            // Store explanation — keyed by message so renderIssuesList can re-inject after re-render
             if (fixed && fixExplanation.length > 0) {
-                fixedIssuesMap[msg] = fixExplanation;
+                fixedIssuesMap[issue.message] = fixExplanation;
             }
 
-            // 2 → 3 after processing delay, then re-run audit on working copy
             setTimeout(() => {
                 s2.classList.remove('active');
                 s2.classList.add('exit');
@@ -2992,8 +3063,6 @@
                 s3.classList.add('active');
 
                 if (fixed) {
-                    // Re-audit working copy, filter "corrected" noise, re-render
-                    // FIXED indicators are re-injected by renderIssuesList from fixedIssuesMap
                     reAuditWorkingCopy();
                 }
             }, 1400);
