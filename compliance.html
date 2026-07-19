@@ -2917,9 +2917,9 @@
                         return m.indexOf(msg) !== -1 && !/corrected|deleted|removed|inserted/i.test(m);
                     });
 
-                    var originalStillPresent = errorStillReported && !contentChanged;
+                    var targetedIsFixed = targetedCorrections.length > 0 || !errorStillReported;
 
-                    if (!originalStillPresent) {
+                    if (targetedIsFixed) {
                         sgfContent = sgfcResult.corrected;
                         sessionStorage.setItem('sgf_content', sgfContent);
                         fixed = true;
