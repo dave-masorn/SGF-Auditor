@@ -675,7 +675,11 @@
                 div.style.cursor = 'pointer';
                 div.style.color = 'var(--color-primary)';
                 div.style.fontSize = '0.82rem';
-                div.textContent = 'Fetch more games?';
+                div.style.display = 'flex';
+                div.style.alignItems = 'center';
+                div.style.justifyContent = 'center';
+                div.style.gap = '6px';
+                div.innerHTML = '<svg fill="currentColor" width="14" height="14" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><defs><style>.cls-1{fill:none;}</style></defs><title>fetch-upload</title><path d="M16,7,6,17l1.41,1.41L15,10.83V28H2v2H15a2,2,0,0,0,2-2V10.83l7.59,7.58L26,17Z"/><path d="M6,8V4H26V8h2V4a2,2,0,0,0-2-2H6A2,2,0,0,0,4,4V8Z"/><rect class="cls-1" width="32" height="32"/></svg><span>Fetch more games?</span>';
                 div.onclick = function() { fetchMoreFoxwqGames(); };
                 document.getElementById('foxwq-gamelist').appendChild(div);
             }
