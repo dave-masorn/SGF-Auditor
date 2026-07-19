@@ -216,6 +216,70 @@
             color: #2E7D32;
         }
 
+        .foxwq-browse {
+            text-align: center;
+            margin-top: 12px;
+            margin-bottom: 24px;
+        }
+
+        .foxwq-browse a {
+            font-size: 0.82rem;
+            color: #1E4ED8;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        .foxwq-browse a:hover {
+            color: #111111;
+        }
+
+        .foxwq-gamelist {
+            display: none;
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto 24px auto;
+            border: 1px solid var(--border);
+            max-height: 320px;
+            overflow-y: auto;
+        }
+
+        .foxwq-gamelist.open {
+            display: block;
+        }
+
+        .foxwq-gamelist-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: #333;
+        }
+
+        .foxwq-gamelist-item:last-child {
+            border-bottom: none;
+        }
+
+        .foxwq-gamelist-item:hover {
+            background: #F5F5F5;
+        }
+
+        .foxwq-gamelist-item .game-title {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-right: 12px;
+        }
+
+        .foxwq-gamelist-item .game-date {
+            color: #999;
+            white-space: nowrap;
+            font-size: 0.78rem;
+        }
+
         .info-list {
             max-width: 640px;
             margin-bottom: 80px;
@@ -349,6 +413,12 @@
         </div>
     </div>
     <div class="foxwq-status" id="foxwq-status"></div>
+
+    <div class="foxwq-browse">
+        <a id="foxwq-browse-btn" onclick="browseFoxwqGames()">or Browse Latest FoxWq Games</a>
+    </div>
+
+    <div class="foxwq-gamelist" id="foxwq-gamelist"></div>
 
     <div class="info-list">
         <ol>
@@ -499,6 +569,64 @@
         document.getElementById('foxwq-url').addEventListener('keydown', function(e) {
             if (e.key === 'Enter') fetchFoxwq();
         });
+
+        // FoxWq game list browser
+        var foxwqListLoaded = false;
+        function browseFoxwqGames() {
+            var list = document.getElementById('foxwq-gamelist');
+            if (list.classList.contains('open')) {
+                list.classList.remove('open');
+                return;
+            }
+            if (foxwqListLoaded) {
+                list.classList.add('open');
+                return;
+            }
+            var btn = document.getElementById('foxwq-browse-btn');
+            btn.textContent = 'Loading games...';
+            var proxy = 'https://foxwq-proxy.dave-42c.workers.dev/?url=';
+            fetch(proxy + encodeURIComponent('https://www.foxwq.com/qipu.html'))
+                .then(function(r) { return r.text(); })
+                .then(function(html) {
+                    var parser = new DOMParser();
+                    var doc = parser.parseFromString(html, 'text/html');
+                    var rows = doc.querySelectorAll('#more tr');
+                    var games = [];
+                    for (var i = 0; i < rows.length && games.length < 10; i++) {
+                        var a = rows[i].querySelector('a.px14');
+                        var tds = rows[i].querySelectorAll('td');
+                        if (a && tds.length >= 2) {
+                            var href = a.getAttribute('href');
+                            var title = (a.querySelector('h4') || a).textContent.trim();
+                            var date = tds[1].textContent.trim();
+                            games.push({ href: href, title: title, date: date });
+                        }
+                    }
+                    list.innerHTML = '';
+                    games.forEach(function(g) {
+                        var item = document.createElement('div');
+                        item.className = 'foxwq-gamelist-item';
+                        item.innerHTML = '<span class="game-title">' + g.title + '</span><span class="game-date">' + g.date + '</span>';
+                        item.onclick = (function(url) {
+                            return function() {
+                                document.getElementById('foxwq-url').value = url;
+                                list.classList.remove('open');
+                                fetchFoxwq();
+                            };
+                        })('https://www.foxwq.com' + g.href);
+                        list.appendChild(item);
+                    });
+                    list.classList.add('open');
+                    foxwqListLoaded = true;
+                    btn.textContent = 'or Browse Latest FoxWq Games';
+                })
+                .catch(function(err) {
+                    btn.textContent = 'or Browse Latest FoxWq Games';
+                    var status = document.getElementById('foxwq-status');
+                    status.className = 'foxwq-status error';
+                    status.textContent = 'Error loading game list: ' + err.message;
+                });
+        }
     </script>
     <script src="version.js"></script>
 </body>
