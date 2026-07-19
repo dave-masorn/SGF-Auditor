@@ -88,7 +88,7 @@
     };
 
     // ── Helpers ──
-    var CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+    var CORS_PROXY = 'https://foxwq-proxy.YOUR_SUBDOMAIN.workers.dev/?url=';
 
     function httpGet(url, useProxy) {
         var target = (useProxy && typeof window !== 'undefined')
