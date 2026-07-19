@@ -140,13 +140,14 @@
             border-radius: 4px;
             padding: 12px 16px;
             display: flex;
+            flex-wrap: wrap;
             align-items: center;
             gap: 12px;
         }
 
         .foxwq-logo {
-            width: auto;
-            height: 36px;
+            width: 100%;
+            height: auto;
             flex-shrink: 0;
             flex-grow: 0;
             border-radius: 2px;
@@ -217,9 +218,9 @@
         }
 
         .foxwq-browse {
+            width: 100%;
             text-align: center;
-            margin-top: 12px;
-            margin-bottom: 24px;
+            margin-top: 4px;
         }
 
         .foxwq-browse a {
@@ -235,11 +236,9 @@
 
         .foxwq-gamelist {
             display: none;
-            max-width: 600px;
             width: 100%;
-            margin: 0 auto 24px auto;
             border: 1px solid var(--border);
-            max-height: 320px;
+            max-height: 360px;
             overflow-y: auto;
         }
 
@@ -247,37 +246,47 @@
             display: block;
         }
 
-        .foxwq-gamelist-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 12px;
-            border-bottom: 1px solid var(--border);
-            cursor: pointer;
-            font-size: 0.85rem;
-            color: #333;
+        .foxwq-gamelist table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
         }
 
-        .foxwq-gamelist-item:last-child {
+        .foxwq-gamelist thead th {
+            position: sticky;
+            top: 0;
+            background: #F5F5F5;
+            border-bottom: 1px solid var(--border);
+            padding: 6px 10px;
+            text-align: left;
+            font-weight: 700;
+            font-size: 0.78rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .foxwq-gamelist tbody tr {
+            cursor: pointer;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .foxwq-gamelist tbody tr:last-child {
             border-bottom: none;
         }
 
-        .foxwq-gamelist-item:hover {
+        .foxwq-gamelist tbody tr:hover {
             background: #F5F5F5;
         }
 
-        .foxwq-gamelist-item .game-title {
-            flex: 1;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            margin-right: 12px;
+        .foxwq-gamelist td {
+            padding: 7px 10px;
+            color: #333;
+            vertical-align: top;
         }
 
-        .foxwq-gamelist-item .game-date {
-            color: #999;
-            white-space: nowrap;
-            font-size: 0.78rem;
+        .foxwq-gamelist td.game-eng {
+            color: #666;
         }
 
         .info-list {
@@ -600,23 +609,40 @@
                             games.push({ href: href, title: title, date: date });
                         }
                     }
-                    list.innerHTML = '';
-                    games.forEach(function(g) {
-                        var item = document.createElement('div');
-                        item.className = 'foxwq-gamelist-item';
-                        item.innerHTML = '<span class="game-title">' + g.title + '</span><span class="game-date">' + g.date + '</span>';
-                        item.onclick = (function(url) {
-                            return function() {
-                                document.getElementById('foxwq-url').value = url;
-                                list.classList.remove('open');
-                                fetchFoxwq();
-                            };
-                        })('https://www.foxwq.com' + g.href);
-                        list.appendChild(item);
+                    // Build table with original text
+                    var tableHtml = '<thead><tr><th>Original</th><th>English</th></tr></thead><tbody>';
+                    games.forEach(function(g, i) {
+                        tableHtml += '<tr data-idx="' + i + '" onclick="selectFoxwqGame(' + i + ')">';
+                        tableHtml += '<td>' + g.title + '</td>';
+                        tableHtml += '<td class="game-eng" id="foxwq-eng-' + i + '">Translating...</td>';
+                        tableHtml += '</tr>';
                     });
+                    tableHtml += '</tbody>';
+                    list.innerHTML = tableHtml;
                     list.classList.add('open');
                     foxwqListLoaded = true;
                     btn.textContent = 'or Browse Latest FoxWq Games';
+                    // Translate all titles via Google Translate API
+                    games.forEach(function(g, i) {
+                        var enc = encodeURIComponent(g.title);
+                        var api = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=' + enc;
+                        fetch(api).then(function(r) { return r.text(); }).then(function(body) {
+                            try {
+                                var data = JSON.parse(body);
+                                if (data && data[0] && data[0][0] && data[0][0][0]) {
+                                    document.getElementById('foxwq-eng-' + i).textContent = data[0][0][0];
+                                } else {
+                                    document.getElementById('foxwq-eng-' + i).textContent = g.title;
+                                }
+                            } catch(e) {
+                                document.getElementById('foxwq-eng-' + i).textContent = g.title;
+                            }
+                        }).catch(function() {
+                            document.getElementById('foxwq-eng-' + i).textContent = g.title;
+                        });
+                    });
+                    // Store games for click handler
+                    window._foxwqGames = games;
                 })
                 .catch(function(err) {
                     btn.textContent = 'or Browse Latest FoxWq Games';
@@ -624,6 +650,15 @@
                     status.className = 'foxwq-status error';
                     status.textContent = 'Error loading game list: ' + err.message;
                 });
+        }
+
+        function selectFoxwqGame(idx) {
+            var games = window._foxwqGames;
+            if (!games || !games[idx]) return;
+            var url = 'https://www.foxwq.com' + games[idx].href;
+            document.getElementById('foxwq-url').value = url;
+            document.getElementById('foxwq-gamelist').classList.remove('open');
+            fetchFoxwq();
         }
     </script>
     <script src="version.js"></script>
