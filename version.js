@@ -3,7 +3,7 @@
  * Change VERSION_HERE below on every push — all pages auto-update.
  */
 (function () {
-    var VERSION = '0.0.064';
+    var VERSION = '0.0.065';
 
     var now = new Date();
     var pad = function (n) { return n < 10 ? '0' + n : '' + n; };

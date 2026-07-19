@@ -151,6 +151,98 @@
             transform: scale(1.1) translateY(-2px);
         }
 
+        /* FoxWq Fetch Section */
+        .foxwq-section {
+            max-width: 600px;
+            width: 100%;
+            margin-bottom: 50px;
+            background: white;
+            border-radius: 16px;
+            padding: 20px 24px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .foxwq-logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            flex-shrink: 0;
+        }
+
+        .foxwq-label {
+            font-size: 0.85rem;
+            color: #666;
+            font-weight: 500;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .foxwq-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-family: "Geist Mono", monospace;
+            outline: none;
+            transition: border-color 0.2s;
+            min-width: 0;
+        }
+
+        .foxwq-input:focus {
+            border-color: #75c5f0;
+        }
+
+        .foxwq-input::placeholder {
+            color: #bbb;
+        }
+
+        .foxwq-btn {
+            padding: 8px 16px;
+            background: #323da5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background-color 0.2s, transform 0.15s;
+            flex-shrink: 0;
+        }
+
+        .foxwq-btn:hover {
+            background: #262e82;
+            transform: translateY(-1px);
+        }
+
+        .foxwq-btn:disabled {
+            background: #aaa;
+            cursor: wait;
+            transform: none;
+        }
+
+        .foxwq-status {
+            font-size: 0.78rem;
+            color: #999;
+            margin-top: -36px;
+            margin-bottom: 36px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .foxwq-status.error {
+            color: #ef4444;
+        }
+
+        .foxwq-status.ok {
+            color: #22c55e;
+        }
+
         .info-list {
             max-width: 640px;
             margin-bottom: 80px;
@@ -297,6 +389,14 @@
         <input type="file" id="file-input" accept=".sgf">
     </div>
 
+    <div class="foxwq-section">
+        <img class="foxwq-logo" src="https://www.foxwq.com/Public/Images/logo.png" alt="FoxWq">
+        <span class="foxwq-label">Get SGF from FoxWq:</span>
+        <input class="foxwq-input" id="foxwq-url" type="text" placeholder="Paste FoxWq game URL here ...">
+        <button class="foxwq-btn" id="foxwq-btn" onclick="fetchFoxwq()">Fetch</button>
+    </div>
+    <div class="foxwq-status" id="foxwq-status"></div>
+
     <div class="info-list">
         <ol>
             <li>We conduct a 100% Compliance Audit to adhere to the SGF FF[4] Standard.</li>
@@ -399,7 +499,54 @@
                 header.classList.remove('scrolled');
             }
         });
+
+        // FoxWq SGF fetcher
+        function fetchFoxwq() {
+            var input = document.getElementById('foxwq-url');
+            var btn = document.getElementById('foxwq-btn');
+            var status = document.getElementById('foxwq-status');
+            var url = input.value.trim();
+
+            if (!url) {
+                status.className = 'foxwq-status error';
+                status.textContent = 'Please paste a FoxWq game URL.';
+                return;
+            }
+
+            if (url.indexOf('foxwq.com/qipu/newlist/id/') === -1) {
+                status.className = 'foxwq-status error';
+                status.textContent = 'Not a valid FoxWq URL. Expected: foxwq.com/qipu/newlist/id/...';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Fetching...';
+            status.className = 'foxwq-status';
+            status.textContent = 'Fetching SGF from FoxWq...';
+
+            FoxwqSGF.fetch(url).then(function(result) {
+                sessionStorage.setItem('sgf_content', result.sgf);
+                sessionStorage.setItem('sgf_original', result.sgf);
+                sessionStorage.setItem('sgf_filename', result.filename);
+                status.className = 'foxwq-status ok';
+                status.textContent = 'Loaded: ' + result.filename + ' — redirecting...';
+                setTimeout(function() {
+                    window.location.href = 'compliance.html';
+                }, 600);
+            }).catch(function(err) {
+                btn.disabled = false;
+                btn.textContent = 'Fetch';
+                status.className = 'foxwq-status error';
+                status.textContent = 'Error: ' + err.message;
+            });
+        }
+
+        // Allow Enter key to trigger fetch
+        document.getElementById('foxwq-url').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') fetchFoxwq();
+        });
     </script>
+    <script src="foxwq-sgf.js"></script>
     <script src="version.js"></script>
 </body>
 </html>
