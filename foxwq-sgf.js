@@ -194,7 +194,7 @@
 
         return httpGet(url, true).then(function (html) {
             var sgf = extractSGF(html);
-            if (!sgf || sgf.substring(0, 2) !== '(;)') {
+            if (!sgf || sgf.substring(0, 2) !== '(;') {
                 throw new Error('Could not extract SGF from page');
             }
 
