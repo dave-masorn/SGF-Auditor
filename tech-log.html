@@ -446,9 +446,14 @@
 
         blockquote p {
             margin: 0;
-            color: #1e3a8a;
-            font-weight: 400;
+            color: #000000;
+            font-weight: 500;
             font-size: 0.95rem;
+        }
+
+        blockquote p strong {
+            font-weight: 600;
+            color: #000000;
         }
 
         /* Tables */
@@ -602,7 +607,7 @@
                 </p>
                 <blockquote>
                     <p>
-                        Technical Detail: To enable in-browser execution, we configured Emscripten's virtual filesystem (FS). When a user drops an SGF file, JavaScript writes it to a virtual file buffer, calls the C-compiled main routine, intercepts standard output streams in real-time, and reads back the repaired file.
+                        <strong>Technical Detail:</strong> To enable in-browser execution, we configured Emscripten's virtual filesystem (FS). When a user drops an SGF file, JavaScript writes it to a virtual file buffer, calls the C-compiled main routine, intercepts standard output streams in real-time, and reads back the repaired file.
                     </p>
                 </blockquote>
 
