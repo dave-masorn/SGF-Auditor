@@ -733,6 +733,44 @@
                 return match ? match[1].trim() : '';
             }
 
+            // Helper to set/update SGF properties
+            function setSgfProp(sgf, prop, value) {
+                if (!value) return sgf;
+                const safeVal = value.replace(/\[/g, '(').replace(/\]/g, ')');
+                const regex = new RegExp('\\b' + prop + '\\s*\\[[^\\]]*\\]', 'g');
+                if (regex.test(sgf)) {
+                    return sgf.replace(regex, prop + '[' + safeVal + ']');
+                } else {
+                    const rootMatch = sgf.match(/^(\s*\(\s*;)/);
+                    if (rootMatch) {
+                        return sgf.replace(rootMatch[1], rootMatch[1] + prop + '[' + safeVal + ']');
+                    }
+                }
+                return sgf;
+            }
+
+            // Google translation API helper
+            function translateField(val) {
+                if (!val || val === 'n/a') return Promise.resolve(val);
+                if (/^[ -~]*$/.test(val)) {
+                    return Promise.resolve(val);
+                }
+                const enc = encodeURIComponent(val);
+                const api = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=' + enc;
+                return fetch(api)
+                    .then(r => r.text())
+                    .then(body => {
+                        try {
+                            const data = JSON.parse(body);
+                            if (data && data[0] && data[0][0] && data[0][0][0]) {
+                                return data[0][0][0].trim();
+                            }
+                        } catch(e) {}
+                        return val;
+                    })
+                    .catch(() => val);
+            }
+
             // Construct simplified display name: {date}__{black}__{white}__({result}).sgf
             const date = getSgfProp(content, 'DT');
             const black = getSgfProp(content, 'PB');
@@ -790,6 +828,53 @@
             document.getElementById('detail-date').textContent = rawDate || 'n/a';
             document.getElementById('detail-place').textContent = rawPlace || 'n/a';
             document.getElementById('detail-note').textContent = rawNote || 'n/a';
+
+            // Asynchronously translate fields and update UI/SGF content/display filename
+            Promise.all([
+                translateField(rawName),
+                translateField(rawEvent),
+                translateField(pb),
+                translateField(pw),
+                translateField(rawPlace),
+                translateField(rawNote)
+            ]).then(([trName, trEvent, trPb, trPw, trPlace, trNote]) => {
+                if (trName !== rawName) {
+                    document.getElementById('detail-name').textContent = trName || 'n/a';
+                    currentSgfContent = setSgfProp(currentSgfContent, 'GN', trName);
+                }
+                if (trEvent !== rawEvent) {
+                    document.getElementById('detail-event').textContent = trEvent || 'n/a';
+                    currentSgfContent = setSgfProp(currentSgfContent, 'EV', trEvent);
+                }
+                if (trPb !== pb) {
+                    document.getElementById('detail-black').textContent = trPb ? (br ? trPb + ' (' + br + ')' : trPb) : 'n/a';
+                    currentSgfContent = setSgfProp(currentSgfContent, 'PB', trPb);
+                }
+                if (trPw !== pw) {
+                    document.getElementById('detail-white').textContent = trPw ? (wr ? trPw + ' (' + wr + ')' : trPw) : 'n/a';
+                    currentSgfContent = setSgfProp(currentSgfContent, 'PW', trPw);
+                }
+                if (trPlace !== rawPlace) {
+                    document.getElementById('detail-place').textContent = trPlace || 'n/a';
+                    currentSgfContent = setSgfProp(currentSgfContent, 'PC', trPlace);
+                }
+                if (trNote !== rawNote) {
+                    document.getElementById('detail-note').textContent = trNote || 'n/a';
+                    const noteTag = getSgfProp(content, 'GC') ? 'GC' : 'C';
+                    currentSgfContent = setSgfProp(currentSgfContent, noteTag, trNote);
+                }
+
+                // If players were translated, update display filename with translated English names
+                if (trPb !== pb || trPw !== pw) {
+                    const datePart = date ? date.split(/[,;]/)[0].trim() : '';
+                    const bPart = trPb || 'Black';
+                    const wPart = trPw || 'White';
+                    const rPart = result || 'unknown';
+                    const trDisplayFilename = (datePart ? datePart + '__' : '') + bPart + '__' + wPart + '__(' + rPart + ').sgf';
+                    document.getElementById('reviewer-filename').textContent = trDisplayFilename;
+                    currentSgfFilename = trDisplayFilename;
+                }
+            });
 
             // SVG Go Board Generation (exact same logic as compliance.html)
             if (moves.length > 0) {
