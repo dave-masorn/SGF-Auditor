@@ -3638,11 +3638,37 @@
         let viewportMgr = null;
         let treeRenderer = null;
 
+        function enrichTree(node, parent = null, moveNum = 0) {
+            if (!node) return;
+            node.parent = parent;
+            node.moveNumber = moveNum;
+            node.x = 0;
+            node.y = 0;
+            if (!node.children) node.children = [];
+            for (let child of node.children) {
+                enrichTree(child, node, moveNum + 1);
+            }
+        }
+
         function buildAndRenderTree() {
             var sgf = sgfContent || sessionStorage.getItem('sgf_content') || '';
             if (!sgf) return;
             try {
-                rootNodeForTree = parseSGF(sgf);
+                if (typeof SGFAuditor !== 'undefined' && SGFAuditor.parseSGF) {
+                    const parsedCollection = SGFAuditor.parseSGF(sgf);
+                    rootNodeForTree = parsedCollection && parsedCollection.length > 0 ? parsedCollection[0] : null;
+                    if (rootNodeForTree) {
+                        enrichTree(rootNodeForTree);
+                    }
+                } else {
+                    rootNodeForTree = parseSGF(sgf);
+                }
+
+                if (!rootNodeForTree) {
+                    console.warn("No root node parsed for the game tree.");
+                    return;
+                }
+
                 computeVerticalLayout(rootNodeForTree);
                 if (!viewportMgr) {
                     viewportMgr = new ViewportManager('tree-viewport', 'transform-group');
