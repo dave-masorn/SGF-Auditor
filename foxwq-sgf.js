@@ -1,12 +1,12 @@
 /**
- * foxwq-sgf.js — Fetch SGF from foxwq.com, return { sgf, filename }
+ * foxwq-sgf.js — Fetch SGF from foxwq.com (new API), return { sgf, filename }
  * Drop-in for webapp: call window.FoxwqSGF.fetch(url) → Promise<{sgf, filename}>
+ * No CORS proxy needed — the h5.foxwq.com APIs have Access-Control-Allow-Origin: *
  */
 (function (global) {
     'use strict';
 
     var PLAYER_MAP = {
-        // Korean
         '신진서':   'Shin_Jinseo',
         '박정환':   'Park_Junghwan',
         '이세돌':   'Lee_Sedol',
@@ -28,7 +28,6 @@
         '최정':     'Choi_Jeong',
         '노승현':   'Noh_Seunghyun',
         '백성혁':   'Baek_Seonghyeok',
-        // Korean (Chinese chars — foxwq.com uses these)
         '申真谞':   'Shin_Jinseo',
         '朴廷桓':   'Park_Junghwan',
         '李世石':   'Lee_Sedol',
@@ -45,7 +44,6 @@
         '金恩持':   'Kim_Eunji',
         '崔精':     'Choi_Jeong',
         '金明煜':   'Kim_Mingwon',
-        // Chinese
         '柯洁':     'Ke_Jie',
         '辜梓豪':   'Gu_Zihao',
         '芈昱廷':   'Mi_Yuting',
@@ -68,7 +66,10 @@
         '连笑':     'Lian_Xiao',
         '檀啸':     'Tan_Xiao',
         '王星昊':   'Wang_Xinghao',
-        // Japanese
+        '许嘉阳':   'Xu_Jiayang',
+        '李维清':   'Li_Weiqing',
+        '廖元赫':   'Liao_Yuanhe',
+        '屠晓宇':   'Tu_Xiaoyu',
         '井山裕太': 'Iyama_Yuta',
         '张栩':     'Cho_U',
         '山下敬吾': 'Yamashita_Keigo',
@@ -87,16 +88,16 @@
         '关航太郎': 'Seki_Kotaro'
     };
 
-    // ── Helpers ──
-    var CORS_PROXY = 'https://foxwq-proxy.dave-42c.workers.dev/?url=';
-
-    function httpGet(url, useProxy) {
-        var target = (useProxy && typeof window !== 'undefined')
-            ? CORS_PROXY + encodeURIComponent(url)
-            : url;
-        return fetch(target).then(function (res) {
+    function httpGet(url) {
+        return fetch(url).then(function (res) {
             if (!res.ok) throw new Error('HTTP ' + res.status);
             return res.text();
+        });
+    }
+
+    function httpGetJSON(url) {
+        return httpGet(url).then(function (text) {
+            return JSON.parse(text);
         });
     }
 
@@ -120,7 +121,7 @@
         var encoded = encodeURIComponent(text);
         var api = 'https://translate.googleapis.com/translate_a/single'
                 + '?client=gtx&sl=auto&tl=en&dt=t&q=' + encoded;
-        return httpGet(api, false).then(function (body) {
+        return httpGet(api).then(function (body) {
             try {
                 var data = JSON.parse(body);
                 if (data && data[0] && data[0][0] && data[0][0][0]) {
@@ -133,29 +134,13 @@
         });
     }
 
-    function resolveName(name, html) {
+    function resolveName(name) {
         if (!name) return Promise.resolve('Unknown');
         if (isEnglish(name)) return Promise.resolve(sanitize(name));
 
         var eng = lookupPlayer(name);
         if (eng) return Promise.resolve(eng);
 
-        // Fallback: try page title for an English name
-        var titleMatch = html.match(/<title>([^<]*)<\/title>/);
-        if (titleMatch) {
-            var title = titleMatch[1].replace(/&nbsp;/g, ' ');
-            var words = title.match(/[A-Za-z][A-Za-z0-9_.-]+[A-Za-z]/g);
-            if (words) {
-                var skip = /^(html|http|com|foxwq|newlist|id|qipu)$/i;
-                for (var i = 0; i < words.length; i++) {
-                    if (!skip.test(words[i]) && isEnglish(words[i])) {
-                        return Promise.resolve(sanitize(words[i]));
-                    }
-                }
-            }
-        }
-
-        // Fallback: Google Translate
         return translateToEng(name).then(function (translated) {
             if (translated && translated !== name) {
                 return sanitize(translated);
@@ -164,26 +149,85 @@
         });
     }
 
-    function extractSGF(html) {
-        var containerMatch = html.match(/<div[^>]*id="player-container">([\s\S]*?)<\/div>/);
-        if (!containerMatch) return '';
-        var raw = containerMatch[1];
-        raw = raw.replace(/<[^>]*>/g, '');
-        raw = raw.replace(/&nbsp;/g, ' ')
-                 .replace(/&gt;/g, '>')
-                 .replace(/&lt;/g, '<')
-                 .replace(/&amp;/g, '&')
-                 .replace(/&#?[0-9]*;/g, '');
-        raw = raw.replace(/\/"[a-z]*/g, '');
-        raw = raw.replace(/^\s+|\s+$/g, '').split('\n')
-                 .filter(function (l) { return l.trim(); }).join('\n');
-        return raw;
+    // ── SGF Tree Parser ──
+    // The API returns SGF with deep nesting: each move in its own variation.
+    // Main line = longest path through the tree (first child at each branch).
+    // AI analysis variations contain "jueyi" in C[] comments.
+
+    function parseSGFTree(sgfStr) {
+        var pos = 0;
+        var len = sgfStr.length;
+        var nodes = [];
+        var children = [];
+
+        function parseTree() {
+            var treeNodes = [];
+            var treeChildren = [];
+
+            while (pos < len) {
+                var c = sgfStr[pos];
+                if (c === '(') {
+                    pos++;
+                    treeChildren.push(parseTree());
+                } else if (c === ')') {
+                    pos++;
+                    break;
+                } else if (c === ';') {
+                    pos++;
+                    var moveMatch = sgfStr.substring(pos).match(/^([BW]\[[a-z][a-z]\])/);
+                    if (moveMatch) {
+                        treeNodes.push(moveMatch[1]);
+                        pos += moveMatch[1].length;
+                    }
+                    // Skip properties (C[...], etc.)
+                    skipProperties();
+                } else {
+                    pos++;
+                }
+            }
+
+            return { nodes: treeNodes, children: treeChildren };
+        }
+
+        function skipProperties() {
+            while (pos < len) {
+                var c = sgfStr[pos];
+                if (c === '[') {
+                    var depth = 1;
+                    pos++;
+                    while (pos < len && depth > 0) {
+                        if (sgfStr[pos] === '[') depth++;
+                        else if (sgfStr[pos] === ']') depth--;
+                        pos++;
+                    }
+                } else if (c === ';' || c === '(' || c === ')') {
+                    break;
+                } else {
+                    pos++;
+                }
+            }
+        }
+
+        function extractMainLine(tree) {
+            var result = tree.nodes.slice();
+            if (tree.children.length > 0) {
+                result = result.concat(extractMainLine(tree.children[0]));
+            }
+            return result;
+        }
+
+        var tree = parseTree();
+        return extractMainLine(tree);
     }
 
-    function extractProp(sgf, prop) {
-        var re = new RegExp(prop + '\\[([^\\]]*)\\]');
-        var m = sgf.match(re);
-        return m ? m[1] : '';
+    function extractHeaderProps(sgfStr) {
+        var props = {};
+        var re = /([A-Z][A-Z])\[([^\]]*)\]/g;
+        var m;
+        while ((m = re.exec(sgfStr)) !== null) {
+            if (!props[m[1]]) props[m[1]] = m[2];
+        }
+        return props;
     }
 
     // ── Public API ──
@@ -192,51 +236,94 @@
             return Promise.reject(new Error('Not a valid foxwq game URL'));
         }
 
-        // New h5 share URLs: extract chessid and build the old-style URL if needed
-        var h5Match = url.match(/h5\.foxwq\.com.*chessid=(\d+)/);
-        var fetchUrl = h5Match
-            ? 'https://www.foxwq.com/qipu/newlist/id/' + h5Match[1] + '.html'
-            : url;
+        // Extract chessid from URL (supports both new h5 share URLs and old /id/ format)
+        var chessidMatch = url.match(/chessid=(\d+)/)
+                        || url.match(/\/id\/(\d+)\.html/);
+        if (!chessidMatch) {
+            return Promise.reject(new Error('Could not extract chessid from URL'));
+        }
+        var chessid = chessidMatch[1];
 
-        return httpGet(fetchUrl, true).then(function (html) {
-            var sgf = extractSGF(html);
-            if (!sgf || sgf.substring(0, 2) !== '(;') {
-                throw new Error('Could not extract SGF from page');
-            }
+        var API_BASE = 'https://h5.foxwq.com/yehuDiamond/chessbook_local';
+        var metaUrl = API_BASE + '/FetchChessSummaryByChessID?with_edu=1&chessid=' + chessid + '&uid=undefined';
+        var sgfUrl = API_BASE + '/YHWQFetchChess?chessid=' + chessid;
 
-            var pw = extractProp(sgf, 'PW');
-            var pb = extractProp(sgf, 'PB');
-            var dt = extractProp(sgf, 'DT');
-            var re = extractProp(sgf, 'RE');
-            var gn = extractProp(sgf, 'GN');
+        return Promise.all([httpGetJSON(metaUrl), httpGetJSON(sgfUrl)])
+            .then(function (results) {
+                var metaResp = results[0];
+                var sgfResp = results[1];
 
-            var eventRaw = gn.replace(/<[^>]*>/g, '').trim();
-            var eventPromise = (eventRaw && /[^a-zA-Z0-9 _-]/.test(eventRaw))
-                ? translateToEng(eventRaw)
-                : Promise.resolve(eventRaw);
+                if (metaResp.result !== 0 || !metaResp.chesslist) {
+                    throw new Error('Metadata API returned error');
+                }
+                if (sgfResp.result !== 0 || !sgfResp.chess) {
+                    throw new Error('SGF API returned error');
+                }
 
-            return eventPromise.then(function (eventTranslated) {
-                var event = eventTranslated
-                    .replace(/ /g, '-')
-                    .replace(/[\/\\:*?"<>|]/g, '_')
-                    .replace(/__+/g, '_')
-                    .replace(/^_|_$/g, '');
+                var cl = metaResp.chesslist;
+                var pb = cl.blacknick || '';
+                var pw = cl.whitenick || '';
+                var winner = cl.winner || 0;
+                var point = cl.point || 0;
+                var reason = cl.reason || 0;
+                var dt = (cl.starttime || '').split(' ')[0] || '';
+                var title = cl.title || '';
 
-                return Promise.all([
-                    resolveName(pb, html),
-                    resolveName(pw, html)
-                ]).then(function (names) {
-                    var pbEng = names[0];
-                    var pwEng = names[1];
+                // Build result string
+                var resultStr;
+                if (reason === 1) {
+                    resultStr = (winner === 1 ? 'B' : 'W') + '+R';
+                } else {
+                    resultStr = (winner === 1 ? 'B' : 'W') + '+' + (point / 100).toFixed(1);
+                }
 
-                    var filename = event
-                        ? dt + '__' + event + '__' + pbEng + '__' + pwEng + '__(' + re + ').sgf'
-                        : dt + '__' + pbEng + '__' + pwEng + '__(' + re + ').sgf';
+                // Parse SGF and extract main line
+                var chessStr = sgfResp.chess.replace(/\\r\\n/g, '\n');
+                var headerProps = extractHeaderProps(chessStr);
+                var mainLine = parseSGFTree(chessStr);
 
-                    return { sgf: sgf, filename: filename };
+                // Build clean SGF
+                var sgfParts = [';'];
+                var headerKeys = ['GM', 'FF', 'SZ', 'GN', 'DT', 'PB', 'PW', 'BR', 'WR', 'KM', 'HA', 'RU', 'AP', 'RE', 'TM', 'TC', 'TT', 'RL'];
+                for (var i = 0; i < headerKeys.length; i++) {
+                    var key = headerKeys[i];
+                    if (headerProps[key]) {
+                        sgfParts.push(key + '[' + headerProps[key] + ']');
+                    }
+                }
+
+                for (var j = 0; j < mainLine.length; j++) {
+                    sgfParts.push(';' + mainLine[j]);
+                }
+
+                var sgf = sgfParts.join('');
+
+                // Translate title for filename
+                var eventPromise = (title && /[^a-zA-Z0-9 _-]/.test(title))
+                    ? translateToEng(title)
+                    : Promise.resolve(title);
+
+                return eventPromise.then(function (eventTranslated) {
+                    var event = eventTranslated
+                        ? eventTranslated
+                            .replace(/ /g, '-')
+                            .replace(/[\/\\:*?"<>|]/g, '_')
+                            .replace(/__+/g, '_')
+                            .replace(/^_|_$/g, '')
+                        : '';
+
+                    return Promise.all([resolveName(pb), resolveName(pw)]).then(function (names) {
+                        var pbEng = names[0];
+                        var pwEng = names[1];
+
+                        var filename = event
+                            ? dt + '__' + event + '__' + pbEng + '__' + pwEng + '__(' + resultStr + ').sgf'
+                            : dt + '__' + pbEng + '__' + pwEng + '__(' + resultStr + ').sgf';
+
+                        return { sgf: sgf, filename: filename };
+                    });
                 });
             });
-        });
     }
 
     // ── Export ──
