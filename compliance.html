@@ -1324,6 +1324,20 @@
         .game-tree-overlay.hidden {
             transform: translateX(100%);
         }
+        .tree-resizer {
+            position: absolute;
+            left: -4px;
+            top: 0;
+            width: 8px;
+            height: 100%;
+            cursor: ew-resize;
+            background-color: transparent;
+            z-index: 1010;
+        }
+        .tree-resizer:hover, .tree-resizer.resizing {
+            background-color: var(--color-primary, #1F4E46);
+            opacity: 0.5;
+        }
         .game-tree-overlay-header {
             display: flex;
             align-items: center;
@@ -3868,6 +3882,47 @@
                     console.log("Game tree collapsed.");
                 });
             }
+
+            // Resizer for Game Tree Overlay
+            const resizer = document.getElementById('tree-resizer');
+            const overlay = document.getElementById('game-tree-overlay');
+            let isResizing = false;
+            let startX, startWidth;
+
+            if (resizer && overlay) {
+                resizer.addEventListener('mousedown', function(e) {
+                    isResizing = true;
+                    startX = e.clientX;
+                    startWidth = parseInt(window.getComputedStyle(overlay).width, 10);
+                    document.body.style.cursor = 'ew-resize';
+                    resizer.classList.add('resizing');
+                    e.preventDefault(); // Prevent text selection during drag
+                });
+
+                document.addEventListener('mousemove', function(e) {
+                    if (!isResizing) return;
+                    const diffX = startX - e.clientX;
+                    let newWidth = startWidth + diffX;
+                    // Min width 300px, max width (viewport - 100px)
+                    if (newWidth < 300) newWidth = 300;
+                    if (newWidth > window.innerWidth - 100) newWidth = window.innerWidth - 100;
+                    overlay.style.width = newWidth + 'px';
+                });
+
+                document.addEventListener('mouseup', function() {
+                    if (isResizing) {
+                        isResizing = false;
+                        document.body.style.cursor = 'default';
+                        resizer.classList.remove('resizing');
+                        // Redraw SVG in case text wrapping changed row heights
+                        if (typeof buildAndRenderTree === 'function') {
+                            setTimeout(() => {
+                                buildAndRenderTree();
+                            }, 50);
+                        }
+                    }
+                });
+            }
         });
     </script>
     <!-- Floating button to reopen tree -->
@@ -3877,6 +3932,7 @@
 
     <!-- Game Tree Sidebar Overlay -->
     <div id="game-tree-overlay" class="game-tree-overlay">
+        <div id="tree-resizer" class="tree-resizer"></div>
         <div class="game-tree-overlay-header">
             <h3>Game Tree Tracker</h3>
             <button class="close-overlay-btn" onclick="toggleGameTree()" title="Close Sidebar">
