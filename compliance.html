@@ -1681,7 +1681,27 @@
             // Display main containers
             document.getElementById('main-container').style.display = 'flex';
             document.getElementById('header-pill-card').style.display = 'flex';
-            document.getElementById('header-filename').textContent = sgfFilename;
+
+            // Construct simplified display name: {date}__{black}__{white}__({result}).sgf
+            function getSgfProp(sgfText, prop) {
+                const regex = new RegExp('\\b' + prop + '\\s*\\[([^\\]]*)\\]');
+                const match = sgfText.match(regex);
+                return match ? match[1].trim() : '';
+            }
+            const date = getSgfProp(sgfContent, 'DT');
+            const black = getSgfProp(sgfContent, 'PB');
+            const white = getSgfProp(sgfContent, 'PW');
+            const result = getSgfProp(sgfContent, 'RE');
+
+            let displayFilename = sgfFilename;
+            if (black || white) {
+                const datePart = date ? date.split(/[,;]/)[0].trim() : '';
+                const bPart = black || 'Black';
+                const wPart = white || 'White';
+                const rPart = result || 'unknown';
+                displayFilename = (datePart ? datePart + '__' : '') + bPart + '__' + wPart + '__(' + rPart + ').sgf';
+            }
+            document.getElementById('header-filename').textContent = displayFilename;
 
 
 

@@ -726,15 +726,30 @@
             currentSgfOriginal = original;
             currentSgfFilename = filename;
 
-            // Set filename
-            document.getElementById('reviewer-filename').textContent = filename;
-
             // Helper to get SGF properties
             function getSgfProp(sgf, prop) {
                 const regex = new RegExp('\\b' + prop + '\\s*\\[([^\\]]*)\\]');
                 const match = sgf.match(regex);
                 return match ? match[1].trim() : '';
             }
+
+            // Construct simplified display name: {date}__{black}__{white}__({result}).sgf
+            const date = getSgfProp(content, 'DT');
+            const black = getSgfProp(content, 'PB');
+            const white = getSgfProp(content, 'PW');
+            const result = getSgfProp(content, 'RE');
+
+            let displayFilename = filename;
+            if (black || white) {
+                const datePart = date ? date.split(/[,;]/)[0].trim() : '';
+                const bPart = black || 'Black';
+                const wPart = white || 'White';
+                const rPart = result || 'unknown';
+                displayFilename = (datePart ? datePart + '__' : '') + bPart + '__' + wPart + '__(' + rPart + ').sgf';
+            }
+
+            // Set filename
+            document.getElementById('reviewer-filename').textContent = displayFilename;
 
             // Parse board size and moves
             let boardSize = 19;
