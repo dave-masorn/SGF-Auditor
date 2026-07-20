@@ -575,9 +575,9 @@
                 return;
             }
 
-            if (url.indexOf('foxwq.com/qipu/newlist/id/') === -1) {
+            if (url.indexOf('foxwq.com') === -1) {
                 status.className = 'foxwq-status error';
-                status.textContent = 'Not a valid FoxWq URL. Expected: foxwq.com/qipu/newlist/id/...';
+                status.textContent = 'Not a valid FoxWq URL. Expected: foxwq.com game link.';
                 return;
             }
 
@@ -616,16 +616,16 @@
         function parseFoxwqPage(html) {
             var parser = new DOMParser();
             var doc = parser.parseFromString(html, 'text/html');
-            var rows = doc.querySelectorAll('#more tr');
+            var rows = doc.querySelectorAll('.qipu-table tr');
             var games = [];
             for (var i = 0; i < rows.length; i++) {
-                var a = rows[i].querySelector('a.px14');
-                var tds = rows[i].querySelectorAll('td');
-                if (a && tds.length >= 2) {
+                var a = rows[i].querySelector('h4.qipu-title a');
+                var timeEl = rows[i].querySelector('.qipu-time');
+                if (a) {
                     games.push({
                         href: a.getAttribute('href'),
-                        title: (a.querySelector('h4') || a).textContent.trim(),
-                        date: tds[1].textContent.trim()
+                        title: a.textContent.trim(),
+                        date: timeEl ? timeEl.textContent.trim() : ''
                     });
                 }
             }
@@ -773,7 +773,8 @@
         function selectFoxwqGame(idx) {
             var games = window._foxwqGames;
             if (!games || !games[idx]) return;
-            var url = 'https://www.foxwq.com' + games[idx].href;
+            var url = games[idx].href;
+            if (url.indexOf('http') !== 0) url = 'https://www.foxwq.com' + url;
             document.getElementById('foxwq-url').value = url;
             document.getElementById('foxwq-gamelist').classList.remove('open');
             fetchFoxwq();

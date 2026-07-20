@@ -188,11 +188,17 @@
 
     // ── Public API ──
     function fetchFoxwqSGF(url) {
-        if (!url || url.indexOf('foxwq.com/qipu/newlist/id/') === -1) {
+        if (!url || url.indexOf('foxwq.com') === -1) {
             return Promise.reject(new Error('Not a valid foxwq game URL'));
         }
 
-        return httpGet(url, true).then(function (html) {
+        // New h5 share URLs: extract chessid and build the old-style URL if needed
+        var h5Match = url.match(/h5\.foxwq\.com.*chessid=(\d+)/);
+        var fetchUrl = h5Match
+            ? 'https://www.foxwq.com/qipu/newlist/id/' + h5Match[1] + '.html'
+            : url;
+
+        return httpGet(fetchUrl, true).then(function (html) {
             var sgf = extractSGF(html);
             if (!sgf || sgf.substring(0, 2) !== '(;') {
                 throw new Error('Could not extract SGF from page');
