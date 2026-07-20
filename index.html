@@ -1259,25 +1259,43 @@
             });
         }
 
+        function fetchPageHtml(url) {
+            var proxy = 'https://foxwq-proxy.dave-42c.workers.dev/?url=';
+            return fetch(proxy + encodeURIComponent(url))
+                .then(function(r) { return r.text(); })
+                .catch(function(e) {
+                    console.error('Fetch error for ' + url + ':', e);
+                    return '';
+                });
+        }
+
         function appendFetchMoreBtn(totalShown) {
             var existing = document.getElementById('foxwq-fetch-more');
             if (existing) existing.remove();
+
+            var div = document.createElement('div');
+            div.id = 'foxwq-fetch-more';
+            div.style.textAlign = 'center';
+            div.style.marginTop = '12px';
+            div.style.fontSize = '0.85rem';
+
             if (totalShown < 100) {
-                var div = document.createElement('div');
-                div.id = 'foxwq-fetch-more';
-                div.style.textAlign = 'center';
-                div.style.marginTop = '8px';
                 div.style.cursor = 'pointer';
                 div.style.color = 'var(--color-primary)';
-                div.style.fontSize = '0.82rem';
                 div.style.display = 'flex';
                 div.style.alignItems = 'center';
                 div.style.justifyContent = 'center';
                 div.style.gap = '6px';
                 div.innerHTML = '<svg fill="currentColor" width="14" height="14" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><defs><style>.cls-1{fill:none;}</style></defs><title>fetch-upload</title><path d="M16,7,6,17l1.41,1.41L15,10.83V28H2v2H15a2,2,0,0,0,2-2V10.83l7.59,7.58L26,17Z"/><path d="M6,8V4H26V8h2V4a2,2,0,0,0-2-2H6A2,2,0,0,0,4,4V8Z"/><rect class="cls-1" width="32" height="32"/></svg><span>Fetch more games?</span>';
                 div.onclick = function() { fetchMoreFoxwqGames(); };
-                document.getElementById('foxwq-gamelist').appendChild(div);
+            } else {
+                div.style.cursor = 'default';
+                div.style.color = 'var(--color-muted)';
+                div.style.padding = '8px 16px';
+                div.style.lineHeight = '1.4';
+                div.innerHTML = 'Maximum 100 records loaded. To audit older games, visit <a href="https://www.foxwq.com/qipu.html" target="_blank" style="color: var(--color-primary); text-decoration: underline;">FoxWq</a> and paste the game URL above.';
             }
+            document.getElementById('foxwq-gamelist').appendChild(div);
         }
 
         function fetchMoreFoxwqGames() {
@@ -1285,17 +1303,18 @@
             if (shown >= 100) return;
             var remaining = window._foxwqAllGames.length - shown;
             if (remaining <= 0) {
-                // Need to fetch next page from FoxWq
-                var proxy = 'https://foxwq-proxy.dave-42c.workers.dev/?url=';
-                var pageUrl = 'https://www.foxwq.com/qipu/index/p/' + foxwqPage + '.html';
                 var moreDiv = document.getElementById('foxwq-fetch-more');
-                if (moreDiv) moreDiv.textContent = 'Loading...';
-                fetch(proxy + encodeURIComponent(pageUrl))
-                    .then(function(r) { return r.text(); })
+                if (moreDiv) {
+                    moreDiv.innerHTML = '<span style="color: var(--color-muted);">Loading...</span>';
+                }
+                var pageUrl = 'https://www.foxwq.com/qipu/index/p/' + foxwqPage + '.html';
+                fetchPageHtml(pageUrl)
                     .then(function(html) {
                         var moreGames = parseFoxwqPage(html);
                         if (moreGames.length === 0) {
-                            if (moreDiv) moreDiv.remove();
+                            if (moreDiv) {
+                                moreDiv.innerHTML = '<span style="color: var(--color-muted);">No more games available</span>';
+                            }
                             return;
                         }
                         window._foxwqAllGames = window._foxwqAllGames.concat(moreGames);
@@ -1303,7 +1322,9 @@
                         appendBatch();
                     })
                     .catch(function() {
-                        if (moreDiv) { moreDiv.textContent = 'No more games'; moreDiv.style.cursor = 'default'; moreDiv.style.color = 'var(--color-muted)'; }
+                        if (moreDiv) {
+                            moreDiv.innerHTML = '<span style="color: var(--color-danger); cursor: pointer;">Failed to load. Click to retry?</span>';
+                        }
                     });
             } else {
                 appendBatch();
@@ -1317,7 +1338,6 @@
             window._foxwqGames = window._foxwqGames.concat(batch);
             renderFoxwqRows(batch, shown);
             appendFetchMoreBtn(window._foxwqGames.length);
-            // Update heading
             var header = document.getElementById('foxwq-browse-btn');
             header.textContent = 'Here are latest ' + window._foxwqGames.length + ' game records';
         }
@@ -1334,25 +1354,40 @@
             }
             var btn = document.getElementById('foxwq-browse-btn');
             btn.textContent = 'Loading games...';
-            var proxy = 'https://foxwq-proxy.dave-42c.workers.dev/?url=';
-            fetch(proxy + encodeURIComponent('https://www.foxwq.com/qipu.html'))
-                .then(function(r) { return r.text(); })
-                .then(function(html) {
-                    var allGames = parseFoxwqPage(html);
-                    window._foxwqAllGames = allGames;
-                    foxwqPage = 2;
-                    var firstBatch = allGames.slice(0, foxwqBatchSize);
-                    window._foxwqGames = firstBatch;
 
-                    // Build table
+            var urls = [
+                'https://www.foxwq.com/qipu.html',
+                'https://www.foxwq.com/qipu/index/p/2.html',
+                'https://www.foxwq.com/qipu/index/p/3.html'
+            ];
+
+            Promise.all(urls.map(fetchPageHtml))
+                .then(function(results) {
+                    var allGames = [];
+                    results.forEach(function(html) {
+                        if (html) {
+                            allGames = allGames.concat(parseFoxwqPage(html));
+                        }
+                    });
+
+                    if (allGames.length === 0) {
+                        throw new Error('No game records found. FoxWq may be temporarily unavailable.');
+                    }
+
+                    window._foxwqAllGames = allGames;
+                    foxwqPage = 4; // Loaded pages 1, 2, 3
+                    
+                    var first50 = allGames.slice(0, 50);
+                    window._foxwqGames = first50;
+
                     var tableHtml = '<table><thead><tr><th>Original</th><th>English</th></tr></thead><tbody></tbody></table>';
                     list.innerHTML = tableHtml;
                     list.classList.add('open');
-                    renderFoxwqRows(firstBatch, 0);
-                    appendFetchMoreBtn(firstBatch.length);
+                    renderFoxwqRows(first50, 0);
+                    appendFetchMoreBtn(first50.length);
 
                     foxwqListLoaded = true;
-                    btn.textContent = 'Here are latest ' + firstBatch.length + ' game records';
+                    btn.textContent = 'Here are latest ' + first50.length + ' game records';
                     btn.removeAttribute('onclick');
                     btn.style.cursor = 'default';
                 })
