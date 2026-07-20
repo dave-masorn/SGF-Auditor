@@ -1535,30 +1535,13 @@
             <!-- Detailed Tabs Card -->
             <div class="main-card">
                 <div class="tabs-header">
-                    <button class="tab-btn active" id="btn-issues-tab" onclick="switchTab(this, 'issues-tab')">Validation Issues</button>
+                    <button class="tab-btn active" id="btn-tree-tab" onclick="switchTab(this, 'tree-tab')">Game Tree</button>
+                    <button class="tab-btn" id="btn-issues-tab" onclick="switchTab(this, 'issues-tab')">Validation Issues</button>
                     <button class="tab-btn" id="btn-report-tab" onclick="switchTab(this, 'report-tab')">Raw Report</button>
-                    <button class="tab-btn" id="btn-tree-tab" onclick="switchTab(this, 'tree-tab')">Game Tree</button>
                 </div>
 
-                <!-- Tab 1: Issues -->
-                <div class="tab-content active" id="issues-tab">
-                    <div class="filter-bar">
-                        <button class="filter-btn active" onclick="filterIssues(this, 'all')">All (<span id="filter-all-count">0</span>)</button>
-                        <button class="filter-btn" onclick="filterIssues(this, 'error')">Errors (<span id="filter-error-count">0</span>)</button>
-                        <button class="filter-btn" onclick="filterIssues(this, 'warning')">Warnings (<span id="filter-warning-count">0</span>)</button>
-                    </div>
-                    <div class="issues-list" id="issues-list-container">
-                        <!-- Issue rows populated dynamically -->
-                    </div>
-                </div>
-
-                <!-- Tab 2: Raw Report -->
-                <div class="tab-content" id="report-tab">
-                    <pre class="terminal-report" id="raw-report-display">SGFC Reference Report will be shown after diagnostics complete.</pre>
-                </div>
-
-                <!-- Tab 3: Game Tree -->
-                <div class="tab-content" id="tree-tab" style="position: relative;">
+                <!-- Tab 1: Game Tree -->
+                <div class="tab-content active" id="tree-tab" style="position: relative;">
                     <!-- Control Buttons -->
                     <div class="tree-controls" style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
                         <button class="tree-control-btn" id="btn-add-var" style="background-color: var(--color-surface); color: var(--color-text); border: 1.5px solid var(--color-text); padding: 6px 14px; border-radius: 4px; font-size: 0.82rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px;">
@@ -1595,6 +1578,26 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Tab 2: Issues -->
+                <div class="tab-content" id="issues-tab">
+                    <div class="filter-bar">
+                        <button class="filter-btn active" onclick="filterIssues(this, 'all')">All (<span id="filter-all-count">0</span>)</button>
+                        <button class="filter-btn" onclick="filterIssues(this, 'error')">Errors (<span id="filter-error-count">0</span>)</button>
+                        <button class="filter-btn" onclick="filterIssues(this, 'warning')">Warnings (<span id="filter-warning-count">0</span>)</button>
+                    </div>
+                    <div class="issues-list" id="issues-list-container">
+                        <!-- Issue rows populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Tab 3: Raw Report -->
+                <div class="tab-content" id="report-tab">
+                    <pre class="terminal-report" id="raw-report-display">SGFC Reference Report will be shown after diagnostics complete.</pre>
+                </div>
+            </div>
+        </div>
+    </div>
             </div>
         </div>
     </div>
@@ -2632,6 +2635,9 @@
             }
 
             renderIssuesList();
+
+            // Populate and render SGF Game Tree list
+            buildAndRenderTree();
 
             // Slide results wrapper down smoothly
             document.getElementById('results-wrapper').classList.add('visible');
