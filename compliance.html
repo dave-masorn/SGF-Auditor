@@ -1305,29 +1305,76 @@
             .filter-btn { padding: 6px 12px; font-size: 0.8rem; }
         }
 
-        /* ── SGF Game Tree Viewport Styles ── */
-        .tree-viewport:active {
-            cursor: grabbing;
+        /* ── SGF Game Tree List & Branch Styles ── */
+        .tree-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            color: var(--color-text);
+            background-color: var(--color-surface);
         }
-        .tree-node {
-            cursor: pointer;
-            pointer-events: all;
+        .tree-row {
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--color-border);
+            height: 44px;
+            box-sizing: border-box;
         }
-        .node-circle {
-            stroke: var(--color-text);
-            stroke-width: 2.5px;
+        .tree-row:hover {
+            background-color: var(--color-surface-muted);
         }
-        .node-text {
-            font-size: 10px;
-            font-weight: bold;
+        .tree-row.active-move {
+            background-color: #EAF4EA;
+        }
+        .tree-branch-col {
+            width: 120px;
+            min-width: 120px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+        }
+        .tree-cell {
+            padding: 0 12px;
+            box-sizing: border-box;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .move-cell {
+            width: 80px;
+            min-width: 80px;
+            font-weight: 600;
+        }
+        .color-cell {
+            width: 70px;
+            min-width: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .point-cell {
+            width: 80px;
+            min-width: 80px;
             font-family: monospace;
-            text-anchor: middle;
-            dominant-baseline: central;
+            font-weight: bold;
         }
-        .tree-edge {
-            stroke: var(--color-text);
-            stroke-width: 2.5px;
-            fill: none;
+        .comment-cell {
+            flex: 1;
+            color: var(--color-muted);
+        }
+        .stone-b {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: var(--color-text);
+            border: 1.5px solid var(--color-text);
+        }
+        .stone-w {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: var(--color-surface);
+            border: 1.5px solid var(--color-text);
         }
 
     </style>
@@ -1512,12 +1559,39 @@
 
                 <!-- Tab 3: Game Tree -->
                 <div class="tab-content" id="tree-tab" style="position: relative;">
-                    <div class="tree-viewport" id="tree-viewport" style="width: 100%; height: 500px; position: relative; overflow: auto; cursor: grab; user-select: none; background-color: var(--color-surface-muted); border: 1.5px solid var(--color-text); border-radius: 4px; box-sizing: border-box; background-image: linear-gradient(rgba(32, 32, 32, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(32, 32, 32, 0.03) 1px, transparent 1px); background-size: 20px 20px;">
-                        <svg id="tree-canvas" xmlns="http://www.w3.org/2000/svg" width="2000" height="4000" style="position: absolute; top: 0; left: 0; transform-origin: 0 0; pointer-events: none;">
-                            <g id="transform-group"></g>
-                        </svg>
-                        <div style="position: absolute; bottom: 16px; left: 16px; z-index: 10; display: flex; gap: 8px;">
-                            <button class="autofix-btn" id="reset-view-btn" style="padding: 6px 12px; font-size: 0.8rem; margin: 0; background-color: var(--color-surface); color: var(--color-text); border: 1.5px solid var(--color-text); cursor: pointer; border-radius: 4px; font-weight: bold;">Center View</button>
+                    <!-- Control Buttons -->
+                    <div class="tree-controls" style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
+                        <button class="tree-control-btn" id="btn-add-var" style="background-color: var(--color-surface); color: var(--color-text); border: 1.5px solid var(--color-text); padding: 6px 14px; border-radius: 4px; font-size: 0.82rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                            <svg width="12" height="12" viewBox="0 0 24 24"><path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                            Add Variation
+                        </button>
+                        <button class="tree-control-btn" id="btn-del-var" style="background-color: var(--color-surface); color: var(--color-text); border: 1.5px solid var(--color-text); padding: 6px 14px; border-radius: 4px; font-size: 0.82rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                            <svg width="12" height="12" viewBox="0 0 24 24"><path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                            Delete
+                        </button>
+                        <button class="tree-control-btn" id="btn-expand-all" style="background-color: var(--color-surface); color: var(--color-text); border: 1.5px solid var(--color-text); padding: 6px 14px; border-radius: 4px; font-size: 0.82rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                            <svg width="12" height="12" viewBox="0 0 24 24"><path fill="currentColor" d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg>
+                            Expand All
+                        </button>
+                        <button class="tree-control-btn" id="btn-collapse-all" style="background-color: var(--color-surface); color: var(--color-text); border: 1.5px solid var(--color-text); padding: 6px 14px; border-radius: 4px; font-size: 0.82rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                            <svg width="12" height="12" viewBox="0 0 24 24"><path fill="currentColor" d="M12 8l-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14z"/></svg>
+                            Collapse All
+                        </button>
+                    </div>
+
+                    <!-- Header Row -->
+                    <div class="tree-header-row" style="display: flex; border-bottom: 1.5px solid var(--color-text); font-weight: 700; background-color: var(--color-surface-muted); padding: 8px 0; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px;">
+                        <div style="width: 120px;"></div>
+                        <div class="tree-cell move-cell" style="width: 80px; min-width: 80px; padding: 0 12px; box-sizing: border-box; font-weight: 600;">Move</div>
+                        <div class="tree-cell color-cell" style="width: 70px; min-width: 70px; padding: 0 12px; box-sizing: border-box; display: flex; align-items: center; justify-content: center;">Color</div>
+                        <div class="tree-cell point-cell" style="width: 80px; min-width: 80px; padding: 0 12px; box-sizing: border-box; font-family: monospace; font-weight: bold;">Point</div>
+                        <div class="tree-cell comment-cell" style="flex: 1; padding: 0 12px; box-sizing: border-box;">Comment</div>
+                    </div>
+
+                    <!-- Scrollable Viewport Container -->
+                    <div class="tree-viewport-container" id="tree-viewport-container" style="width: 100%; max-height: 600px; overflow-y: auto; border: 1.5px solid var(--color-text); border-radius: 4px; background-color: var(--color-surface);">
+                        <div id="tree-rows-list">
+                            <!-- Rows populated dynamically -->
                         </div>
                     </div>
                 </div>
@@ -3414,238 +3488,225 @@
             }
         });
 
-        /* ── SGF Game Tree Advanced Visual Engine ── */
-        class SGFNode {
-            constructor(id) {
-                this.id = id;
-                this.properties = {};
-                this.children = [];
-                this.parent = null;
-                this.x = 0;
-                this.y = 0;
-                this.moveNumber = 0;
-            }
+        /* ── SGF Game Tree Hierarchical Flat List Renderer ── */
+        function sgfToGoCoord(sgfVal) {
+            if (!sgfVal || sgfVal.length !== 2) return '';
+            const cols = "ABCDEFGHJKLMNOPQRST"; // skipped I
+            const cChar = sgfVal[0].toLowerCase();
+            const rChar = sgfVal[1].toLowerCase();
+            
+            const colIdx = cChar.charCodeAt(0) - 97;
+            const rowIdx = rChar.charCodeAt(0) - 97;
+            
+            if (colIdx < 0 || colIdx >= 19 || rowIdx < 0 || rowIdx >= 19) return '';
+            
+            const colName = cols[colIdx];
+            const rowName = 19 - rowIdx;
+            return colName + rowName;
         }
 
-        function parseSGF(sgfString) {
-            let index = 0;
-            let nodeCount = 0;
-            let root = null;
-            let current = null;
-            let stack = [];
-
-            sgfString = sgfString.replace(/\s+(?=[^\[]*\])/g, ' ');
-
-            while (index < sgfString.length) {
-                let char = sgfString[index];
-
-                if (char === '(') {
-                    if (current) {
-                        stack.push(current);
-                    }
-                    index++;
-                } else if (char === ')') {
-                    if (stack.length > 0) {
-                        current = stack.pop();
-                    }
-                    index++;
-                } else if (char === ';') {
-                    index++;
-                    let newNode = new SGFNode(nodeCount++);
-                    
-                    if (!root) {
-                        root = newNode;
-                    } else if (current) {
-                        newNode.parent = current;
-                        newNode.moveNumber = current.moveNumber + 1;
-                        current.children.push(newNode);
-                    }
-                    current = newNode;
-
-                    while (index < sgfString.length && sgfString[index] !== ';' && sgfString[index] !== '(' && sgfString[index] !== ')') {
-                        if (navigator.userAgent.match(/Chrome/) && sgfString[index].trim() === '') { index++; continue; }
-                        
-                        let match = sgfString.substring(index).match(/^([A-Z]{1,2})/);
-                        if (match) {
-                            let propId = match[1];
-                            index += propId.length;
-                            newNode.properties[propId] = [];
-                            
-                            while (index < sgfString.length && sgfString[index] === '[') {
-                                index++;
-                                let value = "";
-                                while (index < sgfString.length && sgfString[index] !== ']') {
-                                    if (sgfString[index] === '\\') {
-                                        value += sgfString[index + 1];
-                                        index += 2;
-                                    } else {
-                                        value += sgfString[index];
-                                        index++;
-                                    }
-                                }
-                                newNode.properties[propId].push(value);
-                                index++;
-                            }
-                        } else {
-                            index++;
-                        }
-                    }
-                } else {
-                    index++;
-                }
+        function flattenTree(node, depth = 0, variationLabel = '', list = []) {
+            if (!node) return list;
+            
+            let moveNum = node.moveNumber === 0 ? "Root" : node.moveNumber;
+            let color = null;
+            let point = '';
+            let comment = '';
+            
+            if (node.properties['B']) {
+                color = 'B';
+                point = sgfToGoCoord(node.properties['B'][0]);
+            } else if (node.properties['W']) {
+                color = 'W';
+                point = sgfToGoCoord(node.properties['W'][0]);
             }
-            return root;
-        }
-
-        function computeVerticalLayout(node, depth = 0, state = { nextX: 40, xSpacing: 50, ySpacing: 60 }) {
-            if (!node) return;
-
-            node.y = 40 + depth * state.ySpacing;
-
-            if (node.children.length === 0) {
-                node.x = state.nextX;
-                state.nextX += state.xSpacing;
+            
+            if (node.properties['C']) {
+                comment = node.properties['C'][0];
+            } else if (node.moveNumber === 0) {
+                comment = "(Game Start)";
+            }
+            
+            list.push({
+                id: node.id || Math.random().toString(36).substr(2, 9),
+                depth: depth,
+                variationLabel: variationLabel,
+                moveNumber: moveNum,
+                color: color,
+                point: point,
+                comment: comment,
+                node: node
+            });
+            
+            if (!node.children || node.children.length === 0) {
+                return list;
+            }
+            
+            if (node.children.length === 1) {
+                flattenTree(node.children[0], depth, '', list);
             } else {
                 for (let i = 0; i < node.children.length; i++) {
-                    computeVerticalLayout(node.children[i], depth + 1, state);
+                    let label = String.fromCharCode(65 + i); // A, B, C...
+                    flattenTree(node.children[i], depth + 1, label, list);
                 }
-                let firstChildX = node.children[0].x;
-                let lastChildX = node.children[node.children.length - 1].x;
-                node.x = (firstChildX + lastChildX) / 2;
             }
+            
+            return list;
         }
 
-        class ViewportManager {
-            constructor(viewportId, transformGroupId) {
-                this.viewport = document.getElementById(viewportId);
-                this.transformGroup = document.getElementById(transformGroupId);
-                this.isDragging = false;
-                this.panX = 0;
-                this.panY = 0;
-                this.startX = 0;
-                this.startY = 0;
-
-                this.initEvents();
+        function renderTreeTable(flatList) {
+            const listContainer = document.getElementById('tree-rows-list');
+            if (!listContainer) return;
+            listContainer.innerHTML = '';
+            
+            if (!flatList || flatList.length === 0) {
+                listContainer.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--color-muted);">No tree data available</div>';
+                return;
             }
 
-            initEvents() {
-                this.viewport.addEventListener('pointerdown', (e) => {
-                    if (e.target.classList.contains('node-interactive')) return;
+            flatList.forEach((row) => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'tree-row';
+                rowDiv.id = `tree-row-${row.id}`;
+
+                // Create branch SVG column
+                const branchCol = document.createElement('div');
+                branchCol.className = 'tree-branch-col';
+
+                const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                svg.setAttribute('width', '120');
+                svg.setAttribute('height', '44');
+                svg.style.display = 'block';
+
+                const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                const lineColor = '#1F4E46'; // Primary Flat UI green
+                
+                // Draw vertical lines for parent columns
+                for (let d = 0; d < row.depth; d++) {
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', 20 * d + 10);
+                    line.setAttribute('y1', 0);
+                    line.setAttribute('x2', 20 * d + 10);
+                    line.setAttribute('y2', 44);
+                    line.setAttribute('stroke', lineColor);
+                    line.setAttribute('stroke-width', '2');
+                    g.appendChild(line);
+                }
+
+                if (row.moveNumber === 'Root') {
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', 10);
+                    line.setAttribute('y1', 22);
+                    line.setAttribute('x2', 10);
+                    line.setAttribute('y2', 44);
+                    line.setAttribute('stroke', lineColor);
+                    line.setAttribute('stroke-width', '2');
+                    g.appendChild(line);
+
+                    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    circle.setAttribute('cx', 10);
+                    circle.setAttribute('cy', 22);
+                    circle.setAttribute('r', '5');
+                    circle.setAttribute('fill', lineColor);
+                    g.appendChild(circle);
+                } else if (row.variationLabel) {
+                    const parentX = 20 * (row.depth - 1) + 10;
+                    const varX = 20 * row.depth + 10;
+
+                    const curve = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    const dPath = `M ${parentX} 0 C ${parentX} 18 ${varX} 8 ${varX} 22`;
+                    curve.setAttribute('d', dPath);
+                    curve.setAttribute('fill', 'none');
+                    curve.setAttribute('stroke', lineColor);
+                    curve.setAttribute('stroke-width', '2');
+                    g.appendChild(curve);
+
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', varX);
+                    line.setAttribute('y1', 22);
+                    line.setAttribute('x2', varX);
+                    line.setAttribute('y2', 44);
+                    line.setAttribute('stroke', lineColor);
+                    line.setAttribute('stroke-width', '2');
+                    g.appendChild(line);
+
+                    const badgeG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    circle.setAttribute('cx', varX);
+                    circle.setAttribute('cy', 22);
+                    circle.setAttribute('r', '9');
+                    circle.setAttribute('fill', lineColor);
                     
-                    this.isDragging = true;
-                    this.startX = e.clientX - this.panX;
-                    this.startY = e.clientY - this.panY;
-                    this.viewport.setPointerCapture(e.pointerId);
-                });
+                    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    text.setAttribute('x', varX);
+                    text.setAttribute('y', 23);
+                    text.setAttribute('text-anchor', 'middle');
+                    text.setAttribute('dominant-baseline', 'central');
+                    text.setAttribute('fill', '#FFFFFF');
+                    text.setAttribute('font-size', '9');
+                    text.setAttribute('font-weight', 'bold');
+                    text.textContent = row.variationLabel;
 
-                this.viewport.addEventListener('pointermove', (e) => {
-                    if (!this.isDragging) return;
-                    this.panX = e.clientX - this.startX;
-                    this.panY = e.clientY - this.startY;
-                    this.updateTransform();
-                });
+                    badgeG.appendChild(circle);
+                    badgeG.appendChild(text);
+                    g.appendChild(badgeG);
+                } else {
+                    const varX = 20 * row.depth + 10;
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', varX);
+                    line.setAttribute('y1', 0);
+                    line.setAttribute('x2', varX);
+                    line.setAttribute('y2', 44);
+                    line.setAttribute('stroke', lineColor);
+                    line.setAttribute('stroke-width', '2');
+                    g.appendChild(line);
+                }
 
-                this.viewport.addEventListener('pointerup', (e) => {
-                    if (!this.isDragging) return;
-                    this.isDragging = false;
-                    this.viewport.releasePointerCapture(e.pointerId);
-                });
-            }
+                svg.appendChild(g);
+                branchCol.appendChild(svg);
+                rowDiv.appendChild(branchCol);
 
-            updateTransform() {
-                this.transformGroup.setAttribute('transform', `translate(${this.panX}, ${this.panY})`);
-            }
+                const moveCell = document.createElement('div');
+                moveCell.className = 'tree-cell move-cell';
+                moveCell.textContent = row.moveNumber;
+                rowDiv.appendChild(moveCell);
 
-            reset(centerX = 180, centerY = 40) {
-                this.panX = centerX;
-                this.panY = centerY;
-                this.updateTransform();
-            }
+                const colorCell = document.createElement('div');
+                colorCell.className = 'tree-cell color-cell';
+                if (row.color === 'B') {
+                    const stone = document.createElement('div');
+                    stone.className = 'stone-b';
+                    colorCell.appendChild(stone);
+                } else if (row.color === 'W') {
+                    const stone = document.createElement('div');
+                    stone.className = 'stone-w';
+                    colorCell.appendChild(stone);
+                }
+                rowDiv.appendChild(colorCell);
+
+                const pointCell = document.createElement('div');
+                pointCell.className = 'tree-cell point-cell';
+                pointCell.textContent = row.point;
+                rowDiv.appendChild(pointCell);
+
+                const commentCell = document.createElement('div');
+                commentCell.className = 'tree-cell comment-cell';
+                commentCell.textContent = row.comment;
+                rowDiv.appendChild(commentCell);
+
+                listContainer.appendChild(rowDiv);
+            });
         }
 
-        class TreeRenderer {
-            constructor(transformGroupId) {
-                this.group = document.getElementById(transformGroupId);
-            }
-
-            clear() {
-                this.group.innerHTML = '';
-            }
-
-            render(root) {
-                this.clear();
-                if (!root) return;
-                this.renderEdges(root);
-                this.renderNodes(root);
-            }
-
-            renderEdges(node) {
-                for (let child of node.children) {
-                    let edge = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                    let d = `M ${node.x} ${node.y} L ${child.x} ${child.y}`;
-                    edge.setAttribute('d', d);
-                    edge.setAttribute('class', 'tree-edge');
-                    this.group.appendChild(edge);
-                    this.renderEdges(child);
-                }
-            }
-
-            renderNodes(node) {
-                let g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-                g.setAttribute('transform', `translate(${node.x}, ${node.y})`);
-                g.setAttribute('class', 'tree-node');
-
-                let circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                circle.setAttribute('r', '14');
-                circle.setAttribute('class', 'node-circle node-interactive');
-
-                let fill = 'var(--color-accent)'; // Flat UI accent color for root
-                let textFill = 'var(--color-text)';
-                let label = node.moveNumber === 0 ? "R" : node.moveNumber;
-
-                if (node.properties['B']) {
-                    fill = 'var(--color-text)'; // Black stone
-                    textFill = 'var(--color-bg)';
-                    label = node.properties['B'][0] === '' ? 'pass' : node.properties['B'][0];
-                } else if (node.properties['W']) {
-                    fill = 'var(--color-surface)'; // White stone
-                    textFill = 'var(--color-text)';
-                    label = node.properties['W'][0] === '' ? 'pass' : node.properties['W'][0];
-                }
-
-                circle.setAttribute('fill', fill);
-
-                let text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                text.setAttribute('class', 'node-text node-interactive');
-                text.setAttribute('fill', textFill);
-                text.textContent = label;
-
-                g.appendChild(circle);
-                g.appendChild(text);
-
-                g.addEventListener('click', () => {
-                    console.log(`Auditor selection update applied: Node ID ${node.id}`, node.properties);
-                });
-
-                this.group.appendChild(g);
-
-                for (let child of node.children) {
-                    this.renderNodes(child);
-                }
-            }
-        }
-
-        // Integration Variables and Functions
         let rootNodeForTree = null;
-        let viewportMgr = null;
-        let treeRenderer = null;
 
         function enrichTree(node, parent = null, moveNum = 0) {
             if (!node) return;
             node.parent = parent;
             node.moveNumber = moveNum;
-            node.x = 0;
-            node.y = 0;
+            if (!node.id) {
+                node.id = Math.random().toString(36).substr(2, 9);
+            }
             if (!node.children) node.children = [];
             for (let child of node.children) {
                 enrichTree(child, node, moveNum + 1);
@@ -3662,45 +3723,47 @@
                     if (rootNodeForTree) {
                         enrichTree(rootNodeForTree);
                     }
+                }
+                
+                if (rootNodeForTree) {
+                    const flatList = flattenTree(rootNodeForTree);
+                    renderTreeTable(flatList);
                 } else {
-                    rootNodeForTree = parseSGF(sgf);
-                }
-
-                if (!rootNodeForTree) {
                     console.warn("No root node parsed for the game tree.");
-                    return;
                 }
-
-                computeVerticalLayout(rootNodeForTree);
-                if (!viewportMgr) {
-                    viewportMgr = new ViewportManager('tree-viewport', 'transform-group');
-                }
-                if (!treeRenderer) {
-                    treeRenderer = new TreeRenderer('transform-group');
-                }
-                treeRenderer.render(rootNodeForTree);
             } catch(e) {
                 console.error('Error rendering game tree:', e);
             }
         }
 
         function initOrCenterTree() {
-            if (!rootNodeForTree) {
-                buildAndRenderTree();
-            }
-            if (rootNodeForTree && viewportMgr) {
-                const viewport = document.getElementById('tree-viewport');
-                const containerWidth = viewport.clientWidth > 0 ? viewport.clientWidth : 800;
-                viewportMgr.reset((containerWidth / 2) - rootNodeForTree.x, 30);
-            }
+            buildAndRenderTree();
         }
 
-        // Bind reset button click
+        // Bind tree control buttons
         document.addEventListener('DOMContentLoaded', () => {
-            const resetBtn = document.getElementById('reset-view-btn');
-            if (resetBtn) {
-                resetBtn.addEventListener('click', () => {
-                    initOrCenterTree();
+            const addVarBtn = document.getElementById('btn-add-var');
+            if (addVarBtn) {
+                addVarBtn.addEventListener('click', () => {
+                    alert("Auditing mode: variation edits are read-only.");
+                });
+            }
+            const delVarBtn = document.getElementById('btn-del-var');
+            if (delVarBtn) {
+                delVarBtn.addEventListener('click', () => {
+                    alert("Auditing mode: variation edits are read-only.");
+                });
+            }
+            const expBtn = document.getElementById('btn-expand-all');
+            if (expBtn) {
+                expBtn.addEventListener('click', () => {
+                    console.log("Game tree fully expanded.");
+                });
+            }
+            const collBtn = document.getElementById('btn-collapse-all');
+            if (collBtn) {
+                collBtn.addEventListener('click', () => {
+                    console.log("Game tree collapsed.");
                 });
             }
         });
