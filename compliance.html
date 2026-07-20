@@ -1385,30 +1385,6 @@
             .cat-bar-name { width: 110px; font-size: 0.72rem; }
         }
 
-        /* ── Go Board SVG Container ── */
-        .go-board-wrapper {
-            width: 100%;
-            max-width: 480px;
-            margin: 0 auto 30px auto;
-            position: relative;
-            z-index: 2;
-            border-radius: 4px;
-            overflow: hidden;
-            border: 1px solid var(--border-color);
-            background: var(--card-bg);
-            display: none;
-        }
-
-        .go-board-wrapper.visible {
-            display: block;
-        }
-
-        .go-board-wrapper svg {
-            display: block;
-            width: 100%;
-            height: auto;
-        }
-
         /* RESPONSIVE */
         @media (max-width: 768px) {
             .top-header { padding: 0 16px; }
@@ -1492,11 +1468,6 @@
         <div class="terminal-bg-container" id="code-log-box">
             <div class="code-box-line">- Ready to run SGF diagnostics...</div>
             <div class="code-box-line">- Press PLAY or click "Run SGFC Diagnostic" to start.</div>
-        </div>
-
-        <!-- Go Board SVG Visualization -->
-        <div class="go-board-wrapper" id="go-board-wrapper">
-            <div id="go-board-container"></div>
         </div>
 
         <!-- Play Button, Stepper Card and Status Banner Section -->
@@ -1681,175 +1652,7 @@
         let correctedSgfContent = null;
         let currentStep = 1;
 
-        // ── Go Board SVG Renderer ──
-        function renderGoBoard() {
-            if (!sgfContent) return;
 
-            var boardSize = 19;
-            var szMatch = sgfContent.match(/SZ\[(\d+)\]/);
-            if (szMatch) boardSize = parseInt(szMatch[1], 10);
-
-            var moveRe = /;([BW])\[([a-s]{2})\]/g;
-            var moves = [];
-            var m;
-            while ((m = moveRe.exec(sgfContent)) !== null) {
-                moves.push({
-                    color: m[1],
-                    row: m[2].charCodeAt(1) - 97,
-                    col: m[2].charCodeAt(0) - 97
-                });
-            }
-            if (moves.length === 0) return;
-
-            // Board engine
-            var grid = {};
-
-            function ptKey(r, c) { return r + ',' + c; }
-
-            function getNeighbors(r, c) {
-                var n = [];
-                if (r > 0) n.push([r-1, c]);
-                if (r < boardSize-1) n.push([r+1, c]);
-                if (c > 0) n.push([r, c-1]);
-                if (c < boardSize-1) n.push([r, c+1]);
-                return n;
-            }
-
-            function removeString(target) {
-                var pts = Object.keys(target.stones);
-                for (var i = 0; i < pts.length; i++) {
-                    var pt = pts[i];
-                    var parts = pt.split(',');
-                    var r = parseInt(parts[0]), c = parseInt(parts[1]);
-                    delete grid[pt];
-                    var nbs = getNeighbors(r, c);
-                    for (var j = 0; j < nbs.length; j++) {
-                        var nk = ptKey(nbs[j][0], nbs[j][1]);
-                        var ns = grid[nk];
-                        if (ns && ns.color !== target.color) {
-                            ns.liberties[pt] = true;
-                        }
-                    }
-                }
-            }
-
-            function placeStone(color, row, col) {
-                var pt = ptKey(row, col);
-                if (grid[pt]) return;
-
-                var neighbors = getNeighbors(row, col);
-                var initLib = {};
-                var adjSame = {}, adjOpp = {};
-
-                for (var i = 0; i < neighbors.length; i++) {
-                    var nk = ptKey(neighbors[i][0], neighbors[i][1]);
-                    var ns = grid[nk];
-                    if (!ns) {
-                        initLib[nk] = true;
-                    } else if (ns.color === color) {
-                        adjSame[nk] = ns;
-                    } else {
-                        adjOpp[nk] = ns;
-                    }
-                }
-
-                var stones = {}; stones[pt] = true;
-                var newStr = { color: color, stones: stones, liberties: initLib };
-
-                var sameKeys = Object.keys(adjSame);
-                for (var i = 0; i < sameKeys.length; i++) {
-                    var ss = adjSame[sameKeys[i]];
-                    var sk = Object.keys(ss.stones);
-                    for (var j = 0; j < sk.length; j++) newStr.stones[sk[j]] = true;
-                    var lk = Object.keys(ss.liberties);
-                    for (var j = 0; j < lk.length; j++) newStr.liberties[lk[j]] = true;
-                }
-                delete newStr.liberties[pt];
-
-                var allStones = Object.keys(newStr.stones);
-                for (var i = 0; i < allStones.length; i++) {
-                    grid[allStones[i]] = newStr;
-                }
-
-                var oppKeys = Object.keys(adjOpp);
-                for (var i = 0; i < oppKeys.length; i++) {
-                    var os = adjOpp[oppKeys[i]];
-                    delete os.liberties[pt];
-                    if (Object.keys(os.liberties).length === 0) removeString(os);
-                }
-            }
-
-            var lastMove = null;
-            for (var i = 0; i < moves.length; i++) {
-                placeStone(moves[i].color, moves[i].row, moves[i].col);
-                lastMove = [moves[i].row, moves[i].col];
-            }
-
-            // SVG generation
-            var cellSize = 40, margin = 40;
-            var boardPx = (boardSize - 1) * cellSize + 2 * margin;
-            var lines = [];
-            lines.push('<?xml version="1.0" encoding="UTF-8"?>');
-            lines.push('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + boardPx + ' ' + boardPx + '" width="100%" height="100%">');
-            lines.push('  <rect width="' + boardPx + '" height="' + boardPx + '" fill="#DCB35C"/>');
-
-            lines.push('  <g stroke="#222222" stroke-width="1">');
-            for (var i = 0; i < boardSize; i++) {
-                var off = margin + i * cellSize;
-                lines.push('    <line x1="' + off + '" y1="' + margin + '" x2="' + off + '" y2="' + (boardPx - margin) + '"/>');
-                lines.push('    <line x1="' + margin + '" y1="' + off + '" x2="' + (boardPx - margin) + '" y2="' + off + '"/>');
-            }
-            lines.push('  </g>');
-
-            var hoshi = boardSize >= 13 ? (boardSize >= 19 ? [3,9,15] : [3, Math.floor(boardSize/2), boardSize-4]) : [Math.floor(boardSize/2)];
-            lines.push('  <g fill="#222222">');
-            for (var ri = 0; ri < hoshi.length; ri++) {
-                for (var ci = 0; ci < hoshi.length; ci++) {
-                    var cx = margin + hoshi[ci] * cellSize;
-                    var cy = margin + hoshi[ri] * cellSize;
-                    if (hoshi[ci] < boardSize && hoshi[ri] < boardSize) {
-                        lines.push('    <circle cx="' + cx + '" cy="' + cy + '" r="3.5"/>');
-                    }
-                }
-            }
-            lines.push('  </g>');
-
-            var sr = cellSize * 0.47;
-            lines.push('  <g>');
-            var rendered = {};
-            var pts = Object.keys(grid);
-            for (var i = 0; i < pts.length; i++) {
-                if (rendered[pts[i]]) continue;
-                rendered[pts[i]] = true;
-                var parts = pts[i].split(',');
-                var r = parseInt(parts[0]), c = parseInt(parts[1]);
-                var cx = margin + c * cellSize;
-                var cy = margin + r * cellSize;
-                var s = grid[pts[i]];
-                if (s.color === 'B') {
-                    lines.push('    <circle cx="' + cx + '" cy="' + cy + '" r="' + sr + '" fill="#1A1A1A" stroke="#000000" stroke-width="1"/>');
-                } else {
-                    lines.push('    <circle cx="' + cx + '" cy="' + cy + '" r="' + sr + '" fill="#FFFFFF" stroke="#A0A0A0" stroke-width="1"/>');
-                }
-            }
-            lines.push('  </g>');
-
-            if (lastMove) {
-                var cx = margin + lastMove[1] * cellSize;
-                var cy = margin + lastMove[0] * cellSize;
-                var mr = cellSize * 0.18;
-                var lk = ptKey(lastMove[0], lastMove[1]);
-                var mc = '#FFFFFF';
-                if (grid[lk] && grid[lk].color === 'W') mc = '#000000';
-                lines.push('  <circle cx="' + cx + '" cy="' + cy + '" r="' + mr + '" fill="none" stroke="' + mc + '" stroke-width="2"/>');
-            }
-
-            lines.push('</svg>');
-
-            var wrapper = document.getElementById('go-board-wrapper');
-            document.getElementById('go-board-container').innerHTML = lines.join('\n');
-            wrapper.classList.add('visible');
-        }
 
         function downloadOriginalSgf() {
             var content = originalSgfContent || sessionStorage.getItem('sgf_original');
@@ -1880,8 +1683,7 @@
             document.getElementById('header-pill-card').style.display = 'flex';
             document.getElementById('header-filename').textContent = sgfFilename;
 
-            // Render Go board SVG from SGF moves
-            renderGoBoard();
+
 
             // Load SGFC WASM engine only — do NOT run audit yet.
             // Audit runs when user clicks "Run Diagnostic" (play button).
