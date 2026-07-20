@@ -1305,15 +1305,89 @@
             .filter-btn { padding: 6px 12px; font-size: 0.8rem; }
         }
 
+        /* ── Game Tree Sidebar Overlay ── */
+        .game-tree-overlay {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 450px;
+            height: 100vh;
+            background-color: var(--color-surface);
+            border-left: 2px solid var(--color-border);
+            z-index: 1000;
+            box-shadow: -4px 0 15px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            transform: translateX(0);
+            transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+        .game-tree-overlay.hidden {
+            transform: translateX(100%);
+        }
+        .game-tree-overlay-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            border-bottom: 1px solid var(--color-border);
+            background-color: var(--color-surface-muted);
+        }
+        .game-tree-overlay-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: var(--color-text);
+        }
+        .close-overlay-btn {
+            background: none;
+            border: none;
+            color: var(--color-text);
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .close-overlay-btn:hover {
+            color: var(--color-muted);
+        }
+        .tree-overlay-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .floating-tree-toggle {
+            position: fixed;
+            top: 70px;
+            right: 12px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background-color: var(--color-surface);
+            border: 1.5px solid var(--color-border);
+            color: var(--color-text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 900;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .floating-tree-toggle:hover {
+            background-color: var(--color-surface-muted);
+            transform: scale(1.05);
+        }
+
         /* ── SGF Game Tree List & Branch Styles (Hybrid Tree-Table) ── */
         .tree-viewport-container {
             width: 100%;
-            height: 600px;
+            flex: 1;
             overflow-y: auto;
             overflow-x: hidden;
             position: relative;
-            border: 1.5px solid var(--color-text);
-            border-radius: 4px;
             background-color: var(--color-surface);
         }
         .tree-svg-overlay {
@@ -1556,55 +1630,12 @@
             <!-- Detailed Tabs Card -->
             <div class="main-card">
                 <div class="tabs-header">
-                    <button class="tab-btn active" id="btn-tree-tab" onclick="switchTab(this, 'tree-tab')">Game Tree</button>
-                    <button class="tab-btn" id="btn-issues-tab" onclick="switchTab(this, 'issues-tab')">Validation Issues</button>
+                    <button class="tab-btn active" id="btn-issues-tab" onclick="switchTab(this, 'issues-tab')">Validation Issues</button>
                     <button class="tab-btn" id="btn-report-tab" onclick="switchTab(this, 'report-tab')">Raw Report</button>
                 </div>
 
-                <!-- Tab 1: Game Tree -->
-                <div class="tab-content active" id="tree-tab" style="position: relative;">
-                    <!-- Control Buttons -->
-                    <div class="tree-controls" style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
-                        <button class="tree-control-btn" id="btn-add-var" style="background-color: var(--color-surface); color: var(--color-text); border: 1.5px solid var(--color-text); padding: 6px 14px; border-radius: 4px; font-size: 0.82rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-                            <svg width="12" height="12" viewBox="0 0 24 24"><path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-                            Add Variation
-                        </button>
-                        <button class="tree-control-btn" id="btn-del-var" style="background-color: var(--color-surface); color: var(--color-text); border: 1.5px solid var(--color-text); padding: 6px 14px; border-radius: 4px; font-size: 0.82rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-                            <svg width="12" height="12" viewBox="0 0 24 24"><path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
-                            Delete
-                        </button>
-                        <button class="tree-control-btn" id="btn-expand-all" style="background-color: var(--color-surface); color: var(--color-text); border: 1.5px solid var(--color-text); padding: 6px 14px; border-radius: 4px; font-size: 0.82rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-                            <svg width="12" height="12" viewBox="0 0 24 24"><path fill="currentColor" d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg>
-                            Expand All
-                        </button>
-                        <button class="tree-control-btn" id="btn-collapse-all" style="background-color: var(--color-surface); color: var(--color-text); border: 1.5px solid var(--color-text); padding: 6px 14px; border-radius: 4px; font-size: 0.82rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-                            <svg width="12" height="12" viewBox="0 0 24 24"><path fill="currentColor" d="M12 8l-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14z"/></svg>
-                            Collapse All
-                        </button>
-                    </div>
-
-                    <!-- Header Row -->
-                    <div class="tree-header-row" style="display: flex; border-bottom: 1px solid var(--color-border); font-weight: 700; background-color: var(--color-surface-muted); padding: 8px 0; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; position: sticky; top: 0; z-index: 20;">
-                        <div class="col-tree" style="text-align: center;">Game Tree</div>
-                        <div class="col-move">Move</div>
-                        <div class="col-color">Color</div>
-                        <div class="col-point">Point</div>
-                        <div class="col-comment">Analysis / Comment</div>
-                    </div>
-
-                    <!-- Scrollable Viewport Container -->
-                    <div class="tree-viewport-container" id="tree-viewport-container">
-                        <div style="position: relative; min-height: 100%;">
-                            <svg class="tree-svg-overlay" id="tree-svg"></svg>
-                            <div id="tree-rows-list">
-                                <!-- Rows populated dynamically -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tab 2: Issues -->
-                <div class="tab-content" id="issues-tab">
+                <!-- Tab 1: Issues -->
+                <div class="tab-content active" id="issues-tab">
                     <div class="filter-bar">
                         <button class="filter-btn active" onclick="filterIssues(this, 'all')">All (<span id="filter-all-count">0</span>)</button>
                         <button class="filter-btn" onclick="filterIssues(this, 'error')">Errors (<span id="filter-error-count">0</span>)</button>
@@ -3804,6 +3835,13 @@
             buildAndRenderTree();
         }
 
+        function toggleGameTree() {
+            const overlay = document.getElementById('game-tree-overlay');
+            if (overlay) {
+                overlay.classList.toggle('hidden');
+            }
+        }
+
         // Bind tree control buttons
         document.addEventListener('DOMContentLoaded', () => {
             const addVarBtn = document.getElementById('btn-add-var');
@@ -3832,5 +3870,56 @@
             }
         });
     </script>
+    <!-- Floating button to reopen tree -->
+    <button id="floating-tree-toggle" class="floating-tree-toggle" onclick="toggleGameTree()" title="View Game Tree">
+        <svg width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 9h-2V7H8v5H6v2h2v5h2v-5h2v-2z"/></svg>
+    </button>
+
+    <!-- Game Tree Sidebar Overlay -->
+    <div id="game-tree-overlay" class="game-tree-overlay">
+        <div class="game-tree-overlay-header">
+            <h3>Game Tree Tracker</h3>
+            <button class="close-overlay-btn" onclick="toggleGameTree()" title="Close Sidebar">
+                <svg width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            </button>
+        </div>
+        
+        <div class="tree-overlay-content">
+            <!-- Control Buttons -->
+            <div class="tree-controls" style="display: flex; gap: 8px; padding: 12px; flex-wrap: wrap; background: var(--color-surface);">
+                <button class="tree-control-btn" id="btn-add-var" style="background-color: var(--color-surface); color: var(--color-text); border: 1.5px solid var(--color-text); padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                    <svg width="12" height="12" viewBox="0 0 24 24"><path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg> Add Variation
+                </button>
+                <button class="tree-control-btn" id="btn-del-var" style="background-color: var(--color-surface); color: var(--color-text); border: 1.5px solid var(--color-text); padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                    <svg width="12" height="12" viewBox="0 0 24 24"><path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg> Delete
+                </button>
+                <button class="tree-control-btn" id="btn-expand-all" style="background-color: var(--color-surface); color: var(--color-text); border: 1.5px solid var(--color-text); padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                    <svg width="12" height="12" viewBox="0 0 24 24"><path fill="currentColor" d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg> Expand All
+                </button>
+                <button class="tree-control-btn" id="btn-collapse-all" style="background-color: var(--color-surface); color: var(--color-text); border: 1.5px solid var(--color-text); padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                    <svg width="12" height="12" viewBox="0 0 24 24"><path fill="currentColor" d="M12 8l-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14z"/></svg> Collapse All
+                </button>
+            </div>
+
+            <!-- Header Row -->
+            <div class="tree-header-row" style="display: flex; border-bottom: 1px solid var(--color-border); font-weight: 700; background-color: var(--color-surface-muted); padding: 8px 0; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; position: sticky; top: 0; z-index: 20;">
+                <div class="col-tree" style="text-align: center;">Tree</div>
+                <div class="col-move">Move</div>
+                <div class="col-color">Color</div>
+                <div class="col-point">Point</div>
+                <div class="col-comment">Comment</div>
+            </div>
+
+            <!-- Scrollable Viewport Container -->
+            <div class="tree-viewport-container" id="tree-viewport-container">
+                <div style="position: relative; min-height: 100%;">
+                    <svg class="tree-svg-overlay" id="tree-svg"></svg>
+                    <div id="tree-rows-list">
+                        <!-- Rows populated dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
