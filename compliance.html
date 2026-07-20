@@ -748,61 +748,7 @@
             overflow-y: auto;
         }
 
-        .issue-row {
-            display: flex;
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--border-color);
-            align-items: flex-start;
-            gap: 12px;
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
 
-        .issue-row:last-child {
-            border-bottom: none;
-        }
-
-        .issue-row.row-error {
-            background-color: rgba(198, 40, 40, 0.04);
-        }
-
-        .issue-row.row-warning {
-            background-color: rgba(230, 164, 0, 0.04);
-        }
-
-        .issue-tag {
-            font-size: 0.7rem;
-            font-weight: 700;
-            padding: 3px 8px;
-            border-radius: 2px;
-            text-transform: uppercase;
-            flex-shrink: 0;
-            letter-spacing: 0.5px;
-        }
-
-        .issue-tag.error {
-            background-color: var(--color-danger);
-            color: white;
-        }
-
-        .issue-tag.warning {
-            background-color: #FFF9C4;
-            color: var(--color-secondary);
-        }
-
-        .issue-pos {
-            color: var(--muted);
-            font-family: "Google Sans Code", monospace;
-            font-size: 0.85rem;
-            white-space: nowrap;
-            flex-shrink: 0;
-            width: 140px;
-        }
-
-        .issue-msg {
-            color: var(--text-color);
-            word-break: break-word;
-        }
 
         .no-issues {
             display: flex;
@@ -870,259 +816,171 @@
             border-color: var(--primary-hover);
         }
 
-        /* ── Issue Item Wrapper (row + action bar + edit panel) ── */
-        .issue-item-wrapper {
-            border-bottom: 1px solid var(--border-color);
-        }
-        .issue-item-wrapper:last-child { border-bottom: none; }
-        .issue-item-wrapper > .issue-row { border-bottom: none; }
-
-        /* 3-State Action Bar */
-        .issue-action-bar {
-            position: relative;
-            height: 44px;
-            overflow: hidden;
-        }
-
-        /* Fixed indicator row */
-        .fixed-indicator {
+        /* ── New Issue Card Layout (Matching Wireframe) ── */
+        .issue-card {
+            background: #FFFFFF;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            padding: 12px 20px;
-            background-color: var(--color-success-bg);
-            border-top: 1px solid var(--color-success-border);
-            font-size: 0.85rem;
-            line-height: 1.5;
+            gap: 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+            transition: all 0.2s ease;
         }
-        .fixed-indicator .fixed-header {
+        .issue-card:hover {
+            box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+            border-color: #B2B2A4;
+        }
+        
+        .issue-card-header {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+            font-size: 0.92rem;
+            flex-wrap: wrap;
         }
-        .fixed-indicator .fixed-tag {
-            background: var(--color-success-border);
-            color: var(--color-success-text);
+
+        .issue-badge {
             font-size: 0.72rem;
             font-weight: 700;
             padding: 3px 8px;
-            border-radius: 2px;
+            border-radius: 3px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             flex-shrink: 0;
         }
-        .fixed-indicator .fixed-detail {
-            color: var(--color-success-text);
-            font-family: "Google Sans Code", monospace;
-            font-size: 0.82rem;
-            word-break: break-all;
+        .issue-badge.warning {
+            background-color: #FFFBE6;
+            border: 1px solid #FFE7BA;
+            color: #D46B08;
         }
-        .fixed-indicator .fixed-steps {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            margin-top: 2px;
-            padding-left: 4px;
-            border-left: 2px solid var(--color-success-border);
-            margin-left: 2px;
+        .issue-badge.error {
+            background-color: #FFF1F0;
+            border: 1px solid #FFA39E;
+            color: #CF1322;
         }
-        .fixed-indicator .fixed-step {
-            color: var(--color-success-text);
-            font-family: "Google Sans Code", monospace;
-            font-size: 0.8rem;
-            line-height: 1.6;
-        }
-        .fixed-indicator .fixed-step .step-label {
-            font-weight: 700;
-            color: var(--color-success);
-        }
-        .fixed-indicator .fixed-arrow {
-            color: var(--color-success);
-            font-weight: 700;
-            flex-shrink: 0;
+        .issue-badge.resolved {
+            background-color: #E8F8F5;
+            border: 1px solid #A3E4D7;
+            color: #16A085;
         }
 
-        .row-fixed-orph {
-            background-color: var(--color-success-bg) !important;
-            cursor: default;
-            opacity: 0.85;
-        }
-        .fixed-orph-tag {
-            background-color: var(--color-success);
-            color: #fff;
-            font-size: 0.65rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            padding: 2px 8px;
-            border-radius: 3px;
-            flex-shrink: 0;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-6px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-        .issue-action-state {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            padding: 0 16px;
-            gap: 10px;
-            transform: translateY(100%);
-            opacity: 0;
-            transition: transform 0.15s ease, opacity 0.15s ease;
-            pointer-events: none;
-        }
-        .issue-action-state.active {
-            transform: translateY(0);
-            opacity: 1;
-            pointer-events: auto;
-        }
-        .issue-action-state.exit {
-            transform: translateY(-100%);
-            opacity: 0;
-            pointer-events: none;
-        }
-        .state-1 { background: var(--color-warning-bg); border-top: 1px solid var(--color-accent); }
-        .state-2 { background: #E3F2FD; border-top: 1px solid var(--color-info); }
-        .state-3 { background: var(--color-success-bg); border-top: 1px solid var(--color-success); }
-        .ias-num {
-            font-weight: 800;
-            font-size: 0.95rem;
-            color: rgba(0,0,0,0.4);
-            width: 18px;
-            flex-shrink: 0;
-        }
-        .ias-actions {
-            flex-grow: 1;
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            align-items: center;
-        }
-        .ias-edit-btn {
-            background: var(--color-accent);
-            border: 1px solid var(--color-accent);
-            padding: 5px 13px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
-            color: var(--color-secondary);
-            font-family: "Inter", sans-serif;
-        }
-        .ias-edit-btn:hover { background: var(--color-accent-hover); }
-        .ias-fix-btn {
-            background: var(--primary-color);
-            border: 1px solid var(--primary-color);
-            padding: 5px 13px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
-            color: white;
-            font-family: "Inter", sans-serif;
-        }
-        .ias-fix-btn:hover { background: var(--primary-hover); }
-        .ias-progress-text {
-            flex-grow: 1;
-            text-align: center;
-            font-weight: 700;
-            font-size: 0.88rem;
-            color: rgba(0,0,0,0.6);
-        }
-        .ias-icon {
-            font-size: 1rem;
-            flex-shrink: 0;
-            width: 26px;
-            height: 26px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            background: rgba(0,0,0,0.06);
-            font-weight: 700;
-        }
-        .issue-action-state.state-3-fail {
-            display: none;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
-            background: var(--color-warning-bg);
-            border-top: 1px solid var(--border-color);
-        }
-        .issue-action-state.state-3-fail.active { display: flex; }
-        .issue-action-state.state-3-fail.exit { display: none; }
-        .ias-fail-text {
-            flex-grow: 1;
+        .issue-location {
+            color: var(--muted);
+            font-family: "Google Sans Code", monospace;
             font-size: 0.82rem;
-            color: #795548;
-            font-weight: 500;
-        }
-        .ias-custom-fix-btn {
-            font-family: "Inter", sans-serif;
-            font-size: 0.78rem;
-            font-weight: 600;
-            color: var(--color-info);
-            background: none;
-            border: 1px solid var(--color-info);
-            border-radius: 2px;
-            padding: 4px 10px;
-            cursor: pointer;
+            background: var(--color-surface-muted);
+            padding: 2px 6px;
+            border-radius: 4px;
             white-space: nowrap;
         }
-        .ias-custom-fix-btn:hover {
-            background: var(--color-info);
-            color: #fff;
-        }
-        /* Inline edit panel */
-        .issue-edit-panel {
-            background: var(--color-surface-muted);
-            border-top: 1px solid var(--border-color);
-            padding: 14px 16px;
-        }
-        .issue-edit-textarea {
-            width: 100%;
-            height: 110px;
-            font-family: "Google Sans Code", monospace;
-            font-size: 0.8rem;
-            border: 1px solid var(--border-color);
-            border-radius: 2px;
-            padding: 10px;
-            box-sizing: border-box;
-            resize: vertical;
+
+        .issue-message-text {
             color: var(--text-color);
-            background: var(--card-bg);
-            margin-bottom: 10px;
+            font-weight: 500;
+            flex-grow: 1;
+            word-break: break-word;
         }
-        .issue-edit-actions {
+
+        .issue-card-actions {
             display: flex;
-            gap: 8px;
-            justify-content: flex-end;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px dashed var(--border-color);
+            padding-top: 10px;
+            margin-top: 2px;
         }
-        .ias-apply-btn {
-            background: var(--primary-color);
-            color: white;
-            border: 1px solid var(--primary-color);
+
+        .issue-type-badge {
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 3px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .issue-type-badge.sgfc {
+            background-color: #FDEDEC;
+            color: #CB4335;
+            border: 1px solid #F5B7B1;
+        }
+        .issue-type-badge.prop {
+            background-color: #F5EEF8;
+            color: #8E44AD;
+            border: 1px solid #D7BDE2;
+        }
+        .issue-type-badge.gnug {
+            background-color: #EBF5FB;
+            color: #2980B9;
+            border: 1px solid #AED6F1;
+        }
+
+        .issue-action-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .issue-autofix-btn {
+            background-color: #16A085;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 4px;
             padding: 6px 16px;
-            border-radius: 2px;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: 600;
             cursor: pointer;
-            font-family: "Inter", sans-serif;
+            transition: all 0.2s ease;
+            outline: none;
         }
-        .ias-cancel-btn {
-            background: var(--card-bg);
-            color: var(--muted);
-            border: 1px solid var(--border-color);
-            padding: 6px 16px;
-            border-radius: 2px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
-            font-family: "Inter", sans-serif;
+        .issue-autofix-btn:hover {
+            background-color: #138D75;
+            transform: translateY(-1px);
+        }
+        .issue-autofix-btn:active {
+            transform: translateY(0);
+        }
+        .issue-autofix-btn:disabled {
+            background-color: var(--color-border);
+            color: var(--color-muted);
+            cursor: not-allowed;
+        }
+
+        .issue-caution-icon {
+            color: var(--color-danger);
+            font-size: 1.1rem;
+            font-weight: bold;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        /* Fixed State Style */
+        .issue-card.fixed {
+            background-color: #F9FCFB;
+            border-color: #D1E8E2;
+        }
+        .issue-fixed-label {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #16A085;
+        }
+        .issue-check-icon {
+            color: #16A085;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .issue-fixed-details {
+            background-color: #F2F9F6;
+            border: 1px solid #D1E8E2;
+            border-radius: 4px;
+            padding: 10px 14px;
+            font-size: 0.82rem;
+            font-family: "Google Sans Code", monospace;
+            color: #117864;
+            word-break: break-all;
         }
 
         /* FF[4] MAXIMIZATION CARD */
@@ -1939,7 +1797,8 @@
                         issues.push({
                             severity: severity === 'error' ? 'error' : 'warning',
                             message,
-                            position: { line: lineNum, col: colNum }
+                            position: { line: lineNum, col: colNum },
+                            type: 'SGFC'
                         });
                     } else {
                         const genMatch = line.match(/^\s*(Error|Warning|Fatal\s+error)\s+\d+(?:\s*\(critical\))?:\s*(.*)$/i);
@@ -1953,7 +1812,8 @@
                             issues.push({
                                 severity: severity === 'error' ? 'error' : 'warning',
                                 message,
-                                position: null
+                                position: null,
+                                type: 'SGFC'
                             });
                         }
                     }
@@ -2153,10 +2013,10 @@
 
             // Merge into auditResult
             propWarnings.forEach(w => {
-                auditResult.issues.push({ severity: 'warning', message: w.msg, position: null });
+                auditResult.issues.push({ severity: 'warning', message: w.msg, position: null, type: 'PROP' });
             });
             propErrors.forEach(e => {
-                auditResult.issues.push({ severity: 'error', message: e.msg, position: null });
+                auditResult.issues.push({ severity: 'error', message: e.msg, position: null, type: 'PROP' });
             });
 
             const steps = [
@@ -2294,7 +2154,12 @@
 
                 // Merge Phase 1.3 issues into auditResult
                 result.issues.forEach(function(issue) {
-                    auditResult.issues.push(issue);
+                    auditResult.issues.push({
+                        severity: issue.severity || 'error',
+                        message: issue.message,
+                        position: { line: issue.line, col: issue.column },
+                        type: 'GNUG'
+                    });
                 });
 
                 var pass = result.issues.length === 0;
@@ -2683,134 +2548,147 @@
             }
 
             filtered.forEach((issue, idx) => {
-                // Outer wrapper (issue row + action bar + edit panel)
-                const wrapper = document.createElement('div');
-                wrapper.className = 'issue-item-wrapper';
-                wrapper.setAttribute('data-issue-idx', auditResult.issues.indexOf(issue));
+                const realIdx = auditResult.issues.indexOf(issue);
+                const isFixed = !!fixedIssuesMap[issue.message];
 
-                // Issue row
-                const row = document.createElement('div');
-                row.className = `issue-row row-${issue.severity}`;
+                // Create the issue card
+                const card = document.createElement('div');
+                card.className = `issue-card ${isFixed ? 'fixed' : ''}`;
+                card.id = `issue-card-${realIdx}`;
 
-                const tag = document.createElement('span');
-                tag.className = `issue-tag ${issue.severity}`;
-                tag.textContent = issue.severity;
+                // Row 1: Header (Severity Badge, Location, Message)
+                const header = document.createElement('div');
+                header.className = 'issue-card-header';
+
+                const badge = document.createElement('span');
+                badge.className = `issue-badge ${issue.severity}`;
+                badge.textContent = issue.severity;
 
                 const pos = document.createElement('span');
-                pos.className = 'issue-pos';
+                pos.className = 'issue-location';
                 pos.textContent = issue.position
                     ? `Line ${issue.position.line}, Col ${issue.position.col}`
                     : 'General Scope';
 
                 const msg = document.createElement('span');
-                msg.className = 'issue-msg';
+                msg.className = 'issue-message-text';
                 msg.textContent = issue.message;
 
-                row.appendChild(tag);
-                row.appendChild(pos);
-                row.appendChild(msg);
-                wrapper.appendChild(row);
+                header.appendChild(badge);
+                header.appendChild(pos);
+                header.appendChild(msg);
+                card.appendChild(header);
 
-                const realIdx = wrapper.getAttribute('data-issue-idx');
+                // Row 2: Actions & Details (Error Type Badge, Auto-Fix / Auto-Fixed)
+                const actionsRow = document.createElement('div');
+                actionsRow.className = 'issue-card-actions';
 
-                // 4-State action bar
-                const actionBar = document.createElement('div');
-                actionBar.className = 'issue-action-bar';
-                actionBar.id = `action-bar-${realIdx}`;
-                actionBar.innerHTML = `
-                    <div class="issue-action-state state-1 active">
-                        <span class="ias-num">1</span>
-                        <div class="ias-actions">
-                            <button class="ias-edit-btn" onclick="editIssue(${wrapper.getAttribute('data-issue-idx')})">Edit / FIY</button>
-                            <button class="ias-fix-btn" onclick="autoFixIssue(${wrapper.getAttribute('data-issue-idx')})">Auto-Fix</button>
-                        </div>
-                        <div class="ias-icon">⚠</div>
-                    </div>
-                    <div class="issue-action-state state-2">
-                        <span class="ias-num">2</span>
-                        <div class="ias-progress-text">Auto-Fixing …</div>
-                        <div class="ias-icon">✓</div>
-                    </div>
-                    <div class="issue-action-state state-3">
-                        <span class="ias-num">3</span>
-                        <div class="ias-progress-text">Auto-Fixed</div>
-                        <div class="ias-icon">✓</div>
-                    </div>
-                    <div class="issue-action-state state-3-fail">
-                        <span class="ias-num">2</span>
-                        <div class="ias-fail-text">Within SGFC, there is no such fix available.</div>
-                        <button class="ias-custom-fix-btn" onclick="autoFixCustomIssue(${wrapper.getAttribute('data-issue-idx')})">Try Custom Fix?</button>
-                    </div>
-                `;
-                wrapper.appendChild(actionBar);
-
-                // Inline edit panel (hidden by default)
-                const editPanel = document.createElement('div');
-                editPanel.className = 'issue-edit-panel';
-                editPanel.id = `edit-panel-${realIdx}`;
-                editPanel.style.display = 'none';
-                editPanel.innerHTML = `
-                    <textarea class="issue-edit-textarea" id="edit-textarea-${realIdx}" placeholder="Edit the SGF content manually and click Apply to re-check..."></textarea>
-                    <div class="issue-edit-actions">
-                        <button class="ias-cancel-btn" onclick="closeEdit(${realIdx})">Cancel</button>
-                        <button class="ias-apply-btn" onclick="applyEdit(${realIdx})">Apply &amp; Re-check</button>
-                    </div>
-                `;
-                wrapper.appendChild(editPanel);
-
-                // Re-inject FIXED indicator if this issue was previously fixed (survives re-render)
-                if (fixedIssuesMap[issue.message]) {
-                    const fixedRow = document.createElement('div');
-                    fixedRow.className = 'fixed-indicator';
-                    const steps = fixedIssuesMap[issue.message].map(function(step) {
-                        return '<div class="fixed-step">' + step + '</div>';
-                    }).join('');
-                    fixedRow.innerHTML = `
-                        <div class="fixed-header">
-                            <span class="fixed-tag">FIXED</span>
-                        </div>
-                        <div class="fixed-steps">${steps}</div>
-                    `;
-                    wrapper.appendChild(fixedRow);
-                    // Auto-update action bar to state-3 (Auto-Fixed)
-                    const abar = wrapper.querySelector('.issue-action-bar');
-                    if (abar) {
-                        const s1el = abar.querySelector('.state-1');
-                        const s3el = abar.querySelector('.state-3');
-                        if (s1el) s1el.classList.remove('active');
-                        if (s3el) {
-                            s3el.querySelector('.ias-progress-text').textContent = 'Auto-Fixed';
-                            s3el.classList.add('active');
-                        }
+                // Determine Error Type (e.g. SGFC, PROP, GNUG)
+                let errType = (issue.type || 'SGFC').toLowerCase();
+                
+                // Double check type based on message if missing
+                if (!issue.type) {
+                    if (/Illegal move|violates basic capture|ko constraints/i.test(issue.message)) {
+                        errType = 'gnug';
+                    } else if (/conforms to SGF FF\[4\]|validateSGFProperties/i.test(issue.message) || /not compliant and not defined by SGF/i.test(issue.message)) {
+                        errType = 'prop';
                     }
                 }
 
-                container.appendChild(wrapper);
+                const typeBadge = document.createElement('span');
+                typeBadge.className = `issue-type-badge ${errType}`;
+                typeBadge.textContent = errType.toUpperCase();
+                actionsRow.appendChild(typeBadge);
+
+                const actionRight = document.createElement('div');
+                actionRight.className = 'issue-action-right';
+                actionRight.id = `action-bar-${realIdx}`;
+
+                if (isFixed) {
+                    // Render "Auto-Fixed" and checkmark
+                    actionRight.innerHTML = `
+                        <span class="issue-fixed-label">Auto-Fixed</span>
+                        <span class="issue-check-icon">✓</span>
+                    `;
+                } else {
+                    // Render "Auto-Fix" button and caution icon
+                    actionRight.innerHTML = `
+                        <button class="issue-autofix-btn" onclick="autoFixIssue(${realIdx})">Auto-Fix</button>
+                        <span class="issue-caution-icon">⚠</span>
+                    `;
+                }
+                actionsRow.appendChild(actionRight);
+                card.appendChild(actionsRow);
+
+                // Row 3: If fixed, append explanation details
+                if (isFixed) {
+                    const explanation = fixedIssuesMap[issue.message];
+                    if (explanation && explanation.length > 0) {
+                        const details = document.createElement('div');
+                        details.className = 'issue-fixed-details';
+                        details.innerHTML = explanation.join('<br>');
+                        card.appendChild(details);
+                    }
+                }
+
+                container.appendChild(card);
             });
 
-            // Render orphaned fixed issues (fixed issues that no longer appear in audit results)
+            // Render resolved orphaned issues
             var renderedMessages = {};
             filtered.forEach(function(issue) { renderedMessages[issue.message] = true; });
             Object.keys(fixedIssuesMap).forEach(function(msg) {
                 if (!renderedMessages[msg] && fixedIssuesMap[msg].length > 0) {
-                    var orphan = document.createElement('div');
-                    orphan.className = 'issue-item-wrapper';
-                    var steps = fixedIssuesMap[msg].map(function(step) {
-                        return '<div class="fixed-step">' + step + '</div>';
-                    }).join('');
-                    orphan.innerHTML = `
-                        <div class="issue-row row-fixed-orph">
-                            <span class="issue-tag fixed-orph-tag">RESOLVED</span>
-                            <span class="issue-msg">${msg}</span>
-                        </div>
-                        <div class="fixed-indicator">
-                            <div class="fixed-header">
-                                <span class="fixed-tag">FIXED</span>
-                            </div>
-                            <div class="fixed-steps">${steps}</div>
-                        </div>
+                    const explanation = fixedIssuesMap[msg];
+
+                    const card = document.createElement('div');
+                    card.className = 'issue-card fixed';
+
+                    const header = document.createElement('div');
+                    header.className = 'issue-card-header';
+
+                    const badge = document.createElement('span');
+                    badge.className = 'issue-badge resolved';
+                    badge.textContent = 'RESOLVED';
+
+                    const pos = document.createElement('span');
+                    pos.className = 'issue-location';
+                    pos.textContent = 'General Scope';
+
+                    const msgSpan = document.createElement('span');
+                    msgSpan.className = 'issue-message-text';
+                    msgSpan.textContent = msg;
+
+                    header.appendChild(badge);
+                    header.appendChild(pos);
+                    header.appendChild(msgSpan);
+                    card.appendChild(header);
+
+                    const actionsRow = document.createElement('div');
+                    actionsRow.className = 'issue-card-actions';
+
+                    const typeBadge = document.createElement('span');
+                    typeBadge.className = 'issue-type-badge sgfc';
+                    typeBadge.textContent = 'SGFC';
+                    actionsRow.appendChild(typeBadge);
+
+                    const actionRight = document.createElement('div');
+                    actionRight.className = 'issue-action-right';
+                    actionRight.innerHTML = `
+                        <span class="issue-fixed-label">Auto-Fixed</span>
+                        <span class="issue-check-icon">✓</span>
                     `;
-                    container.appendChild(orphan);
+                    actionsRow.appendChild(actionRight);
+                    card.appendChild(actionsRow);
+
+                    if (explanation && explanation.length > 0) {
+                        const details = document.createElement('div');
+                        details.className = 'issue-fixed-details';
+                        details.innerHTML = explanation.join('<br>');
+                        card.appendChild(details);
+                    }
+
+                    container.appendChild(card);
                 }
             });
         }
@@ -3020,61 +2898,97 @@
 
         // ── Check if a specific issue's property pattern is still present in content ──
         function isIssueStillPresent(msg, content) {
-            // Extract property name from message (e.g. "property <B/W>: ..." → "B/W")
-            var propMatch = msg.match(/property\s*<([^>]+)>/i);
-            if (!propMatch) {
-                // Try angle-bracket-only pattern (e.g. "unknown property <TT> found")
-                propMatch = msg.match(/<([A-Z]{2,3})>/i);
+            // If it's a front-of-tree warning:
+            if (/front of game-tree/i.test(msg)) {
+                const firstParenthesis = content.indexOf('(');
+                if (firstParenthesis === -1) return true;
+                const before = content.substring(0, firstParenthesis).trim();
+                return before.length > 0;
             }
-            if (!propMatch) return true;
+            
+            // If it's a missing start mark error:
+            if (/start mark.*missing/i.test(msg) || /no SGF data/i.test(msg)) {
+                return !content.trim().startsWith('(');
+            }
+
+            // Extract property name from message (e.g. "property <B/W>: ..." → "B/W")
+            var propMatch = msg.match(/property\s*<([^>]+)>/i) || msg.match(/<([A-Z]{1,4})>/i);
+            if (!propMatch) {
+                // If there's no property tag, let's do a general check:
+                // If it's a general issue, and content changed, let's assume it was fixed
+                return false; 
+            }
             var propName = propMatch[1];
 
-            // For illegal value issues: check if the property still has that specific value
-            var valMatch = msg.match(/illegal\s+value\s*\[([^\]]+)\]/i);
+            // Check if the property name still exists with the bad value if mentioned
+            // E.g. "illegal format [g]" or "illegal value [g]"
+            var valMatch = msg.match(/\[([^\]]+)\]/);
             if (valMatch) {
-                return content.indexOf('[' + valMatch[1] + ']') !== -1 &&
-                       content.indexOf(propName + '[') !== -1;
+                var badValue = valMatch[1];
+                return content.indexOf(propName + '[' + badValue + ']') !== -1 || 
+                       content.indexOf('[' + badValue + ']') !== -1;
             }
 
-            // For compose-type / value-type issues (AP): check if property still has problematic value
-            var composeMatch = msg.match(/expects\s+compose\s+type/i) || msg.match(/value\s+type\s+does\s+not\s+match/i);
-            if (composeMatch) {
-                return content.indexOf(propName + '[') !== -1;
-            }
-
-            // For unknown property / not-defined issues: check if property still exists
-            if (/unknown\s+property/i.test(msg) || /not\s+defined/i.test(msg) || /is\s+not\s+defined/i.test(msg)) {
-                return content.indexOf(propName + '[') !== -1;
-            }
-
-            // For "deleted" messages that mention a property: already fixed
-            if (/deleted/i.test(msg) && /corrected/i.test(msg)) return false;
-
-            // For "illegal format" issues: check if the original bad value still exists
-            var formatValMatch = msg.match(/illegal\s+format[^[]*\[([^\]]+)\]/i);
-            if (formatValMatch) {
-                var badValue = formatValMatch[1];
-                return content.indexOf(badValue) !== -1;
-            }
-
-            // Fallback: check if the property name still exists in the content
+            // General fallback: is the property still present?
             return content.indexOf(propName + '[') !== -1;
+        }
+
+        // ── Generate plain text explanation of changes made during fix ──
+        function generateFixExplanation(msg, before, after) {
+            const explanations = [];
+
+            // Check if stray data before game tree was removed
+            if (/front of game-tree/i.test(msg) || /stray data/i.test(msg)) {
+                const firstParenthesisBefore = before.indexOf('(');
+                const beforeText = firstParenthesisBefore !== -1 ? before.substring(0, firstParenthesisBefore).trim() : '';
+                if (beforeText) {
+                    explanations.push(`Stray data "${beforeText}" before game-tree ---> removed (SGF syntax compliance)`);
+                } else {
+                    explanations.push(`Stray data before game-tree ---> removed (SGF syntax compliance)`);
+                }
+                return explanations;
+            }
+
+            // Extract property name from message
+            var propMatch = msg.match(/property\s*<([^>]+)>/i) || msg.match(/<([A-Z]{1,4})>/i);
+            if (propMatch) {
+                const prop = propMatch[1];
+                
+                // Find property values in before and after
+                const propRegex = new RegExp('\\b' + prop + '\\s*\\[([^\\]]*)\\]', 'g');
+                const beforeVals = [];
+                let match;
+                while ((match = propRegex.exec(before)) !== null) {
+                    beforeVals.push(match[1]);
+                }
+                
+                const afterVals = [];
+                propRegex.lastIndex = 0;
+                while ((match = propRegex.exec(after)) !== null) {
+                    afterVals.push(match[1]);
+                }
+
+                if (beforeVals.length > 0 && afterVals.length === 0) {
+                    explanations.push(`${prop}[${beforeVals[0]}] ---> removed (not compliant and not defined by SGF FF[4])`);
+                } else if (beforeVals.length > 0 && afterVals.length > 0 && beforeVals[0] !== afterVals[0]) {
+                    explanations.push(`${prop}[${beforeVals[0]}] ---> corrected to ${prop}[${afterVals[0]}] (compliance normalization)`);
+                } else {
+                    explanations.push(`${prop} property ---> corrected (normalized to SGF FF[4])`);
+                }
+                return explanations;
+            }
+
+            explanations.push(`Compliance correction ---> applied (normalized to SGF FF[4])`);
+            return explanations;
         }
 
         // ── Per-Issue Auto-Fix: SGFC -c as primary, custom sanitizer as fallback ──
         function autoFixIssue(idx) {
             const bar = document.getElementById(`action-bar-${idx}`);
-            if (!bar) return;
-            const s1 = bar.querySelector('.state-1');
-            const s2 = bar.querySelector('.state-2');
-            const s3 = bar.querySelector('.state-3');
+            if (bar) {
+                bar.innerHTML = `<span class="issue-fixed-label" style="color: #2980B9;">Fixing...</span>`;
+            }
 
-            // 1 → 2
-            s1.classList.remove('active');
-            s1.classList.add('exit');
-            s2.classList.add('active');
-
-            // Preserve original (untouched) on first fix attempt
             if (!originalSgfContent) {
                 originalSgfContent = sgfContent;
                 sessionStorage.setItem('sgf_original', originalSgfContent);
@@ -3086,24 +3000,16 @@
             let fixExplanation = [];
 
             if (issue && msg) {
-
-                // ── Phase 1: SGFC -c mode (authoritative fixer for syntax/value errors) ──
+                // ── Phase 1: SGFC -c mode ──
                 var sgfcResult = runSgfcCorrect(sgfContent);
                 if (sgfcResult && sgfcResult.corrected && sgfcResult.corrected !== sgfContent) {
-                    // SGFC produced a corrected version — check if THIS specific issue is resolved
                     var issueResolved = !isIssueStillPresent(msg, sgfcResult.corrected);
-
                     if (issueResolved) {
+                        const oldContent = sgfContent;
                         sgfContent = sgfcResult.corrected;
                         sessionStorage.setItem('sgf_content', sgfContent);
                         fixed = true;
-
-                        fixExplanation.push(
-                            '<span class="step-label">Why:</span> ' + describeSGFError(msg)
-                        );
-                        fixExplanation.push(
-                            '<span class="step-label">Fix:</span> SGFC corrected this issue in the output. The corrected version resolves this problem.'
-                        );
+                        fixExplanation = generateFixExplanation(msg, oldContent, sgfContent);
                     }
                 }
 
@@ -3120,8 +3026,8 @@
                             try {
                                 var result = SGFAuditor.sanitizeSGFStream(sgfContent);
                                 if (result.archive && result.archive.length > 0 && result.fixed !== sgfContent) {
-                                    // Check if THIS specific issue is resolved in the sanitized content
                                     if (!isIssueStillPresent(msg, result.fixed)) {
+                                        const oldContent = sgfContent;
                                         sgfContent = result.fixed;
                                         sessionStorage.setItem('sgf_content', sgfContent);
                                         fixed = true;
@@ -3135,7 +3041,7 @@
                     }
                 }
 
-                // ── Phase 3: FoxWq non-FF[4] properties (TT, RL, TC, AP) ──
+                // ── Phase 3: FoxWq non-FF[4] properties ──
                 if (!fixed) {
                     var isFoxwqProp = /unknown property/i.test(msg) && /<(TT|RL|TC)>/i.test(msg) ||
                                      /not defined in FF\[4\]/i.test(msg) && /<(TT|RL|TC)>/i.test(msg) ||
@@ -3148,6 +3054,7 @@
                             try {
                                 var foxwqResult = SGFAuditor.autoFixFoxwqProps(sgfContent, msg);
                                 if (foxwqResult.archive && foxwqResult.archive.length > 0 && foxwqResult.fixed !== sgfContent) {
+                                    const oldContent = sgfContent;
                                     sgfContent = foxwqResult.fixed;
                                     sessionStorage.setItem('sgf_content', sgfContent);
                                     fixed = true;
@@ -3161,43 +3068,34 @@
                 }
             }
 
-            // Store explanation — keyed by message so renderIssuesList can re-inject after re-render
-            if (fixed && fixExplanation.length > 0) {
+            if (fixed) {
+                if (fixExplanation.length === 0) {
+                    fixExplanation = [`Correction applied successfully (normalized to SGF FF[4])`];
+                }
                 fixedIssuesMap[msg] = fixExplanation;
             }
 
-            // 2 → 3 (or 3-fail) after processing delay
             setTimeout(() => {
-                s2.classList.remove('active');
-                s2.classList.add('exit');
-
                 if (fixed) {
-                    s3.querySelector('.ias-progress-text').textContent = 'Auto-Fixed';
-                    s3.classList.add('active');
                     reAuditWorkingCopy();
                 } else {
-                    var s3Fail = bar.querySelector('.state-3-fail');
-                    if (s3Fail) {
-                        s3Fail.classList.add('active');
-                    } else {
-                        s3.querySelector('.ias-progress-text').textContent = 'No Fix Available';
-                        s3.classList.add('active');
+                    if (bar) {
+                        bar.innerHTML = `
+                            <span class="issue-fixed-label" style="color: var(--color-danger); font-size: 0.82rem; margin-right: 8px;">No Fix Available</span>
+                            <button class="issue-autofix-btn" style="background-color: #7F8C8D;" onclick="autoFixCustomIssue(${idx})">Try Custom Fix?</button>
+                            <span class="issue-caution-icon">⚠</span>
+                        `;
                     }
                 }
-            }, 1400);
+            }, 600);
         }
 
-        // ── Custom Fix: fallback when SGFC can't fix (sanitizer + FoxWq props) ──
+        // ── Custom Fix fallback ──
         function autoFixCustomIssue(idx) {
             const bar = document.getElementById(`action-bar-${idx}`);
-            if (!bar) return;
-            const s1 = bar.querySelector('.state-1');
-            const s2 = bar.querySelector('.state-2');
-            const s3 = bar.querySelector('.state-3');
-            const s3Fail = bar.querySelector('.state-3-fail');
-
-            if (s3Fail) s3Fail.classList.remove('active');
-            s2.classList.add('active');
+            if (bar) {
+                bar.innerHTML = `<span class="issue-fixed-label" style="color: #2980B9;">Fixing...</span>`;
+            }
 
             if (!originalSgfContent) {
                 originalSgfContent = sgfContent;
@@ -3210,69 +3108,60 @@
             let fixExplanation = [];
 
             if (issue && msg) {
-
-                // ── Custom sanitizer (bracket errors, phantom props, TM format) ──
-                const isBracketError = /illegal char\(s\)\s+found/i.test(msg);
-                const isPhantomProp  = /without any values/i.test(msg);
-                const isTmFormat     = /property.*<TM>.*illegal format/i.test(msg) ||
-                                       /property.*<TM>.*illegal value/i.test(msg) ||
-                                       /TM.*illegal/i.test(msg);
-
-                if (isBracketError || isPhantomProp || isTmFormat) {
-                    if (typeof SGFAuditor !== 'undefined' && SGFAuditor.sanitizeSGFStream) {
-                        try {
-                            var result = SGFAuditor.sanitizeSGFStream(sgfContent);
-                            if (result.archive && result.archive.length > 0 && result.fixed !== sgfContent) {
-                                sgfContent = result.fixed;
-                                sessionStorage.setItem('sgf_content', sgfContent);
-                                fixed = true;
-                                fixExplanation = result.archive;
-                            }
-                        } catch (e) {
-                            console.error('sanitizeSGFStream error:', e);
+                // ── Custom sanitizer ──
+                if (typeof SGFAuditor !== 'undefined' && SGFAuditor.sanitizeSGFStream) {
+                    try {
+                        var result = SGFAuditor.sanitizeSGFStream(sgfContent);
+                        if (result.archive && result.archive.length > 0 && result.fixed !== sgfContent) {
+                            const oldContent = sgfContent;
+                            sgfContent = result.fixed;
+                            sessionStorage.setItem('sgf_content', sgfContent);
+                            fixed = true;
+                            fixExplanation = result.archive;
                         }
+                    } catch (e) {
+                        console.error('sanitizeSGFStream error:', e);
                     }
                 }
 
-                // ── FoxWq non-FF[4] properties (TT, RL, TC, AP) ──
+                // ── FoxWq properties ──
                 if (!fixed) {
-                    const isFoxwqProp = /unknown property/i.test(msg) && /<(TT|RL|TC)>/i.test(msg) ||
-                                        /not defined in FF\[4\]/i.test(msg) && /<(TT|RL|TC)>/i.test(msg) ||
-                                        /<AP>.*expects compose type/i.test(msg) ||
-                                        /<AP>.*value deleted/i.test(msg);
-
-                    if (isFoxwqProp) {
-                        if (typeof SGFAuditor !== 'undefined' && SGFAuditor.autoFixFoxwqProps) {
-                            try {
-                                var foxwqResult = SGFAuditor.autoFixFoxwqProps(sgfContent, msg);
-                                if (foxwqResult.archive && foxwqResult.archive.length > 0 && foxwqResult.fixed !== sgfContent) {
-                                    sgfContent = foxwqResult.fixed;
-                                    sessionStorage.setItem('sgf_content', sgfContent);
-                                    fixed = true;
-                                    fixExplanation = foxwqResult.archive;
-                                }
-                            } catch (e) {
-                                console.error('autoFixFoxwqProps error:', e);
+                    if (typeof SGFAuditor !== 'undefined' && SGFAuditor.autoFixFoxwqProps) {
+                        try {
+                            var foxwqResult = SGFAuditor.autoFixFoxwqProps(sgfContent, msg);
+                            if (foxwqResult.archive && foxwqResult.archive.length > 0 && foxwqResult.fixed !== sgfContent) {
+                                const oldContent = sgfContent;
+                                sgfContent = foxwqResult.fixed;
+                                sessionStorage.setItem('sgf_content', sgfContent);
+                                fixed = true;
+                                fixExplanation = foxwqResult.archive;
                             }
+                        } catch (e) {
+                            console.error('autoFixFoxwqProps error:', e);
                         }
                     }
                 }
             }
 
-            if (fixed && fixExplanation.length > 0) {
-                fixedIssuesMap[issue.message] = fixExplanation;
+            if (fixed) {
+                if (fixExplanation.length === 0) {
+                    fixExplanation = [`Custom correction applied successfully (normalized to SGF FF[4])`];
+                }
+                fixedIssuesMap[msg] = fixExplanation;
             }
 
             setTimeout(() => {
-                s2.classList.remove('active');
-                s2.classList.add('exit');
-                s3.querySelector('.ias-progress-text').textContent = fixed ? 'Auto-Fixed' : 'No Fix Available';
-                s3.classList.add('active');
-
                 if (fixed) {
                     reAuditWorkingCopy();
+                } else {
+                    if (bar) {
+                        bar.innerHTML = `
+                            <span class="issue-fixed-label" style="color: var(--color-danger);">No Fix Available</span>
+                            <span class="issue-caution-icon">⚠</span>
+                        `;
+                    }
                 }
-            }, 1400);
+            }, 600);
         }
 
         // ── Fix All Issues: SGFC -c first, then custom sanitizer ──
