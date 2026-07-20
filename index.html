@@ -1262,7 +1262,7 @@
         function appendFetchMoreBtn(totalShown) {
             var existing = document.getElementById('foxwq-fetch-more');
             if (existing) existing.remove();
-            if (totalShown < window._foxwqAllGames.length) {
+            if (totalShown < 100) {
                 var div = document.createElement('div');
                 div.id = 'foxwq-fetch-more';
                 div.style.textAlign = 'center';
@@ -1282,6 +1282,7 @@
 
         function fetchMoreFoxwqGames() {
             var shown = window._foxwqGames.length;
+            if (shown >= 100) return;
             var remaining = window._foxwqAllGames.length - shown;
             if (remaining <= 0) {
                 // Need to fetch next page from FoxWq
