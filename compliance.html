@@ -1305,6 +1305,31 @@
             .filter-btn { padding: 6px 12px; font-size: 0.8rem; }
         }
 
+        /* ── SGF Game Tree Viewport Styles ── */
+        .tree-viewport:active {
+            cursor: grabbing;
+        }
+        .tree-node {
+            cursor: pointer;
+            pointer-events: all;
+        }
+        .node-circle {
+            stroke: var(--color-text);
+            stroke-width: 2.5px;
+        }
+        .node-text {
+            font-size: 10px;
+            font-weight: bold;
+            font-family: monospace;
+            text-anchor: middle;
+            dominant-baseline: central;
+        }
+        .tree-edge {
+            stroke: var(--color-text);
+            stroke-width: 2.5px;
+            fill: none;
+        }
+
     </style>
 </head>
 <body>
@@ -1465,6 +1490,7 @@
                 <div class="tabs-header">
                     <button class="tab-btn active" id="btn-issues-tab" onclick="switchTab(this, 'issues-tab')">Validation Issues</button>
                     <button class="tab-btn" id="btn-report-tab" onclick="switchTab(this, 'report-tab')">Raw Report</button>
+                    <button class="tab-btn" id="btn-tree-tab" onclick="switchTab(this, 'tree-tab')">Game Tree</button>
                 </div>
 
                 <!-- Tab 1: Issues -->
@@ -1482,6 +1508,18 @@
                 <!-- Tab 2: Raw Report -->
                 <div class="tab-content" id="report-tab">
                     <pre class="terminal-report" id="raw-report-display">SGFC Reference Report will be shown after diagnostics complete.</pre>
+                </div>
+
+                <!-- Tab 3: Game Tree -->
+                <div class="tab-content" id="tree-tab" style="position: relative;">
+                    <div class="tree-viewport" id="tree-viewport" style="width: 100%; height: 500px; position: relative; overflow: auto; cursor: grab; user-select: none; background-color: var(--color-surface-muted); border: 1.5px solid var(--color-text); border-radius: 4px; box-sizing: border-box; background-image: linear-gradient(rgba(32, 32, 32, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(32, 32, 32, 0.03) 1px, transparent 1px); background-size: 20px 20px;">
+                        <svg id="tree-canvas" width="2000" height="4000" style="position: absolute; top: 0; left: 0; transform-origin: 0 0; pointer-events: none;">
+                            <g id="transform-group"></g>
+                        </svg>
+                        <div style="position: absolute; bottom: 16px; left: 16px; z-index: 10; display: flex; gap: 8px;">
+                            <button class="autofix-btn" id="reset-view-btn" style="padding: 6px 12px; font-size: 0.8rem; margin: 0; background-color: var(--color-surface); color: var(--color-text); border: 1.5px solid var(--color-text); cursor: pointer; border-radius: 4px; font-weight: bold;">Center View</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -2893,6 +2931,13 @@
             // 6. Re-render the issues list DOM
             renderIssuesList();
 
+            // Clear computed tree so it gets rebuilt with new SGF content
+            rootNodeForTree = null;
+            if (document.getElementById('tree-tab').classList.contains('active')) {
+                buildAndRenderTree();
+                initOrCenterTree();
+            }
+
             if (onComplete) onComplete();
         }
 
@@ -3312,6 +3357,12 @@
 
             btn.classList.add('active');
             document.getElementById(tabId).classList.add('active');
+
+            if (tabId === 'tree-tab') {
+                if (typeof initOrCenterTree === 'function') {
+                    initOrCenterTree();
+                }
+            }
         }
 
         // Filtering list
@@ -3358,6 +3409,271 @@
                 header.classList.add('scrolled');
             } else {
                 header.classList.remove('scrolled');
+            }
+        });
+
+        /* ── SGF Game Tree Advanced Visual Engine ── */
+        class SGFNode {
+            constructor(id) {
+                this.id = id;
+                this.properties = {};
+                this.children = [];
+                this.parent = null;
+                this.x = 0;
+                this.y = 0;
+                this.moveNumber = 0;
+            }
+        }
+
+        function parseSGF(sgfString) {
+            let index = 0;
+            let nodeCount = 0;
+            let root = null;
+            let current = null;
+            let stack = [];
+
+            sgfString = sgfString.replace(/\s+(?=[^\[]*\])/g, ' ');
+
+            while (index < sgfString.length) {
+                let char = sgfString[index];
+
+                if (char === '(') {
+                    if (current) {
+                        stack.push(current);
+                    }
+                    index++;
+                } else if (char === ')') {
+                    if (stack.length > 0) {
+                        current = stack.pop();
+                    }
+                    index++;
+                } else if (char === ';') {
+                    index++;
+                    let newNode = new SGFNode(nodeCount++);
+                    
+                    if (!root) {
+                        root = newNode;
+                    } else if (current) {
+                        newNode.parent = current;
+                        newNode.moveNumber = current.moveNumber + 1;
+                        current.children.push(newNode);
+                    }
+                    current = newNode;
+
+                    while (index < sgfString.length && sgfString[index] !== ';' && sgfString[index] !== '(' && sgfString[index] !== ')') {
+                        if (navigator.userAgent.match(/Chrome/) && sgfString[index].trim() === '') { index++; continue; }
+                        
+                        let match = sgfString.substring(index).match(/^([A-Z]{1,2})/);
+                        if (match) {
+                            let propId = match[1];
+                            index += propId.length;
+                            newNode.properties[propId] = [];
+                            
+                            while (index < sgfString.length && sgfString[index] === '[') {
+                                index++;
+                                let value = "";
+                                while (index < sgfString.length && sgfString[index] !== ']') {
+                                    if (sgfString[index] === '\\') {
+                                        value += sgfString[index + 1];
+                                        index += 2;
+                                    } else {
+                                        value += sgfString[index];
+                                        index++;
+                                    }
+                                }
+                                newNode.properties[propId].push(value);
+                                index++;
+                            }
+                        } else {
+                            index++;
+                        }
+                    }
+                } else {
+                    index++;
+                }
+            }
+            return root;
+        }
+
+        function computeVerticalLayout(node, depth = 0, state = { nextX: 40, xSpacing: 50, ySpacing: 60 }) {
+            if (!node) return;
+
+            node.y = 40 + depth * state.ySpacing;
+
+            if (node.children.length === 0) {
+                node.x = state.nextX;
+                state.nextX += state.xSpacing;
+            } else {
+                for (let i = 0; i < node.children.length; i++) {
+                    computeVerticalLayout(node.children[i], depth + 1, state);
+                }
+                let firstChildX = node.children[0].x;
+                let lastChildX = node.children[node.children.length - 1].x;
+                node.x = (firstChildX + lastChildX) / 2;
+            }
+        }
+
+        class ViewportManager {
+            constructor(viewportId, transformGroupId) {
+                this.viewport = document.getElementById(viewportId);
+                this.transformGroup = document.getElementById(transformGroupId);
+                this.isDragging = false;
+                this.panX = 0;
+                this.panY = 0;
+                this.startX = 0;
+                this.startY = 0;
+
+                this.initEvents();
+            }
+
+            initEvents() {
+                this.viewport.addEventListener('pointerdown', (e) => {
+                    if (e.target.classList.contains('node-interactive')) return;
+                    
+                    this.isDragging = true;
+                    this.startX = e.clientX - this.panX;
+                    this.startY = e.clientY - this.panY;
+                    this.viewport.setPointerCapture(e.pointerId);
+                });
+
+                this.viewport.addEventListener('pointermove', (e) => {
+                    if (!this.isDragging) return;
+                    this.panX = e.clientX - this.startX;
+                    this.panY = e.clientY - this.startY;
+                    this.updateTransform();
+                });
+
+                this.viewport.addEventListener('pointerup', (e) => {
+                    if (!this.isDragging) return;
+                    this.isDragging = false;
+                    this.viewport.releasePointerCapture(e.pointerId);
+                });
+            }
+
+            updateTransform() {
+                this.transformGroup.setAttribute('transform', `translate(${this.panX}, ${this.panY})`);
+            }
+
+            reset(centerX = 180, centerY = 40) {
+                this.panX = centerX;
+                this.panY = centerY;
+                this.updateTransform();
+            }
+        }
+
+        class TreeRenderer {
+            constructor(transformGroupId) {
+                this.group = document.getElementById(transformGroupId);
+            }
+
+            clear() {
+                this.group.innerHTML = '';
+            }
+
+            render(root) {
+                this.clear();
+                if (!root) return;
+                this.renderEdges(root);
+                this.renderNodes(root);
+            }
+
+            renderEdges(node) {
+                for (let child of node.children) {
+                    let edge = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    let d = `M ${node.x} ${node.y} L ${child.x} ${child.y}`;
+                    edge.setAttribute('d', d);
+                    edge.setAttribute('class', 'tree-edge');
+                    this.group.appendChild(edge);
+                    this.renderEdges(child);
+                }
+            }
+
+            renderNodes(node) {
+                let g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                g.setAttribute('transform', `translate(${node.x}, ${node.y})`);
+                g.setAttribute('class', 'tree-node');
+
+                let circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('r', '14');
+                circle.setAttribute('class', 'node-circle node-interactive');
+
+                let fill = 'var(--color-accent)'; // Flat UI accent color for root
+                let textFill = 'var(--color-text)';
+                let label = node.moveNumber === 0 ? "R" : node.moveNumber;
+
+                if (node.properties['B']) {
+                    fill = 'var(--color-text)'; // Black stone
+                    textFill = 'var(--color-bg)';
+                    label = node.properties['B'][0] === '' ? 'pass' : node.properties['B'][0];
+                } else if (node.properties['W']) {
+                    fill = 'var(--color-surface)'; // White stone
+                    textFill = 'var(--color-text)';
+                    label = node.properties['W'][0] === '' ? 'pass' : node.properties['W'][0];
+                }
+
+                circle.setAttribute('fill', fill);
+
+                let text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('class', 'node-text node-interactive');
+                text.setAttribute('fill', textFill);
+                text.textContent = label;
+
+                g.appendChild(circle);
+                g.appendChild(text);
+
+                g.addEventListener('click', () => {
+                    console.log(`Auditor selection update applied: Node ID ${node.id}`, node.properties);
+                });
+
+                this.group.appendChild(g);
+
+                for (let child of node.children) {
+                    this.renderNodes(child);
+                }
+            }
+        }
+
+        // Integration Variables and Functions
+        let rootNodeForTree = null;
+        let viewportMgr = null;
+        let treeRenderer = null;
+
+        function buildAndRenderTree() {
+            var sgf = sgfContent || sessionStorage.getItem('sgf_content') || '';
+            if (!sgf) return;
+            try {
+                rootNodeForTree = parseSGF(sgf);
+                computeVerticalLayout(rootNodeForTree);
+                if (!viewportMgr) {
+                    viewportMgr = new ViewportManager('tree-viewport', 'transform-group');
+                }
+                if (!treeRenderer) {
+                    treeRenderer = new TreeRenderer('transform-group');
+                }
+                treeRenderer.render(rootNodeForTree);
+            } catch(e) {
+                console.error('Error rendering game tree:', e);
+            }
+        }
+
+        function initOrCenterTree() {
+            if (!rootNodeForTree) {
+                buildAndRenderTree();
+            }
+            if (rootNodeForTree && viewportMgr) {
+                const viewport = document.getElementById('tree-viewport');
+                const containerWidth = viewport.clientWidth || 400;
+                viewportMgr.reset((containerWidth / 2) - rootNodeForTree.x, 30);
+            }
+        }
+
+        // Bind reset button click
+        document.addEventListener('DOMContentLoaded', () => {
+            const resetBtn = document.getElementById('reset-view-btn');
+            if (resetBtn) {
+                resetBtn.addEventListener('click', () => {
+                    initOrCenterTree();
+                });
             }
         });
     </script>
