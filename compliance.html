@@ -1305,6 +1305,149 @@
             .filter-btn { padding: 6px 12px; font-size: 0.8rem; }
         }
 
+        /* ── SGF Ingestion Document Buffer Sidebar (Left Panel) ── */
+        .sgf-buffer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 450px;
+            height: 100vh;
+            background-color: #061c1b;
+            border-right: 2px solid var(--color-border);
+            z-index: 1000;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.25);
+            display: flex;
+            flex-direction: column;
+            transform: translateX(0);
+            transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+        .sgf-buffer-overlay.hidden {
+            transform: translateX(-100%);
+        }
+        .buffer-resizer {
+            position: absolute;
+            right: -4px;
+            top: 0;
+            width: 8px;
+            height: 100%;
+            cursor: ew-resize;
+            background-color: transparent;
+            z-index: 1010;
+        }
+        .buffer-resizer:hover, .buffer-resizer.resizing {
+            background-color: #26a69a;
+            opacity: 0.5;
+        }
+        .sgf-buffer-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            background-color: #063430;
+            border-bottom: 1px solid #0d423e;
+            color: #e0f2f1;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+        }
+        .sgf-buffer-header-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Google Sans Code', 'Inter', monospace;
+            font-weight: 700;
+            font-size: 0.82rem;
+            letter-spacing: 0.8px;
+            color: #e0f2f1;
+            text-transform: uppercase;
+        }
+        .sgf-buffer-header-title svg {
+            color: #80cbc4;
+        }
+        .sgf-buffer-body {
+            flex: 1;
+            display: flex;
+            overflow: auto;
+            background-color: #051b19;
+            font-family: 'Google Sans Code', 'Fira Code', 'Courier New', monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+        .sgf-buffer-gutter {
+            padding: 14px 10px 14px 14px;
+            background-color: #041513;
+            border-right: 1px solid #0c3531;
+            color: #3f6e68;
+            text-align: right;
+            user-select: none;
+            font-family: inherit;
+            font-size: inherit;
+            line-height: inherit;
+            min-width: 32px;
+        }
+        .sgf-buffer-code {
+            flex: 1;
+            padding: 14px 16px;
+            color: #d1e8e5;
+            white-space: pre;
+            overflow-x: auto;
+            font-family: inherit;
+            font-size: inherit;
+            line-height: inherit;
+            outline: none;
+        }
+        .sgf-syntax-struct {
+            color: #80cbc4;
+        }
+        .sgf-syntax-prop {
+            color: #8ce39c;
+            font-weight: 500;
+        }
+        .sgf-syntax-val {
+            color: #edd667;
+        }
+        .sgf-buffer-footer {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background-color: #063430;
+            border-top: 1px solid #0d423e;
+            color: #80cbc4;
+            font-family: 'Google Sans Code', monospace;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.6px;
+        }
+        .sgf-buffer-status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #26a69a;
+            box-shadow: 0 0 6px rgba(38, 166, 154, 0.8);
+            display: inline-block;
+        }
+        .floating-buffer-toggle {
+            position: fixed;
+            top: 70px;
+            left: 12px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background-color: var(--color-surface);
+            border: 1.5px solid var(--color-border);
+            color: var(--color-text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 900;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .floating-buffer-toggle:hover {
+            background-color: var(--color-surface-muted);
+            transform: scale(1.05);
+        }
+
         /* ── Game Tree Sidebar Overlay ── */
         .game-tree-overlay {
             position: fixed;
@@ -1717,8 +1860,11 @@
 
             if (!sgfContent) {
                 document.getElementById('empty-state').style.display = 'block';
+                if (typeof renderSgfBuffer === 'function') renderSgfBuffer();
                 return;
             }
+
+            if (typeof renderSgfBuffer === 'function') renderSgfBuffer(sgfContent);
 
             // Display main containers
             document.getElementById('main-container').style.display = 'flex';
@@ -3849,6 +3995,72 @@
             buildAndRenderTree();
         }
 
+        function toggleSgfBuffer() {
+            const overlay = document.getElementById('sgf-buffer-overlay');
+            if (overlay) {
+                overlay.classList.toggle('hidden');
+                if (!overlay.classList.contains('hidden')) {
+                    renderSgfBuffer();
+                }
+            }
+        }
+
+        function highlightSGF(text) {
+            if (!text) return '';
+            var escaped = text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+            
+            return escaped.replace(/(\[[\s\S]*?\])|(\b[A-Za-z]+(?=\s*\[))|([();])/g, function(match, val, prop, struct) {
+                if (val !== undefined) {
+                    return '<span class="sgf-syntax-val">' + val + '</span>';
+                } else if (prop !== undefined) {
+                    return '<span class="sgf-syntax-prop">' + prop + '</span>';
+                } else if (struct !== undefined) {
+                    return '<span class="sgf-syntax-struct">' + struct + '</span>';
+                }
+                return match;
+            });
+        }
+
+        function renderSgfBuffer(rawSgf) {
+            var sgf = rawSgf || sgfContent || sessionStorage.getItem('sgf_content') || '';
+            if (!sgf) {
+                sgf = "(;FF[4]GM[1]SZ[19]PB[Go Seigen]PW[Honinbo Shusai]\nDT[1933.10.16]KM[0]RE[W+R]\n\n;B[qd]AW[dd]\n;W[dp]AB[pp][pd]\n;B[pq];W[dc];B[ce];W[ed];B[jc]\n(;ff[4] B[oc];W[qj];B[qh])\n(;B[nd];W[qf];B[pi]ab[dp]))";
+            }
+
+            var gutterElem = document.getElementById('sgf-buffer-gutter');
+            var codeElem = document.getElementById('sgf-buffer-code');
+            var footerMode = document.getElementById('sgf-buffer-mode-text');
+
+            if (!gutterElem || !codeElem) return;
+
+            var lines = sgf.split('\n');
+            var displayLineCount = Math.max(lines.length, 10);
+
+            var gutterHtml = '';
+            for (var i = 1; i <= displayLineCount; i++) {
+                gutterHtml += i + '<br>';
+            }
+            gutterElem.innerHTML = gutterHtml;
+
+            var highlightedLines = lines.map(function(line) {
+                return highlightSGF(line);
+            });
+            while (highlightedLines.length < displayLineCount) {
+                highlightedLines.push('');
+            }
+
+            codeElem.innerHTML = highlightedLines.join('\n');
+
+            var ffMatch = sgf.match(/\bFF\[([0-9]+)\]/i);
+            var ffVer = ffMatch ? 'FF[' + ffMatch[1] + ']' : 'FF[4]';
+            if (footerMode) {
+                footerMode.textContent = ffVer + ' SGF SYNTAX MODE';
+            }
+        }
+
         function toggleGameTree() {
             const overlay = document.getElementById('game-tree-overlay');
             if (overlay) {
@@ -3882,6 +4094,43 @@
                     console.log("Game tree collapsed.");
                 });
             }
+
+            // Resizer for SGF Buffer Overlay (Left Panel)
+            const bufResizer = document.getElementById('buffer-resizer');
+            const bufOverlay = document.getElementById('sgf-buffer-overlay');
+            let isBufResizing = false;
+            let bufStartX, bufStartWidth;
+
+            if (bufResizer && bufOverlay) {
+                bufResizer.addEventListener('mousedown', function(e) {
+                    isBufResizing = true;
+                    bufStartX = e.clientX;
+                    bufStartWidth = parseInt(window.getComputedStyle(bufOverlay).width, 10);
+                    document.body.style.cursor = 'ew-resize';
+                    bufResizer.classList.add('resizing');
+                    e.preventDefault();
+                });
+
+                document.addEventListener('mousemove', function(e) {
+                    if (!isBufResizing) return;
+                    const diffX = e.clientX - bufStartX;
+                    let newWidth = bufStartWidth + diffX;
+                    if (newWidth < 300) newWidth = 300;
+                    if (newWidth > window.innerWidth - 100) newWidth = window.innerWidth - 100;
+                    bufOverlay.style.width = newWidth + 'px';
+                });
+
+                document.addEventListener('mouseup', function() {
+                    if (isBufResizing) {
+                        isBufResizing = false;
+                        document.body.style.cursor = 'default';
+                        bufResizer.classList.remove('resizing');
+                    }
+                });
+            }
+
+            // Render buffer on load
+            renderSgfBuffer();
 
             // Resizer for Game Tree Overlay
             const resizer = document.getElementById('tree-resizer');
@@ -3925,6 +4174,45 @@
             }
         });
     </script>
+    <!-- Floating button to toggle SGF Buffer left panel -->
+    <button id="floating-buffer-toggle" class="floating-buffer-toggle" onclick="toggleSgfBuffer()" title="View SGF Ingestion Document Buffer">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+        </svg>
+    </button>
+
+    <!-- SGF Ingestion Document Buffer Overlay (Left Panel) -->
+    <div id="sgf-buffer-overlay" class="sgf-buffer-overlay">
+        <div id="buffer-resizer" class="buffer-resizer"></div>
+        <div class="sgf-buffer-header">
+            <div class="sgf-buffer-header-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+                <span>SGF INGESTION DOCUMENT BUFFER</span>
+            </div>
+            <button class="close-overlay-btn" onclick="toggleSgfBuffer()" title="Close Sidebar" style="color: #e0f2f1;">
+                <svg width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            </button>
+        </div>
+        
+        <div class="sgf-buffer-body">
+            <div class="sgf-buffer-gutter" id="sgf-buffer-gutter"></div>
+            <div class="sgf-buffer-code" id="sgf-buffer-code"></div>
+        </div>
+
+        <div class="sgf-buffer-footer">
+            <span class="sgf-buffer-status-dot"></span>
+            <span id="sgf-buffer-mode-text">FF[4] SGF SYNTAX MODE</span>
+        </div>
+    </div>
+
     <!-- Floating button to reopen tree -->
     <button id="floating-tree-toggle" class="floating-tree-toggle" onclick="toggleGameTree()" title="View Game Tree">
         <svg width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 9h-2V7H8v5H6v2h2v5h2v-5h2v-2z"/></svg>

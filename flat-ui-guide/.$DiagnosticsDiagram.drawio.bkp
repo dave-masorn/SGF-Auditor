@@ -1,0 +1,34 @@
+<mxfile host="Electron">
+  <diagram name="Page-1" id="IVJLCZ7_qMPQm2mo9rpI">
+    <mxGraphModel dx="1094" dy="697" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="KdZUmk1holBMmnFsny-J-3" edge="1" parent="1" source="KdZUmk1holBMmnFsny-J-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" target="KdZUmk1holBMmnFsny-J-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="KdZUmk1holBMmnFsny-J-1" parent="1" style="whiteSpace=wrap;html=1;aspect=fixed;fontSize=18;strokeWidth=2;" value="compliance.html" vertex="1">
+          <mxGeometry height="200" width="200" x="40" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="KdZUmk1holBMmnFsny-J-5" edge="1" parent="1" source="KdZUmk1holBMmnFsny-J-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="KdZUmk1holBMmnFsny-J-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="KdZUmk1holBMmnFsny-J-8" edge="1" parent="1" source="KdZUmk1holBMmnFsny-J-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="KdZUmk1holBMmnFsny-J-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="KdZUmk1holBMmnFsny-J-2" parent="1" style="shape=step;perimeter=stepPerimeter;whiteSpace=wrap;html=1;fixedSize=1;size=10;strokeWidth=2;fontSize=14;fontStyle=1" value="STEP 01" vertex="1">
+          <mxGeometry height="40" width="120" x="320" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="KdZUmk1holBMmnFsny-J-4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=30;fontSize=13;strokeWidth=2;fontStyle=1" value="Run SGFC Diagnostic" vertex="1">
+          <mxGeometry height="40" width="200" x="480" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="KdZUmk1holBMmnFsny-J-6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=30;fontSize=13;strokeWidth=2;fontStyle=1" value="Properties Validation" vertex="1">
+          <mxGeometry height="40" width="200" x="480" y="130" as="geometry" />
+        </mxCell>
+        <mxCell id="KdZUmk1holBMmnFsny-J-7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=30;fontSize=13;strokeWidth=2;fontStyle=1" value="Move Legality Audit (GNU Go)" vertex="1">
+          <mxGeometry height="40" width="200" x="480" y="180" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

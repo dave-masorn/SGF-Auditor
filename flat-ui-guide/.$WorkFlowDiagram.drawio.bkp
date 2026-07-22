@@ -1,0 +1,19 @@
+<mxfile host="Electron">
+  <diagram name="Page-1" id="uN2ggb9NR525azNQMLm0">
+    <mxGraphModel dx="1054" dy="697" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="jOBTt2T4_VA56tqfJqLQ-1" parent="1" style="whiteSpace=wrap;html=1;aspect=fixed;fontSize=18;" value="index.html" vertex="1">
+          <mxGeometry height="200" width="200" x="80" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="jOBTt2T4_VA56tqfJqLQ-4" parent="1" style="shape=display;whiteSpace=wrap;html=1;" value="Upload SGF" vertex="1">
+          <mxGeometry height="40" width="160" x="280" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="jOBTt2T4_VA56tqfJqLQ-5" parent="1" style="shape=display;whiteSpace=wrap;html=1;" value="Fetch and have SGF" vertex="1">
+          <mxGeometry height="40" width="160" x="280" y="180" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
