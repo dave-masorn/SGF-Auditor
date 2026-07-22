@@ -881,7 +881,8 @@
             color: var(--text-color);
             font-weight: 500;
             flex-grow: 1;
-            word-break: break-word;
+            word-break: normal;
+            overflow-wrap: break-word;
         }
 
         .issue-card-actions {
@@ -980,7 +981,9 @@
             font-size: 0.82rem;
             font-family: "Google Sans Code", monospace;
             color: #117864;
-            word-break: break-all;
+            word-break: normal;
+            overflow-wrap: break-word;
+            line-height: 1.5;
         }
 
         /* FF[4] MAXIMIZATION CARD */
