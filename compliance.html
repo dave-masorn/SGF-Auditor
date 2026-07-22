@@ -591,6 +591,125 @@
             color: var(--color-primary);
         }
 
+        /* Sub-Steps Diagnostic Table Card (Matching Image 1 Specification) */
+        .substeps-card {
+            width: 100%;
+            margin-bottom: 30px;
+            background: #ffffff;
+            border: 1px solid #4DE8C2;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(4, 42, 36, 0.08);
+            position: relative;
+            z-index: 2;
+        }
+        .substeps-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'Google Sans', 'Inter', system-ui, sans-serif;
+            font-size: 0.85rem;
+        }
+        .substeps-table th {
+            background-color: #52E8C5;
+            color: #052923;
+            font-weight: 700;
+            font-size: 0.88rem;
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 2px solid #36CEAC;
+        }
+        .substeps-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #E2F6F0;
+            vertical-align: top;
+            color: #2c3e50;
+            line-height: 1.5;
+        }
+        .substeps-table tr:last-child td {
+            border-bottom: none;
+        }
+        .substep-num {
+            text-align: center;
+            font-weight: 700;
+            color: #052923;
+            font-size: 0.95rem;
+        }
+        .substep-name strong {
+            color: #052923;
+            font-size: 0.9rem;
+        }
+        .substep-action {
+            color: #34495e;
+            font-size: 0.82rem;
+        }
+        .substep-code-box {
+            background-color: #0b1a18;
+            color: #80cbc4;
+            border: 1px solid #1c5e59;
+            border-radius: 6px;
+            padding: 8px 10px;
+            font-family: 'Google Sans Code', 'Consolas', monospace;
+            font-size: 0.75rem;
+            max-height: 110px;
+            overflow-y: auto;
+            line-height: 1.4;
+        }
+        .substep-code-prompt {
+            color: #7f8c8d;
+            display: block;
+            margin-bottom: 4px;
+            font-size: 0.68rem;
+        }
+        .substep-code-content {
+            white-space: pre-wrap;
+            word-break: normal;
+            overflow-wrap: break-word;
+        }
+        .substep-code-content .error-text {
+            color: #ff8a80;
+            font-weight: 600;
+        }
+        .substep-code-content .pass-text {
+            color: #81c784;
+            font-weight: 600;
+        }
+        .substep-status {
+            text-align: center;
+        }
+        .status-pill {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-align: center;
+            width: 105px;
+            box-sizing: border-box;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .status-pill.pending {
+            background-color: #F5D061;
+            color: #4A3B00;
+        }
+        .status-pill.under-review {
+            background-color: #F5D061;
+            color: #4A3B00;
+            animation: pillPulse 1.2s infinite;
+        }
+        .status-pill.pass {
+            background-color: #2ECC71;
+            color: #ffffff;
+        }
+        .status-pill.fail {
+            background-color: #E74C3C;
+            color: #ffffff;
+        }
+        @keyframes pillPulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(0.97); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
         /* Detailed Results Container */
         .detailed-results-wrapper {
             width: 100%;
@@ -1917,6 +2036,78 @@
             <div class="progress-bar-text" id="progress-text" style="display: none;">0%</div>
         </div>
 
+        <!-- Sub-Steps Diagnostic Table Card (Matching Image 1 Specification) -->
+        <div class="substeps-card" id="substeps-table-card">
+            <table class="substeps-table">
+                <thead>
+                    <tr>
+                        <th style="width: 10%; text-align: center;">Sub-Step</th>
+                        <th style="width: 22%;">Name</th>
+                        <th style="width: 32%;">Action</th>
+                        <th style="width: 24%;">Result</th>
+                        <th style="width: 12%; text-align: center;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr id="substep-row-1">
+                        <td class="substep-num">01</td>
+                        <td class="substep-name">
+                            <strong>SGFC Syntax Checker</strong>
+                        </td>
+                        <td class="substep-action">
+                            Check the "working" SGF with the Official SGFC compiled from C to web-based here. If any error(s) found, have it logged with a tag of "SGFC", independently, Per-Issue.
+                            <br><small style="color: #7f8c8d; display: block; margin-top: 4px;">Note: the "working sgf" is the copied version of the original SGF file to use within and across our web app.</small>
+                        </td>
+                        <td class="substep-result">
+                            <div class="substep-code-box" id="result-box-1">
+                                <span class="substep-code-prompt">davemasorn@Daves-MacBook-Air ~ % sgfc ...</span>
+                                <div id="result-text-1" class="substep-code-content">Ready for audit run...</div>
+                            </div>
+                        </td>
+                        <td class="substep-status">
+                            <span class="status-pill pending" id="status-pill-1">Pending</span>
+                        </td>
+                    </tr>
+                    <tr id="substep-row-2">
+                        <td class="substep-num">02</td>
+                        <td class="substep-name">
+                            <strong>Properties Validation</strong>
+                        </td>
+                        <td class="substep-action">
+                            This is part of our Custom-Checker, the Auditor that's not officially available, like SGFC, but aims to follow the SGF FF[4] standard strictly. If any error(s) found, have it logged with a tag of "PROP", independently, Per-Issue.
+                        </td>
+                        <td class="substep-result">
+                            <div class="substep-code-box" id="result-box-2">
+                                <span class="substep-code-prompt">custom-checker ~ % prop-validate</span>
+                                <div id="result-text-2" class="substep-code-content">Ready for audit run...</div>
+                            </div>
+                        </td>
+                        <td class="substep-status">
+                            <span class="status-pill pending" id="status-pill-2">Pending</span>
+                        </td>
+                    </tr>
+                    <tr id="substep-row-3">
+                        <td class="substep-num">03</td>
+                        <td class="substep-name">
+                            <strong>GNU Go</strong>
+                        </td>
+                        <td class="substep-action">
+                            This is our add-on checker powered by GNU Go. If any error(s) found, have it logged with a tag of "GNUG", independently, Per-Issue.
+                        </td>
+                        <td class="substep-result">
+                            <div class="substep-code-box" id="result-box-3">
+                                <span class="substep-code-prompt">gnugo ~ % move-legality-audit</span>
+                                <div id="result-text-3" class="substep-code-content">Ready for audit run...</div>
+                            </div>
+                        </td>
+                        <td class="substep-status">
+                            <span class="status-pill pending" id="status-pill-3">Pending</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
         <!-- FF[4] Maximization Results Card (reveals after Step 2) -->
         <div class="detailed-results-wrapper" id="maximize-wrapper">
             <div class="maximize-card">
@@ -2388,23 +2579,44 @@
             }
         }
 
+        function setSubstepStatus(stepNum, status, count = 0) {
+            const pill = document.getElementById(`status-pill-${stepNum}`);
+            if (!pill) return;
+            if (status === 'under-review') {
+                pill.className = 'status-pill under-review';
+                pill.textContent = 'Under Review';
+            } else if (status === 'pass') {
+                pill.className = 'status-pill pass';
+                pill.textContent = 'PASS';
+            } else if (status === 'fail') {
+                pill.className = 'status-pill fail';
+                pill.textContent = count > 0 ? `FAIL (${count})` : 'FAIL';
+            } else {
+                pill.className = 'status-pill pending';
+                pill.textContent = 'Pending';
+            }
+        }
+
         // ── Combined diagnostic: 1.1 Syntax Checker → 1.2 Properties Validation → Completed ──
         function startDiagnostics() {
             if (diagnosticsRunning) return;
             diagnosticsRunning = true;
 
-            // Reset progress bar
+            // Reset progress bar & substep status pills per Image 1 spec
             document.getElementById('progress-fill').style.width = '0%';
             document.getElementById('progress-text').textContent = '0%';
 
+            setSubstepStatus(1, 'under-review');
+            setSubstepStatus(2, 'pending');
+            setSubstepStatus(3, 'pending');
+
             const playBtn = document.getElementById('play-btn');
-            playBtn.classList.add('running');
+            if (playBtn) playBtn.classList.add('running');
 
             if (currentStep === 1) {
                 const stepBar = document.getElementById('step1-bar');
-                stepBar.classList.add('running');
+                if (stepBar) stepBar.classList.add('running');
 
-                // Step 1: Run WASM audit in READ-ONLY mode (no output file, no auto-correction)
                 if (isWasmLoaded) {
                     runWasmAuditReadOnly(() => {
                         runPhase1SyntaxChecker();
@@ -2421,26 +2633,25 @@
 
         // ── Phase 1.1: Execute SGFC Syntax Checker (animated playback of WASM results) ──
         function runPhase1SyntaxChecker() {
-            document.getElementById('step1-text').textContent = "Executing SGFC Syntax Checker ...";
+            document.getElementById('step1-text').textContent = "Executing Sub-Step 01: SGFC Syntax Checker ...";
+            setSubstepStatus(1, 'under-review');
 
             const logBox = document.getElementById('code-log-box');
-            logBox.innerHTML = '';
+            if (logBox) logBox.innerHTML = '';
 
             const fill = document.getElementById('progress-fill');
             const text = document.getElementById('progress-text');
 
             const steps = [
-                { percent: 0,  text: `[INIT] Loading SGF file...`, type: 'info' },
-                { percent: 12, text: `[INIT] File target: ${sgfFilename} (${sgfContent.length} bytes read)`, type: 'info' },
-                { percent: 25, text: `[PARSE] Initializing SGFC WebAssembly engine...`, type: 'text' },
-                { percent: 38, text: `[PARSE] Scanning game tree nodes: Found ${auditResult.stats.gameTrees} game tree(s) and ${auditResult.stats.nodes} node(s)...`, type: 'text' },
-                { percent: 52, text: `[VALIDATE] Commencing SGFC compliance check for Go GM[1] FF[4]...`, type: 'info' },
-                { percent: 68, text: `[VALIDATE] Verifying board dimensions: SZ[${auditResult.board.width}x${auditResult.board.height}] checked successfully`, type: 'text' },
-                { percent: 80, text: `[VALIDATE] Analyzing game move sequences: ${auditResult.stats.moves} moves, ${auditResult.stats.variations} variations...`, type: 'text' },
-                { percent: 88, text: `[VALIDATE] Auditing coordinate syntax and checking for property card exclusions...`, type: 'text' }
+                { percent: 0,  text: `[SUB-STEP 01/03] [SGFC] Loading working SGF copy...`, type: 'info' },
+                { percent: 12, text: `[SUB-STEP 01/03] [SGFC] Target file: ${sgfFilename} (${sgfContent.length} bytes read)`, type: 'info' },
+                { percent: 25, text: `[SUB-STEP 01/03] [SGFC] Initializing SGFC WebAssembly engine...`, type: 'text' },
+                { percent: 38, text: `[SUB-STEP 01/03] [SGFC] Scanning game tree nodes: Found ${auditResult.stats.gameTrees} game tree(s) and ${auditResult.stats.nodes} node(s)...`, type: 'text' },
+                { percent: 52, text: `[SUB-STEP 01/03] [SGFC] Commencing SGFC compliance check for Go GM[1] FF[4]...`, type: 'info' },
+                { percent: 68, text: `[SUB-STEP 01/03] [SGFC] Verifying board dimensions: SZ[${auditResult.board.width}x${auditResult.board.height}] checked successfully`, type: 'text' },
+                { percent: 80, text: `[SUB-STEP 01/03] [SGFC] Analyzing game move sequences: ${auditResult.stats.moves} moves, ${auditResult.stats.variations} variations...`, type: 'text' }
             ];
 
-            // Stream any WASM report lines as sub-steps
             const reportLines = auditResult.report.split('\n').filter(line => line.trim().length > 0);
             if (reportLines.length > 0) {
                 const sampleLimit = Math.min(5, reportLines.length);
@@ -2450,24 +2661,38 @@
                     if (line.toLowerCase().includes('error') || line.toLowerCase().includes('fatal')) type = 'error';
                     else if (line.toLowerCase().includes('warning')) type = 'warning';
                     steps.push({
-                        percent: 88 + Math.floor((i + 1) * (10 / (sampleLimit + 1))),
+                        percent: 80 + Math.floor((i + 1) * (15 / (sampleLimit + 1))),
                         text: line,
                         type
                     });
                 }
             }
 
-            const errorsCount = auditResult.issues.filter(i => i.severity === 'error').length;
-            const finalType = auditResult.compliant ? 'info' : 'error';
-            const finalMessage = auditResult.compliant
-                ? `[1.1 DONE] SGFC Syntax Checker complete — PASS.`
-                : `[1.1 DONE] SGFC Syntax Checker complete — FAIL (${errorsCount} violation(s)).`;
-            steps.push({ percent: 100, text: finalMessage, type: finalType });
+            const sgfcIssues = auditResult.issues.filter(i => (i.tags && i.tags.includes('SGFC')) || i.type === 'SGFC');
+            const sgfcErrors = sgfcIssues.filter(i => i.severity === 'error');
+            const finalMessage = sgfcErrors.length === 0
+                ? `[SUB-STEP 01 DONE] SGFC Syntax Checker complete — PASS (0 errors).`
+                : `[SUB-STEP 01 DONE] SGFC Syntax Checker complete — FAIL (${sgfcErrors.length} violation(s)).`;
+            steps.push({ percent: 95, text: finalMessage, type: sgfcErrors.length === 0 ? 'info' : 'error' });
 
             let currentIdx = 0;
 
             function runStep() {
                 if (currentIdx >= steps.length) {
+                    // Update Sub-Step 1 Result Box & Status Pill per Image 1 spec
+                    const resBox1 = document.getElementById('result-text-1');
+                    if (resBox1) {
+                        if (sgfcIssues.length === 0) {
+                            resBox1.innerHTML = '<span class="pass-text">[SGFC] All SGF FF[4] syntax rules passed — 0 errors.</span>';
+                        } else {
+                            resBox1.innerHTML = sgfcIssues.map(i => {
+                                let pos = i.position ? `Line:${i.position.line} Col:${i.position.col}` : 'General';
+                                return `<div class="${i.severity === 'error' ? 'error-text' : ''}">${pos} - ${i.severity.toUpperCase()}: ${i.message}</div>`;
+                            }).join('');
+                        }
+                    }
+                    setSubstepStatus(1, sgfcErrors.length > 0 ? 'fail' : 'pass', sgfcErrors.length);
+
                     setTimeout(runPhase2PropertiesValidation, 300);
                     return;
                 }
@@ -2476,20 +2701,19 @@
                 fill.style.width = `${step.percent}%`;
                 text.textContent = `${step.percent}%`;
 
-                const line = document.createElement('div');
-                line.className = 'code-box-line';
-                if (step.type === 'error') line.classList.add('error-line');
-                else if (step.type === 'warning') line.classList.add('warn-line');
-                else if (step.type === 'info') line.classList.add('info-line');
-                line.textContent = step.text;
-                logBox.appendChild(line);
-                logBox.scrollTop = logBox.scrollHeight;
+                if (logBox) {
+                    const line = document.createElement('div');
+                    line.className = 'code-box-line';
+                    if (step.type === 'error') line.classList.add('error-line');
+                    else if (step.type === 'warning') line.classList.add('warn-line');
+                    else if (step.type === 'info') line.classList.add('info-line');
+                    line.textContent = step.text;
+                    logBox.appendChild(line);
+                    logBox.scrollTop = logBox.scrollHeight;
+                }
 
                 currentIdx++;
-                let delay = 160;
-                if (step.percent >= 80) delay = 220;
-                if (step.percent === 100) delay = 350;
-                setTimeout(runStep, delay);
+                setTimeout(runStep, 140);
             }
 
             runStep();
@@ -2497,7 +2721,8 @@
 
         // ── Phase 1.2: Properties Validation (DT, RE) ──
         function runPhase2PropertiesValidation() {
-            document.getElementById('step1-text').textContent = "Doing Properties Validation ...";
+            document.getElementById('step1-text').textContent = "Executing Sub-Step 02: Properties Validation ...";
+            setSubstepStatus(2, 'under-review');
 
             const logBox = document.getElementById('code-log-box');
             const fill = document.getElementById('progress-fill');
@@ -2535,11 +2760,11 @@
             });
 
             const steps = [
-                { percent: 30, text: `[1.2] Running Properties Validation — checking DT (Date) and RE (Result) formats...`, type: 'info' }
+                { percent: 30, text: `[SUB-STEP 02/03] [PROP] Running Properties Validation — checking DT, RE, TM format compliance...`, type: 'info' }
             ];
 
             if (propWarnings.length === 0 && propErrors.length === 0) {
-                steps.push({ percent: 70, text: `[1.2] All property values conform to SGF FF[4] specifications.`, type: 'text' });
+                steps.push({ percent: 70, text: `[SUB-STEP 02/03] [PROP] All property values conform to SGF FF[4] specifications.`, type: 'text' });
             } else {
                 propWarnings.forEach(w => {
                     steps.push({ percent: 70, text: `[WARNING] ${w.msg}`, type: 'warning' });
@@ -2549,15 +2774,12 @@
                 });
             }
 
-            const allErrors   = auditResult.issues.filter(i => i.severity === 'error').length;
-            const allWarnings = auditResult.issues.filter(i => i.severity === 'warning').length;
-            const pass = allErrors === 0;
-            const finalType = pass ? 'info' : 'error';
+            const finalType = propErrors.length === 0 ? 'info' : 'error';
             steps.push({
                 percent: 100,
-                text: pass
-                    ? `[COMPLETE] SGF Diagnostics Completed! — PASS (${allErrors} error(s), ${allWarnings} warning(s)).`
-                    : `[COMPLETE] SGF Diagnostics Completed! — FAIL (${allErrors} error(s), ${allWarnings} warning(s)).`,
+                text: propErrors.length === 0
+                    ? `[SUB-STEP 02 DONE] Properties Validation complete — PASS (0 errors).`
+                    : `[SUB-STEP 02 DONE] Properties Validation complete — FAIL (${propErrors.length} violation(s)).`,
                 type: finalType
             });
 
@@ -2565,6 +2787,20 @@
 
             function runStep() {
                 if (currentIdx >= steps.length) {
+                    // Update Sub-Step 2 Result Box & Status Pill per Image 1 spec
+                    const resBox2 = document.getElementById('result-text-2');
+                    if (resBox2) {
+                        if (propErrors.length === 0 && propWarnings.length === 0) {
+                            resBox2.innerHTML = '<span class="pass-text">[PROP] All SGF FF[4] property values conform to specification.</span>';
+                        } else {
+                            let allPropIssues = propErrors.concat(propWarnings);
+                            resBox2.innerHTML = allPropIssues.map(i => {
+                                return `<div class="${i.type === 'error' || i.severity === 'error' ? 'error-text' : ''}">Property - ${i.msg || i.message}</div>`;
+                            }).join('');
+                        }
+                    }
+                    setSubstepStatus(2, propErrors.length > 0 ? 'fail' : 'pass', propErrors.length);
+
                     runPhase3MoveLegality();
                     return;
                 }
@@ -2573,19 +2809,19 @@
                 fill.style.width = `${step.percent}%`;
                 text.textContent = `${step.percent}%`;
 
-                const line = document.createElement('div');
-                line.className = 'code-box-line';
-                if (step.type === 'error') line.classList.add('error-line');
-                else if (step.type === 'warning') line.classList.add('warn-line');
-                else if (step.type === 'info') line.classList.add('info-line');
-                line.textContent = step.text;
-                logBox.appendChild(line);
-                logBox.scrollTop = logBox.scrollHeight;
+                if (logBox) {
+                    const line = document.createElement('div');
+                    line.className = 'code-box-line';
+                    if (step.type === 'error') line.classList.add('error-line');
+                    else if (step.type === 'warning') line.classList.add('warn-line');
+                    else if (step.type === 'info') line.classList.add('info-line');
+                    line.textContent = step.text;
+                    logBox.appendChild(line);
+                    logBox.scrollTop = logBox.scrollHeight;
+                }
 
                 currentIdx++;
-                let delay = 200;
-                if (step.percent === 100) delay = 400;
-                setTimeout(runStep, delay);
+                setTimeout(runStep, 160);
             }
 
             runStep();
@@ -2593,7 +2829,8 @@
 
         // ── Phase 1.3: Move Legality Audit (GNU Go WASM) ──
         function runPhase3MoveLegality() {
-            document.getElementById('step1-text').textContent = "Doing Move Legality Audit (GNU Go) ...";
+            document.getElementById('step1-text').textContent = "Executing Sub-Step 03: GNU Go Move Legality ...";
+            setSubstepStatus(3, 'under-review');
 
             const logBox = document.getElementById('code-log-box');
             const fill = document.getElementById('progress-fill');
@@ -2602,12 +2839,14 @@
             // Attempt to load GNU Go WASM (lazy load)
             loadGnuGo(function(success) {
                 if (!success) {
-                    // GNU Go not available — skip Phase 1.3 gracefully
                     var steps = [
-                        { percent: 50, text: "[1.3] GNU Go WASM engine not available — skipping Move Legality Audit.", type: "info" },
-                        { percent: 100, text: "[1.3 DONE] Move Legality Audit — SKIPPED (engine unavailable).", type: "info" }
+                        { percent: 50, text: "[SUB-STEP 03/03] [GNUG] GNU Go WASM engine not available — skipping Move Legality Audit.", type: "info" },
+                        { percent: 100, text: "[SUB-STEP 03 DONE] Move Legality Audit — SKIPPED (engine unavailable).", type: "info" }
                     ];
                     animatePhase1_3(steps, function() {
+                        const resBox3 = document.getElementById('result-text-3');
+                        if (resBox3) resBox3.innerHTML = '<span class="pass-text">[GNUG] Engine skipped — PASS.</span>';
+                        setSubstepStatus(3, 'pass');
                         finishDiagnostics();
                     });
                     return;
@@ -2623,10 +2862,13 @@
                 } catch (e) {
                     console.warn("Phase 1.3: parseSGF failed:", e);
                     var steps = [
-                        { percent: 50, text: "[1.3] SGF AST parse failed: " + e.message, type: "warning" },
-                        { percent: 100, text: "[1.3 DONE] Move Legality Audit — SKIPPED (AST parse error).", type: "info" }
+                        { percent: 50, text: "[SUB-STEP 03/03] [GNUG] SGF AST parse failed: " + e.message, type: "warning" },
+                        { percent: 100, text: "[SUB-STEP 03 DONE] Move Legality Audit — SKIPPED (AST parse error).", type: "info" }
                     ];
                     animatePhase1_3(steps, function() {
+                        const resBox3 = document.getElementById('result-text-3');
+                        if (resBox3) resBox3.innerHTML = '<span class="pass-text">[GNUG] AST parse skipped — PASS.</span>';
+                        setSubstepStatus(3, 'pass');
                         finishDiagnostics();
                     });
                     return;
@@ -2634,40 +2876,40 @@
 
                 if (!astRoot) {
                     var steps = [
-                        { percent: 50, text: "[1.3] No game tree found — skipping Move Legality Audit.", type: "info" },
-                        { percent: 100, text: "[1.3 DONE] Move Legality Audit — SKIPPED.", type: "info" }
+                        { percent: 50, text: "[SUB-STEP 03/03] [GNUG] No game tree found — skipping Move Legality Audit.", type: "info" },
+                        { percent: 100, text: "[SUB-STEP 03 DONE] Move Legality Audit — SKIPPED.", type: "info" }
                     ];
                     animatePhase1_3(steps, function() {
+                        const resBox3 = document.getElementById('result-text-3');
+                        if (resBox3) resBox3.innerHTML = '<span class="pass-text">[GNUG] No game tree — PASS.</span>';
+                        setSubstepStatus(3, 'pass');
                         finishDiagnostics();
                     });
                     return;
                 }
 
-                // Determine board size from auditResult (parsed in Phase 1.1)
                 var boardSize = 19;
                 if (auditResult && auditResult.board) {
                     boardSize = auditResult.board.width || 19;
                 }
 
                 var steps = [
-                    { percent: 15, text: "[1.3] Initializing GNU Go WASM engine (board size: " + boardSize + "x" + boardSize + ") ...", type: "info" },
-                    { percent: 30, text: "[1.3] Building SGF Abstract Syntax Tree ...", type: "text" },
-                    { percent: 50, text: "[1.3] Traversing game tree variations (depth-first search) ...", type: "text" }
+                    { percent: 15, text: "[SUB-STEP 03/03] [GNUG] Initializing GNU Go WASM engine (board size: " + boardSize + "x" + boardSize + ") ...", type: "info" },
+                    { percent: 30, text: "[SUB-STEP 03/03] [GNUG] Building SGF Abstract Syntax Tree ...", type: "text" },
+                    { percent: 50, text: "[SUB-STEP 03/03] [GNUG] Traversing game tree variations (depth-first search) ...", type: "text" }
                 ];
 
-                // Execute the move legality audit
                 var auditor = new SgfMoveAuditor(gnugoWasmModule, boardSize);
                 var result = auditor.executeAudit(astRoot);
 
                 if (result.issues.length === 0) {
-                    steps.push({ percent: 85, text: "[1.3] All moves validated — no illegal placements or rule violations detected.", type: "text" });
+                    steps.push({ percent: 85, text: "[SUB-STEP 03/03] [GNUG] All moves validated — no illegal placements or rule violations detected.", type: "text" });
                 } else {
                     result.issues.forEach(function(issue) {
-                        steps.push({ percent: 85, text: "[1.3] [ERROR] " + issue.message, type: "error" });
+                        steps.push({ percent: 85, text: "[SUB-STEP 03/03] [GNUG] [ERROR] " + issue.message, type: "error" });
                     });
                 }
 
-                // Merge Phase 1.3 issues into auditResult with multi-tag support per diagram specification
                 result.issues.forEach(function(issue) {
                     let existing = auditResult.issues.find(i => i.message === issue.message);
                     if (existing) {
@@ -2688,12 +2930,21 @@
                 steps.push({
                     percent: 100,
                     text: pass
-                        ? "[1.3 DONE] Move Legality Audit — PASS (0 illegal moves)."
-                        : "[1.3 DONE] Move Legality Audit — FAIL (" + result.issues.length + " illegal move(s) found).",
+                        ? "[SUB-STEP 03 DONE] Move Legality Audit — PASS (0 illegal moves)."
+                        : "[SUB-STEP 03 DONE] Move Legality Audit — FAIL (" + result.issues.length + " illegal move(s) found).",
                     type: pass ? "info" : "error"
                 });
 
                 animatePhase1_3(steps, function() {
+                    const resBox3 = document.getElementById('result-text-3');
+                    if (resBox3) {
+                        if (result.issues.length === 0) {
+                            resBox3.innerHTML = '<span class="pass-text">[GNUG] All moves validated — 0 illegal placements or rule violations.</span>';
+                        } else {
+                            resBox3.innerHTML = result.issues.map(i => `<div class="error-text">Move Rule Violation: ${i.message}</div>`).join('');
+                        }
+                    }
+                    setSubstepStatus(3, result.issues.length > 0 ? 'fail' : 'pass', result.issues.length);
                     finishDiagnostics();
                 });
             });
@@ -2711,19 +2962,19 @@
                     fill.style.width = step.percent + "%";
                     text.textContent = step.percent + "%";
 
-                    var line = document.createElement('div');
-                    line.className = 'code-box-line';
-                    if (step.type === 'error') line.classList.add('error-line');
-                    else if (step.type === 'warning') line.classList.add('warn-line');
-                    else if (step.type === 'info') line.classList.add('info-line');
-                    line.textContent = step.text;
-                    logBox.appendChild(line);
-                    logBox.scrollTop = logBox.scrollHeight;
+                    if (logBox) {
+                        var line = document.createElement('div');
+                        line.className = 'code-box-line';
+                        if (step.type === 'error') line.classList.add('error-line');
+                        else if (step.type === 'warning') line.classList.add('warn-line');
+                        else if (step.type === 'info') line.classList.add('info-line');
+                        line.textContent = step.text;
+                        logBox.appendChild(line);
+                        logBox.scrollTop = logBox.scrollHeight;
+                    }
 
                     currentIdx++;
-                    var delay = 200;
-                    if (step.percent === 100) delay = 400;
-                    setTimeout(runStep, delay);
+                    setTimeout(runStep, 160);
                 }
 
                 runStep();
