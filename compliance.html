@@ -2221,7 +2221,8 @@
                             severity: severity === 'error' ? 'error' : 'warning',
                             message,
                             position: { line: lineNum, col: colNum },
-                            type: 'SGFC'
+                            type: 'SGFC',
+                            tags: ['SGFC']
                         });
                     } else {
                         const genMatch = line.match(/^\s*(Error|Warning|Fatal\s+error)\s+\d+(?:\s*\(critical\))?:\s*(.*)$/i);
@@ -2236,7 +2237,8 @@
                                 severity: severity === 'error' ? 'error' : 'warning',
                                 message,
                                 position: null,
-                                type: 'SGFC'
+                                type: 'SGFC',
+                                tags: ['SGFC']
                             });
                         }
                     }
@@ -2434,12 +2436,24 @@
                 propWarnings.push({ type: "properties", msg: "Properties validator not available (SGFAuditor.validateSGFProperties missing)." });
             }
 
-            // Merge into auditResult
+            // Merge into auditResult with multi-tag support per diagram specification
             propWarnings.forEach(w => {
-                auditResult.issues.push({ severity: 'warning', message: w.msg, position: null, type: 'PROP' });
+                let existing = auditResult.issues.find(i => i.message === w.msg);
+                if (existing) {
+                    if (!existing.tags) existing.tags = [existing.type || 'SGFC'];
+                    if (!existing.tags.includes('PROP')) existing.tags.push('PROP');
+                } else {
+                    auditResult.issues.push({ severity: 'warning', message: w.msg, position: null, type: 'PROP', tags: ['PROP'] });
+                }
             });
             propErrors.forEach(e => {
-                auditResult.issues.push({ severity: 'error', message: e.msg, position: null, type: 'PROP' });
+                let existing = auditResult.issues.find(i => i.message === e.msg);
+                if (existing) {
+                    if (!existing.tags) existing.tags = [existing.type || 'SGFC'];
+                    if (!existing.tags.includes('PROP')) existing.tags.push('PROP');
+                } else {
+                    auditResult.issues.push({ severity: 'error', message: e.msg, position: null, type: 'PROP', tags: ['PROP'] });
+                }
             });
 
             const steps = [
@@ -2575,14 +2589,21 @@
                     });
                 }
 
-                // Merge Phase 1.3 issues into auditResult
+                // Merge Phase 1.3 issues into auditResult with multi-tag support per diagram specification
                 result.issues.forEach(function(issue) {
-                    auditResult.issues.push({
-                        severity: issue.severity || 'error',
-                        message: issue.message,
-                        position: { line: issue.line, col: issue.column },
-                        type: 'GNUG'
-                    });
+                    let existing = auditResult.issues.find(i => i.message === issue.message);
+                    if (existing) {
+                        if (!existing.tags) existing.tags = [existing.type || 'SGFC'];
+                        if (!existing.tags.includes('GNUG')) existing.tags.push('GNUG');
+                    } else {
+                        auditResult.issues.push({
+                            severity: issue.severity || 'error',
+                            message: issue.message,
+                            position: { line: issue.line, col: issue.column },
+                            type: 'GNUG',
+                            tags: ['GNUG']
+                        });
+                    }
                 });
 
                 var pass = result.issues.length === 0;
@@ -3022,22 +3043,28 @@
                 const actionsRow = document.createElement('div');
                 actionsRow.className = 'issue-card-actions';
 
-                // Determine Error Type (e.g. SGFC, PROP, GNUG)
-                let errType = (issue.type || 'SGFC').toLowerCase();
-                
-                // Double check type based on message if missing
-                if (!issue.type) {
+                // Determine Error Tags (supports multiple tags per diagram specification: SGFC, PROP, GNUG)
+                let tagsArr = [];
+                if (Array.isArray(issue.tags) && issue.tags.length > 0) {
+                    tagsArr = issue.tags;
+                } else if (issue.type) {
+                    tagsArr = [issue.type];
+                } else {
                     if (/Illegal move|violates basic capture|ko constraints/i.test(issue.message)) {
-                        errType = 'gnug';
+                        tagsArr = ['GNUG'];
                     } else if (/conforms to SGF FF\[4\]|validateSGFProperties/i.test(issue.message) || /not compliant and not defined by SGF/i.test(issue.message)) {
-                        errType = 'prop';
+                        tagsArr = ['PROP'];
+                    } else {
+                        tagsArr = ['SGFC'];
                     }
                 }
 
-                const typeBadge = document.createElement('span');
-                typeBadge.className = `issue-type-badge ${errType}`;
-                typeBadge.textContent = errType.toUpperCase();
-                actionsRow.appendChild(typeBadge);
+                tagsArr.forEach(t => {
+                    const typeBadge = document.createElement('span');
+                    typeBadge.className = `issue-type-badge ${t.toLowerCase()}`;
+                    typeBadge.textContent = t.toUpperCase();
+                    actionsRow.appendChild(typeBadge);
+                });
 
                 const actionRight = document.createElement('div');
                 actionRight.className = 'issue-action-right';
@@ -3607,9 +3634,19 @@
                 } else {
                     if (bar) {
                         bar.innerHTML = `
-                            <span class="issue-fixed-label" style="color: var(--color-danger);">No Fix Available</span>
+                            <span class="issue-fixed-label" style="color: var(--color-danger); font-weight: 600;">Custom-Fix: Unresolved</span>
                             <span class="issue-caution-icon">⚠</span>
                         `;
+                    }
+                    // Log why not fixed under the issue block per diagram step 2.2
+                    let card = document.getElementById(`issue-card-${idx}`);
+                    if (card && !card.querySelector('.issue-unfixed-log')) {
+                        let logDiv = document.createElement('div');
+                        logDiv.className = 'issue-fixed-details issue-unfixed-log';
+                        logDiv.style.borderLeftColor = 'var(--color-danger)';
+                        logDiv.style.backgroundColor = 'rgba(189, 90, 75, 0.08)';
+                        logDiv.innerHTML = `<strong>Reason Not Fixed:</strong> Manual correction required in SGF Document Buffer (non-standard property format or complex move sequence).`;
+                        card.appendChild(logDiv);
                     }
                 }
             }, 600);
