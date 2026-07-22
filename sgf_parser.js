@@ -1551,6 +1551,122 @@
         return { fixed: fixed, changes: changes, archive: archive };
     }
 
+    /**
+     * SgfSanitizer & Formatter
+     * Reconstructs, standardizes, and formats malformed or unformatted SGF strings into strictly FF[4]-compliant SGF.
+     */
+    function sanitizeAndFormatSGF(rawSgf) {
+        if (!rawSgf || typeof rawSgf !== 'string') return '';
+
+        // 1. Prune truncated trailing sequence at EOF
+        var clean = rawSgf.trim().replace(/;[A-Z]{1,2}(?:\[[^\]]*\])*\[[^\]]*$/, '');
+
+        // 2. Isolate root node & rest of tree
+        var rootMatch = clean.match(/^\(?(?:\s*;)?([^;()]+)/);
+        if (!rootMatch) return clean;
+
+        var rootNodeStr = rootMatch[1];
+        var restOfTree = clean.slice(rootMatch[0].length);
+
+        // 3. Map properties from root node
+        var props = new Map();
+        var propRegex = /([A-Z]{1,2})((?:\s*\[.*?\])+)/g;
+        var match;
+        
+        while ((match = propRegex.exec(rootNodeStr)) !== null) {
+            var key = match[1];
+            var valMatches = match[2].match(/\[(.*?)\]/g);
+            var values = valMatches ? valMatches.map(function(v) { return v.slice(1, -1); }) : [];
+            props.set(key, values);
+        }
+
+        // --- GO-DOMAIN FIXES ---
+        props.set('GM', ['1']);
+        props.set('FF', ['4']);
+        props.set('CA', ['UTF-8']);
+
+        // Normalize Komi: Convert Chinese zi values (e.g., 375 = 3.75 zi) to points (3.75 * 2 = 7.5)
+        if (props.has('KM')) {
+            var kmVal = parseFloat(props.get('KM')[0]);
+            if (kmVal > 100) {
+                props.set('KM', [((kmVal / 100) * 2).toString()]);
+            }
+        }
+
+        // Standardize ranks to FF[4] recommendations (..p, ..d, ..k)
+        var normalizeRank = function(rankArray) {
+            if (!rankArray || rankArray.length === 0) return;
+            var rank = rankArray[0];
+            rank = rank.replace(/P(\d+)段/i, '$1p')
+                       .replace(/(\d+)段/, '$1d')
+                       .replace(/(\d+)级/, '$1k');
+            rankArray[0] = rank;
+        };
+        normalizeRank(props.get('BR'));
+        normalizeRank(props.get('WR'));
+
+        // Consolidate TC + TT timing into standard OT (Overtime)
+        if (props.has('TC') && props.has('TT')) {
+            var tc = props.get('TC')[0];
+            var tt = props.get('TT')[0];
+            props.set('OT', [tc + 'x' + tt + ' byo-yomi']);
+        }
+        
+        // Strip non-standard registry violators (TC, TT, RL)
+        ['TC', 'TT', 'RL'].forEach(function(prop) { props.delete(prop); });
+
+        // --- BEAUTIFUL FORMATTING & REASSEMBLY ---
+        var formattedRoot = '(\n;';
+        
+        var lineGroups = [
+            ['GM', 'FF', 'SZ', 'CA'],
+            ['GN'],
+            ['DT'],
+            ['PB', 'PW'],
+            ['BR', 'WR'],
+            ['KM', 'HA', 'RU'],
+            ['AP', 'RE'],
+            ['TM', 'OT']
+        ];
+
+        var renderedProps = new Set();
+
+        lineGroups.forEach(function(group) {
+            var line = '';
+            group.forEach(function(key) {
+                if (props.has(key)) {
+                    line += key + props.get(key).map(function(v) { return '[' + v + ']'; }).join('');
+                    renderedProps.add(key);
+                }
+            });
+            if (line.length > 0) {
+                formattedRoot += line + '\n';
+            }
+        });
+
+        for (var entry of props.entries()) {
+            var k = entry[0];
+            var vals = entry[1];
+            if (!renderedProps.has(k)) {
+                formattedRoot += k + vals.map(function(v) { return '[' + v + ']'; }).join('') + '\n';
+            }
+        }
+
+        // Format moves into clean lines (10 moves per line)
+        var moveNodes = restOfTree.split(/(?=;)/).filter(function(n) { return n.trim().length > 0; });
+        var movesFormatted = '';
+        
+        for (var i = 0; i < moveNodes.length; i++) {
+            movesFormatted += moveNodes[i].trim();
+            if ((i + 1) % 10 === 0 && i < moveNodes.length - 1) {
+                movesFormatted += '\n';
+            }
+        }
+
+        var result = formattedRoot + movesFormatted + '\n)';
+        return result;
+    }
+
     // Expose APIs
     global.SGFAuditor = {
         parseSGF,
@@ -1561,6 +1677,7 @@
         maximizeSGF,
         autoFixSGFProperties,
         sanitizeSGFStream,
+        sanitizeAndFormatSGF,
         fixEscapedBrackets,
         fixStrayArtifacts,
         fixStrayNonASCII,

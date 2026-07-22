@@ -3853,6 +3853,19 @@
                     }
                 }
 
+                // Phase D: SgfSanitizer & Formatter (KM, BR/WR, CA, OT, tree enclosure & line formatting)
+                if (typeof SGFAuditor !== 'undefined' && SGFAuditor.sanitizeAndFormatSGF) {
+                    var formatted = SGFAuditor.sanitizeAndFormatSGF(sgfContent);
+                    if (formatted && formatted !== sgfContent) {
+                        sgfContent = formatted;
+                        sessionStorage.setItem('sgf_content', sgfContent);
+                        fixedAny = true;
+                        archive.push(
+                            '<span class="step-label">Sanitizer & Formatter:</span> Applied strict SGF FF[4] tree enclosure, Komi/Rank normalization, OT time consolidation, and clean line formatting.'
+                        );
+                    }
+                }
+
                 if (!fixedAny) {
                     alert('No fixable issues found.');
                     return;
