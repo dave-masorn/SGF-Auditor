@@ -1430,23 +1430,48 @@
             color: #80cbc4;
             border: 1px solid rgba(38, 166, 154, 0.5);
         }
-        .buffer-reaudit-btn {
-            background-color: #0d423e;
-            color: #80cbc4;
-            border: 1px solid #1c5e59;
+        .buffer-diff-toggle {
+            display: inline-flex;
+            background-color: #041513;
+            border: 1px solid #0d423e;
             border-radius: 4px;
-            padding: 4px 10px;
-            font-size: 0.72rem;
+            padding: 2px;
+        }
+        .buffer-diff-btn {
+            background: none;
+            border: none;
+            color: #80cbc4;
+            font-family: 'Google Sans Code', monospace;
+            font-size: 0.68rem;
             font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 3px;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 4px;
             transition: all 0.15s ease;
         }
-        .buffer-reaudit-btn:hover {
-            background-color: #175752;
+        .buffer-diff-btn.active {
+            background-color: #064540;
             color: #ffffff;
+        }
+        .diff-badge-add {
+            background-color: rgba(76, 175, 80, 0.25);
+            color: #a5d6a7;
+            border: 1px solid rgba(76, 175, 80, 0.5);
+            padding: 1px 6px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-left: 4px;
+        }
+        .diff-badge-del {
+            background-color: rgba(239, 83, 80, 0.25);
+            color: #ff8a80;
+            border: 1px solid rgba(239, 83, 80, 0.5);
+            padding: 1px 6px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-left: 4px;
         }
         .buffer-line {
             display: flex;
@@ -1465,6 +1490,28 @@
         .buffer-line.warning {
             background-color: rgba(255, 179, 0, 0.15);
             border-left: 3px solid #ffb300;
+        }
+        .buffer-line.add {
+            background-color: rgba(76, 175, 80, 0.2) !important;
+            border-left: 3px solid #66bb6a !important;
+            color: #c8e6c9 !important;
+        }
+        .buffer-line.del {
+            background-color: rgba(239, 83, 80, 0.22) !important;
+            border-left: 3px solid #ef5350 !important;
+            color: #ffcdd2 !important;
+            text-decoration: line-through;
+            text-decoration-color: rgba(239, 83, 80, 0.7);
+        }
+        .buffer-gutter-line.add {
+            color: #66bb6a;
+            font-weight: bold;
+            background-color: rgba(76, 175, 80, 0.1);
+        }
+        .buffer-gutter-line.del {
+            color: #ef5350;
+            font-weight: bold;
+            background-color: rgba(239, 83, 80, 0.1);
         }
         .buffer-pulse-highlight {
             animation: bufferPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
@@ -4143,6 +4190,64 @@
             buildAndRenderTree();
         }
 
+        var bufferViewMode = 'diff';
+
+        function setBufferViewMode(mode) {
+            bufferViewMode = mode;
+            var btnDiff = document.getElementById('btn-diff-mode');
+            var btnClean = document.getElementById('btn-clean-mode');
+            if (btnDiff && btnClean) {
+                if (mode === 'diff') {
+                    btnDiff.classList.add('active');
+                    btnClean.classList.remove('active');
+                } else {
+                    btnClean.classList.add('active');
+                    btnDiff.classList.remove('active');
+                }
+            }
+            renderSgfBuffer();
+        }
+
+        function computeLineDiff(oldText, newText) {
+            var oldLines = (oldText || '').split('\n');
+            var newLines = (newText || '').split('\n');
+
+            var M = oldLines.length;
+            var N = newLines.length;
+            var L = [];
+            for (var i = 0; i <= M; i++) {
+                L[i] = new Array(N + 1).fill(0);
+            }
+
+            for (var i = 0; i < M; i++) {
+                for (var j = 0; j < N; j++) {
+                    if (oldLines[i] === newLines[j]) {
+                        L[i + 1][j + 1] = L[i][j] + 1;
+                    } else {
+                        L[i + 1][j + 1] = Math.max(L[i + 1][j], L[i][j + 1]);
+                    }
+                }
+            }
+
+            var i = M, j = N;
+            var diff = [];
+            while (i > 0 || j > 0) {
+                if (i > 0 && j > 0 && oldLines[i - 1] === newLines[j - 1]) {
+                    diff.unshift({ type: 'same', text: oldLines[i - 1] });
+                    i--;
+                    j--;
+                } else if (j > 0 && (i === 0 || L[i][j - 1] >= L[i - 1][j])) {
+                    diff.unshift({ type: 'add', text: newLines[j - 1] });
+                    j--;
+                } else if (i > 0 && (j === 0 || L[i][j - 1] < L[i - 1][j])) {
+                    diff.unshift({ type: 'remove', text: oldLines[i - 1] });
+                    i--;
+                }
+            }
+
+            return diff;
+        }
+
         function toggleSgfBuffer() {
             const overlay = document.getElementById('sgf-buffer-overlay');
             if (overlay) {
@@ -4194,26 +4299,10 @@
             }
         }
 
-        function reAuditBufferText() {
-            var codeElem = document.getElementById('sgf-buffer-code');
-            if (!codeElem) return;
-            var newSgf = codeElem.innerText ? codeElem.innerText.trim() : '';
-            if (!newSgf) return;
-            
-            if (!originalSgfContent) {
-                originalSgfContent = sgfContent;
-                sessionStorage.setItem('sgf_original', originalSgfContent);
-            }
-            sgfContent = newSgf;
-            sessionStorage.setItem('sgf_content', sgfContent);
-            
-            if (typeof reAuditWorkingCopy === 'function') {
-                reAuditWorkingCopy();
-            }
-        }
-
         function renderSgfBuffer(rawSgf, result) {
             var sgf = rawSgf || sgfContent || sessionStorage.getItem('sgf_content') || '';
+            var origSgf = originalSgfContent || sessionStorage.getItem('sgf_original') || sgf;
+
             if (!sgf) {
                 sgf = "(;FF[4]GM[1]SZ[19]PB[Go Seigen]PW[Honinbo Shusai]\nDT[1933.10.16]KM[0]RE[W+R]\n\n;B[qd]AW[dd]\n;W[dp]AB[pp][pd]\n;B[pq];W[dc];B[ce];W[ed];B[jc]\n(;ff[4] B[oc];W[qj];B[qh])\n(;B[nd];W[qf];B[pi]ab[dp]))";
             }
@@ -4222,6 +4311,8 @@
             var codeElem = document.getElementById('sgf-buffer-code');
             var footerMode = document.getElementById('sgf-buffer-mode-text');
             var diagPill = document.getElementById('buffer-diag-pill');
+            var diffBadgesEl = document.getElementById('buffer-diff-badges');
+            var toggleBox = document.getElementById('buffer-diff-toggle-box');
 
             if (!gutterElem || !codeElem) return;
 
@@ -4260,30 +4351,75 @@
                 }
             }
 
-            var lines = sgf.split('\n');
-            var displayLineCount = Math.max(lines.length, 10);
+            var hasDiff = origSgf && origSgf !== sgf;
+            var diffItems = hasDiff ? computeLineDiff(origSgf, sgf) : [];
+
+            var addedCount = 0;
+            var removedCount = 0;
+            if (hasDiff) {
+                diffItems.forEach(function(item) {
+                    if (item.type === 'add') addedCount++;
+                    if (item.type === 'remove') removedCount++;
+                });
+            }
+
+            // Render diff summary badges & toggle visibility
+            if (diffBadgesEl) {
+                if (hasDiff && (addedCount > 0 || removedCount > 0)) {
+                    diffBadgesEl.style.display = 'inline-flex';
+                    diffBadgesEl.innerHTML = '<span class="diff-badge-add">+' + addedCount + '</span><span class="diff-badge-del">-' + removedCount + '</span>';
+                } else {
+                    diffBadgesEl.style.display = 'none';
+                }
+            }
+            if (toggleBox) {
+                toggleBox.style.display = hasDiff ? 'inline-flex' : 'none';
+            }
 
             var gutterHtml = '';
             var codeHtml = '';
 
-            for (var i = 1; i <= displayLineCount; i++) {
-                var diagList = lineDiagnostics[i];
-                var badgeHtml = '';
-                var lineClass = 'buffer-line';
+            if (hasDiff && bufferViewMode === 'diff') {
+                // Render Diff View (+/- line changes)
+                var lineNum = 1;
+                diffItems.forEach(function(item, idx) {
+                    var highlighted = highlightSGF(item.text);
+                    if (item.type === 'remove') {
+                        gutterHtml += '<div class="buffer-gutter-line del">-</div>';
+                        codeHtml += '<div class="buffer-line del" id="buffer-diff-line-' + idx + '">- ' + (highlighted || ' ') + '</div>';
+                    } else if (item.type === 'add') {
+                        gutterHtml += '<div class="buffer-gutter-line add">+</div>';
+                        codeHtml += '<div class="buffer-line add" id="buffer-diff-line-' + idx + '">+ ' + (highlighted || ' ') + '</div>';
+                    } else {
+                        gutterHtml += '<div class="buffer-gutter-line"><span>' + lineNum + '</span></div>';
+                        codeHtml += '<div class="buffer-line" id="buffer-line-' + lineNum + '">' + (highlighted || ' ') + '</div>';
+                        lineNum++;
+                    }
+                });
+            } else {
+                // Render Clean Code View
+                var lines = sgf.split('\n');
+                var displayLineCount = Math.max(lines.length, 10);
 
-                if (diagList && diagList.length > 0) {
-                    var hasErr = diagList.some(function(d) { return d.severity === 'error'; });
-                    var badgeSev = hasErr ? 'error' : 'warning';
-                    lineClass += hasErr ? ' error' : ' warning';
-                    var tooltip = diagList.map(function(d) { return d.severity.toUpperCase() + ': ' + d.message; }).join(' | ');
-                    badgeHtml = '<span class="buffer-gutter-badge ' + badgeSev + '" title="' + tooltip + '">' + (hasErr ? '!' : '⚠') + '</span>';
+                for (var i = 1; i <= displayLineCount; i++) {
+                    var diagList = lineDiagnostics[i];
+                    var badgeHtml = '';
+                    var lineClass = 'buffer-line';
+
+                    if (diagList && diagList.length > 0) {
+                        var hasErr = diagList.some(function(d) { return d.severity === 'error'; });
+                        var badgeSev = hasErr ? 'error' : 'warning';
+                        lineClass += hasErr ? ' error' : ' warning';
+                        var tooltip = diagList.map(function(d) { return d.severity.toUpperCase() + ': ' + d.message; }).join(' | ');
+                        badgeHtml = '<span class="buffer-gutter-badge ' + badgeSev + '" title="' + tooltip + '">' + (hasErr ? '!' : '⚠') + '</span>';
+                    }
+
+                    gutterHtml += '<div class="buffer-gutter-line" id="buffer-gutter-line-' + i + '">' + badgeHtml + '<span>' + i + '</span></div>';
+
+                    var lineText = (i <= lines.length) ? lines[i - 1] : '';
+                    var highlighted = highlightSGF(lineText);
+                    codeHtml += '<div class="' + lineClass + '" id="buffer-line-' + i + '">' + (highlighted || ' ') + '</div>';
                 }
-
-                gutterHtml += '<div class="buffer-gutter-line" id="buffer-gutter-line-' + i + '">' + badgeHtml + '<span>' + i + '</span></div>';
-
-                var lineText = (i <= lines.length) ? lines[i - 1] : '';
-                var highlighted = highlightSGF(lineText);
-                codeHtml += '<div class="' + lineClass + '" id="buffer-line-' + i + '">' + (highlighted || ' ') + '</div>';
             }
 
             gutterElem.innerHTML = gutterHtml;
@@ -4293,8 +4429,9 @@
             var ffVer = ffMatch ? 'FF[' + ffMatch[1] + ']' : 'FF[4]';
             if (footerMode) {
                 var totalIssues = totalErrors + totalWarnings;
+                var diffText = (hasDiff && bufferViewMode === 'diff') ? ' • DIFF VIEW (+' + addedCount + ' -' + removedCount + ')' : '';
                 var suffix = totalIssues > 0 ? ' • ' + totalIssues + ' DIAGNOSTIC ISSUES DETECTED' : ' • 0 DIAGNOSTIC ISSUES';
-                footerMode.textContent = ffVer + ' SGF SYNTAX MODE' + suffix;
+                footerMode.textContent = ffVer + ' SGF SYNTAX MODE' + diffText + suffix;
             }
         }
 
@@ -4434,10 +4571,17 @@
                 </svg>
                 <span>SGF INGESTION DOCUMENT BUFFER</span>
                 <span id="buffer-diag-pill" class="buffer-diag-pill clean">✓ Clean</span>
+                <span id="buffer-diff-badges" style="display: none; align-items: center;"></span>
             </div>
-            <button class="close-overlay-btn" onclick="toggleSgfBuffer()" title="Close Sidebar" style="color: #e0f2f1;">
-                <svg width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-            </button>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <div class="buffer-diff-toggle" id="buffer-diff-toggle-box" style="display: none;">
+                    <button class="buffer-diff-btn active" id="btn-diff-mode" onclick="setBufferViewMode('diff')">Diff View</button>
+                    <button class="buffer-diff-btn" id="btn-clean-mode" onclick="setBufferViewMode('clean')">Clean Code</button>
+                </div>
+                <button class="close-overlay-btn" onclick="toggleSgfBuffer()" title="Close Sidebar" style="color: #e0f2f1;">
+                    <svg width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                </button>
+            </div>
         </div>
         
         <div class="sgf-buffer-body">
