@@ -2730,6 +2730,28 @@
             }
         }
 
+        var initialErrorsCount = 0;
+
+        function updateStep1ProgressBarText() {
+            const step1Text = document.getElementById('step1-text');
+            if (!step1Text) return;
+
+            const activeErrors = auditResult.issues ? auditResult.issues.filter(i => i.severity === 'error').length : 0;
+            const fixedCount = Object.keys(fixedIssuesMap).length;
+            
+            if (initialErrorsCount === 0 || (activeErrors + fixedCount) > initialErrorsCount) {
+                initialErrorsCount = activeErrors + fixedCount;
+            }
+
+            if (activeErrors === 0) {
+                // Image 2 Spec: When ALL errors fixed (XX = YY)
+                step1Text.innerHTML = `SGF Diagnostics Completed — <span style="color: #27AE60; font-weight: 700;">ALL Errors Fixed</span>; Re-Run Diagnostics &rarr;`;
+            } else {
+                // Image 2 Spec: SGF Diagnostics Completed — XX Errors Found — YY Fixed
+                step1Text.innerHTML = `SGF Diagnostics Completed — <span style="color: #E74C3C; font-weight: 700;">${initialErrorsCount} Errors Found</span> — <span style="color: #27AE60; font-weight: 700;">${fixedCount} Fixed</span>`;
+            }
+        }
+
         // ── Finish Step 1: if PASS → transition to Step 2; if FAIL → show results ──
         function finishDiagnostics() {
             const stepNode1 = document.getElementById('step-node-1');
@@ -2742,12 +2764,12 @@
             document.getElementById('play-btn').classList.remove('running');
             document.getElementById('step1-bar').classList.remove('running');
 
-            // If Step 1 passed (no errors), auto-transition to Step 2
+            // Update Step 1 bar text dynamically according to Image 2 specification
+            updateStep1ProgressBarText();
+
             const hasErrors = auditResult.issues.some(i => i.severity === 'error');
             if (!hasErrors) {
                 setTimeout(() => transitionToStep2(), 600);
-            } else {
-                document.getElementById('step1-text').textContent = "SGF Diagnostics Completed — Errors Found";
             }
         }
 
@@ -3427,12 +3449,16 @@
             const moveCount = (sgfContent.match(/[BW]\[/g) || []).length;
             auditResult.stats.moves = moveCount;
 
-            // 5. Refresh banner counts
+            // 5. Refresh banner counts & Step 1 bar status per Image 2 spec
             const errs  = auditResult.issues.filter(i => i.severity === 'error').length;
             const warns = auditResult.issues.filter(i => i.severity === 'warning').length;
             document.getElementById('filter-all-count').textContent   = errs + warns;
             document.getElementById('filter-error-count').textContent = errs;
             document.getElementById('filter-warning-count').textContent = warns;
+
+            if (typeof updateStep1ProgressBarText === 'function') {
+                updateStep1ProgressBarText();
+            }
 
             // 6. Re-render the issues list DOM
             renderIssuesList();
