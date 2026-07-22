@@ -3332,9 +3332,14 @@
             // 6. Re-render the issues list DOM
             renderIssuesList();
 
+            // 7. Update SGF Document Buffer left panel with updated content & resolved issues
+            if (typeof renderSgfBuffer === 'function') {
+                renderSgfBuffer(sgfContent, auditResult);
+            }
+
             // Clear computed tree so it gets rebuilt with new SGF content
             rootNodeForTree = null;
-            if (document.getElementById('tree-tab').classList.contains('active')) {
+            if (document.getElementById('tree-tab') && document.getElementById('tree-tab').classList.contains('active')) {
                 buildAndRenderTree();
                 initOrCenterTree();
             }
@@ -4393,12 +4398,9 @@
                 <span>SGF INGESTION DOCUMENT BUFFER</span>
                 <span id="buffer-diag-pill" class="buffer-diag-pill clean">✓ Clean</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <button class="buffer-reaudit-btn" onclick="reAuditBufferText()" title="Re-Audit SGF Buffer">⚡ Re-Audit</button>
-                <button class="close-overlay-btn" onclick="toggleSgfBuffer()" title="Close Sidebar" style="color: #e0f2f1;">
-                    <svg width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-                </button>
-            </div>
+            <button class="close-overlay-btn" onclick="toggleSgfBuffer()" title="Close Sidebar" style="color: #e0f2f1;">
+                <svg width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            </button>
         </div>
         
         <div class="sgf-buffer-body">
