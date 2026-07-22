@@ -840,28 +840,21 @@
             ]).then(([trName, trEvent, trPb, trPw, trPlace, trNote]) => {
                 if (trName !== rawName) {
                     document.getElementById('detail-name').textContent = trName || 'n/a';
-                    currentSgfContent = setSgfProp(currentSgfContent, 'GN', trName);
                 }
                 if (trEvent !== rawEvent) {
                     document.getElementById('detail-event').textContent = trEvent || 'n/a';
-                    currentSgfContent = setSgfProp(currentSgfContent, 'EV', trEvent);
                 }
                 if (trPb !== pb) {
                     document.getElementById('detail-black').textContent = trPb ? (br ? trPb + ' (' + br + ')' : trPb) : 'n/a';
-                    currentSgfContent = setSgfProp(currentSgfContent, 'PB', trPb);
                 }
                 if (trPw !== pw) {
                     document.getElementById('detail-white').textContent = trPw ? (wr ? trPw + ' (' + wr + ')' : trPw) : 'n/a';
-                    currentSgfContent = setSgfProp(currentSgfContent, 'PW', trPw);
                 }
                 if (trPlace !== rawPlace) {
                     document.getElementById('detail-place').textContent = trPlace || 'n/a';
-                    currentSgfContent = setSgfProp(currentSgfContent, 'PC', trPlace);
                 }
                 if (trNote !== rawNote) {
                     document.getElementById('detail-note').textContent = trNote || 'n/a';
-                    const noteTag = getSgfProp(content, 'GC') ? 'GC' : 'C';
-                    currentSgfContent = setSgfProp(currentSgfContent, noteTag, trNote);
                 }
 
                 // If players were translated, update display filename with translated English names
@@ -1075,7 +1068,7 @@
         function confirmReviewer() {
             if (!currentSgfContent) return;
             sessionStorage.setItem('sgf_content', currentSgfContent);
-            sessionStorage.setItem('sgf_original', currentSgfOriginal || currentSgfContent);
+            sessionStorage.setItem('sgf_original', currentSgfContent);
             sessionStorage.setItem('sgf_filename', currentSgfFilename || 'game.sgf');
             window.location.href = 'compliance.html?v=' + window.__SGF_VER;
         }
