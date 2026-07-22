@@ -1404,6 +1404,99 @@
         .sgf-syntax-val {
             color: #edd667;
         }
+        .buffer-diag-pill {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-left: 6px;
+            text-transform: none;
+            letter-spacing: 0;
+            display: inline-flex;
+            align-items: center;
+        }
+        .buffer-diag-pill.error {
+            background-color: rgba(239, 83, 80, 0.25);
+            color: #ff8a80;
+            border: 1px solid rgba(239, 83, 80, 0.5);
+        }
+        .buffer-diag-pill.warning {
+            background-color: rgba(255, 179, 0, 0.25);
+            color: #ffe082;
+            border: 1px solid rgba(255, 179, 0, 0.5);
+        }
+        .buffer-diag-pill.clean {
+            background-color: rgba(38, 166, 154, 0.25);
+            color: #80cbc4;
+            border: 1px solid rgba(38, 166, 154, 0.5);
+        }
+        .buffer-reaudit-btn {
+            background-color: #0d423e;
+            color: #80cbc4;
+            border: 1px solid #1c5e59;
+            border-radius: 4px;
+            padding: 4px 10px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.15s ease;
+        }
+        .buffer-reaudit-btn:hover {
+            background-color: #175752;
+            color: #ffffff;
+        }
+        .buffer-line {
+            display: flex;
+            align-items: center;
+            min-height: 1.6em;
+            padding: 0 4px;
+            border-radius: 2px;
+            transition: background 0.2s ease;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .buffer-line.error {
+            background-color: rgba(239, 83, 80, 0.18);
+            border-left: 3px solid #ef5350;
+        }
+        .buffer-line.warning {
+            background-color: rgba(255, 179, 0, 0.15);
+            border-left: 3px solid #ffb300;
+        }
+        .buffer-pulse-highlight {
+            animation: bufferPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            background-color: rgba(38, 166, 154, 0.35) !important;
+        }
+        @keyframes bufferPulse {
+            0%, 100% { background-color: rgba(38, 166, 154, 0.35); }
+            50% { background-color: rgba(38, 166, 154, 0.7); }
+        }
+        .buffer-gutter-line {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 4px;
+            min-height: 1.6em;
+        }
+        .buffer-gutter-badge {
+            font-size: 0.65rem;
+            font-weight: bold;
+            padding: 0 4px;
+            border-radius: 3px;
+            cursor: pointer;
+            line-height: 1.2;
+        }
+        .buffer-gutter-badge.error {
+            background-color: #ef5350;
+            color: #ffffff;
+        }
+        .buffer-gutter-badge.warning {
+            background-color: #ffb300;
+            color: #111111;
+        }
         .sgf-buffer-footer {
             display: flex;
             align-items: center;
@@ -2854,6 +2947,11 @@
             // Populate and render SGF Game Tree list
             buildAndRenderTree();
 
+            // Render/Update SGF Buffer with active diagnostics
+            if (typeof renderSgfBuffer === 'function') {
+                renderSgfBuffer(sgfContent, auditResult);
+            }
+
             // Slide results wrapper down smoothly
             document.getElementById('results-wrapper').classList.add('visible');
         }
@@ -2888,6 +2986,14 @@
                 const card = document.createElement('div');
                 card.className = `issue-card ${isFixed ? 'fixed' : ''}`;
                 card.id = `issue-card-${realIdx}`;
+                card.style.cursor = 'pointer';
+                card.title = 'Click to jump to line in SGF Document Buffer';
+                card.addEventListener('click', (e) => {
+                    if (e.target.tagName !== 'BUTTON' && !e.target.classList.contains('issue-autofix-btn')) {
+                        var lineNum = issue.position ? issue.position.line : null;
+                        jumpToBufferLine(lineNum);
+                    }
+                });
 
                 // Row 1: Header (Severity Badge, Location, Message)
                 const header = document.createElement('div');
@@ -4024,7 +4130,47 @@
             });
         }
 
-        function renderSgfBuffer(rawSgf) {
+        function jumpToBufferLine(lineNum) {
+            const overlay = document.getElementById('sgf-buffer-overlay');
+            if (overlay && overlay.classList.contains('hidden')) {
+                overlay.classList.remove('hidden');
+            }
+            
+            document.querySelectorAll('.buffer-pulse-highlight').forEach(el => el.classList.remove('buffer-pulse-highlight'));
+
+            if (!lineNum) return;
+
+            const lineElem = document.getElementById('buffer-line-' + lineNum);
+            const gutterElem = document.getElementById('buffer-gutter-line-' + lineNum);
+
+            if (lineElem) {
+                lineElem.classList.add('buffer-pulse-highlight');
+                lineElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            if (gutterElem) {
+                gutterElem.classList.add('buffer-pulse-highlight');
+            }
+        }
+
+        function reAuditBufferText() {
+            var codeElem = document.getElementById('sgf-buffer-code');
+            if (!codeElem) return;
+            var newSgf = codeElem.innerText ? codeElem.innerText.trim() : '';
+            if (!newSgf) return;
+            
+            if (!originalSgfContent) {
+                originalSgfContent = sgfContent;
+                sessionStorage.setItem('sgf_original', originalSgfContent);
+            }
+            sgfContent = newSgf;
+            sessionStorage.setItem('sgf_content', sgfContent);
+            
+            if (typeof reAuditWorkingCopy === 'function') {
+                reAuditWorkingCopy();
+            }
+        }
+
+        function renderSgfBuffer(rawSgf, result) {
             var sgf = rawSgf || sgfContent || sessionStorage.getItem('sgf_content') || '';
             if (!sgf) {
                 sgf = "(;FF[4]GM[1]SZ[19]PB[Go Seigen]PW[Honinbo Shusai]\nDT[1933.10.16]KM[0]RE[W+R]\n\n;B[qd]AW[dd]\n;W[dp]AB[pp][pd]\n;B[pq];W[dc];B[ce];W[ed];B[jc]\n(;ff[4] B[oc];W[qj];B[qh])\n(;B[nd];W[qf];B[pi]ab[dp]))";
@@ -4033,31 +4179,80 @@
             var gutterElem = document.getElementById('sgf-buffer-gutter');
             var codeElem = document.getElementById('sgf-buffer-code');
             var footerMode = document.getElementById('sgf-buffer-mode-text');
+            var diagPill = document.getElementById('buffer-diag-pill');
 
             if (!gutterElem || !codeElem) return;
+
+            var res = result || auditResult;
+            var lineDiagnostics = {};
+            var totalErrors = 0;
+            var totalWarnings = 0;
+
+            if (res && res.issues) {
+                res.issues.forEach(function(issue) {
+                    var isFixed = !!fixedIssuesMap[issue.message];
+                    if (isFixed) return;
+
+                    if (issue.severity === 'error') totalErrors++;
+                    else if (issue.severity === 'warning') totalWarnings++;
+
+                    if (issue.position && issue.position.line) {
+                        var l = issue.position.line;
+                        if (!lineDiagnostics[l]) lineDiagnostics[l] = [];
+                        lineDiagnostics[l].push(issue);
+                    }
+                });
+            }
+
+            // Update Header Diagnostic Badge Pill
+            if (diagPill) {
+                if (totalErrors > 0) {
+                    diagPill.className = 'buffer-diag-pill error';
+                    diagPill.textContent = '● ' + totalErrors + ' Errors, ' + totalWarnings + ' Warnings';
+                } else if (totalWarnings > 0) {
+                    diagPill.className = 'buffer-diag-pill warning';
+                    diagPill.textContent = '● ' + totalWarnings + ' Warnings';
+                } else {
+                    diagPill.className = 'buffer-diag-pill clean';
+                    diagPill.textContent = '✓ Clean';
+                }
+            }
 
             var lines = sgf.split('\n');
             var displayLineCount = Math.max(lines.length, 10);
 
             var gutterHtml = '';
+            var codeHtml = '';
+
             for (var i = 1; i <= displayLineCount; i++) {
-                gutterHtml += i + '<br>';
+                var diagList = lineDiagnostics[i];
+                var badgeHtml = '';
+                var lineClass = 'buffer-line';
+
+                if (diagList && diagList.length > 0) {
+                    var hasErr = diagList.some(function(d) { return d.severity === 'error'; });
+                    var badgeSev = hasErr ? 'error' : 'warning';
+                    lineClass += hasErr ? ' error' : ' warning';
+                    var tooltip = diagList.map(function(d) { return d.severity.toUpperCase() + ': ' + d.message; }).join(' | ');
+                    badgeHtml = '<span class="buffer-gutter-badge ' + badgeSev + '" title="' + tooltip + '">' + (hasErr ? '!' : '⚠') + '</span>';
+                }
+
+                gutterHtml += '<div class="buffer-gutter-line" id="buffer-gutter-line-' + i + '">' + badgeHtml + '<span>' + i + '</span></div>';
+
+                var lineText = (i <= lines.length) ? lines[i - 1] : '';
+                var highlighted = highlightSGF(lineText);
+                codeHtml += '<div class="' + lineClass + '" id="buffer-line-' + i + '">' + (highlighted || ' ') + '</div>';
             }
+
             gutterElem.innerHTML = gutterHtml;
-
-            var highlightedLines = lines.map(function(line) {
-                return highlightSGF(line);
-            });
-            while (highlightedLines.length < displayLineCount) {
-                highlightedLines.push('');
-            }
-
-            codeElem.innerHTML = highlightedLines.join('\n');
+            codeElem.innerHTML = codeHtml;
 
             var ffMatch = sgf.match(/\bFF\[([0-9]+)\]/i);
             var ffVer = ffMatch ? 'FF[' + ffMatch[1] + ']' : 'FF[4]';
             if (footerMode) {
-                footerMode.textContent = ffVer + ' SGF SYNTAX MODE';
+                var totalIssues = totalErrors + totalWarnings;
+                var suffix = totalIssues > 0 ? ' • ' + totalIssues + ' DIAGNOSTIC ISSUES DETECTED' : ' • 0 DIAGNOSTIC ISSUES';
+                footerMode.textContent = ffVer + ' SGF SYNTAX MODE' + suffix;
             }
         }
 
@@ -4196,10 +4391,14 @@
                     <line x1="16" y1="17" x2="8" y2="17"></line>
                 </svg>
                 <span>SGF INGESTION DOCUMENT BUFFER</span>
+                <span id="buffer-diag-pill" class="buffer-diag-pill clean">✓ Clean</span>
             </div>
-            <button class="close-overlay-btn" onclick="toggleSgfBuffer()" title="Close Sidebar" style="color: #e0f2f1;">
-                <svg width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-            </button>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <button class="buffer-reaudit-btn" onclick="reAuditBufferText()" title="Re-Audit SGF Buffer">⚡ Re-Audit</button>
+                <button class="close-overlay-btn" onclick="toggleSgfBuffer()" title="Close Sidebar" style="color: #e0f2f1;">
+                    <svg width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                </button>
+            </div>
         </div>
         
         <div class="sgf-buffer-body">
