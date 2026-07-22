@@ -1473,15 +1473,43 @@
             font-weight: 700;
             margin-left: 4px;
         }
-        .buffer-line {
-            display: flex;
+        .buffer-icon-btn {
+            background-color: #041513;
+            color: #80cbc4;
+            border: 1px solid #0d423e;
+            border-radius: 4px;
+            padding: 3px 6px;
+            cursor: pointer;
+            display: inline-flex;
             align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+        }
+        .buffer-icon-btn:hover {
+            background-color: #0d423e;
+            color: #ffffff;
+        }
+        .buffer-icon-btn.active {
+            background-color: #064540;
+            color: #ffffff;
+            border-color: #1c5e59;
+        }
+        .buffer-line {
+            display: block;
             min-height: 1.6em;
             padding: 0 4px;
             border-radius: 2px;
             transition: background 0.2s ease;
-            white-space: pre-wrap;
-            word-break: break-all;
+            white-space: pre;
+            word-break: normal;
+            font-family: 'Consolas', 'Fira Code', 'Monaco', 'Courier New', monospace;
+            font-size: 0.82rem;
+            line-height: 1.6;
+        }
+        .sgf-buffer-code.word-wrap .buffer-line {
+            white-space: pre-wrap !important;
+            word-break: break-word !important;
+            overflow-wrap: anywhere !important;
         }
         .buffer-line.error {
             background-color: rgba(239, 83, 80, 0.18);
@@ -4248,6 +4276,31 @@
             return diff;
         }
 
+        var isWordWrapEnabled = false;
+
+        function toggleWordWrap() {
+            isWordWrapEnabled = !isWordWrapEnabled;
+            var codeElem = document.getElementById('sgf-buffer-code');
+            var wrapBtn = document.getElementById('btn-word-wrap');
+
+            if (codeElem) {
+                if (isWordWrapEnabled) {
+                    codeElem.classList.add('word-wrap');
+                } else {
+                    codeElem.classList.remove('word-wrap');
+                }
+            }
+            if (wrapBtn) {
+                if (isWordWrapEnabled) {
+                    wrapBtn.classList.add('active');
+                    wrapBtn.title = "Word Wrap ON (Click to disable)";
+                } else {
+                    wrapBtn.classList.remove('active');
+                    wrapBtn.title = "Word Wrap OFF (Click to enable)";
+                }
+            }
+        }
+
         function toggleSgfBuffer() {
             const overlay = document.getElementById('sgf-buffer-overlay');
             if (overlay) {
@@ -4265,7 +4318,7 @@
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;');
             
-            return escaped.replace(/(\[[\s\S]*?\])|(\b[A-Za-z]+(?=\s*\[))|([();])/g, function(match, val, prop, struct) {
+            return escaped.replace(/(\[[^\]]*\])|(\b[A-Za-z]{1,4}(?=\s*\[))|([();])/g, function(match, val, prop, struct) {
                 if (val !== undefined) {
                     return '<span class="sgf-syntax-val">' + val + '</span>';
                 } else if (prop !== undefined) {
@@ -4578,6 +4631,12 @@
                     <button class="buffer-diff-btn active" id="btn-diff-mode" onclick="setBufferViewMode('diff')">Diff View</button>
                     <button class="buffer-diff-btn" id="btn-clean-mode" onclick="setBufferViewMode('clean')">Clean Code</button>
                 </div>
+                <button id="btn-word-wrap" class="buffer-icon-btn" onclick="toggleWordWrap()" title="Toggle Word Wrap (Soft Wrap)">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 6h16M4 12h13a3 3 0 0 1 0 6h-4M4 18h4"/>
+                        <polyline points="16 16 13 19 16 22"/>
+                    </svg>
+                </button>
                 <button class="close-overlay-btn" onclick="toggleSgfBuffer()" title="Close Sidebar" style="color: #e0f2f1;">
                     <svg width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
                 </button>
