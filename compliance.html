@@ -2026,7 +2026,7 @@
 
         window.onload = function() {
             sgfContent = sessionStorage.getItem('sgf_content');
-            originalSgfContent = sessionStorage.getItem('sgf_original') || sgfContent;
+            originalSgfContent = null;
             sgfFilename = sessionStorage.getItem('sgf_filename') || 'game.sgf';
 
             if (!sgfContent) {
@@ -4357,7 +4357,7 @@
 
         function renderSgfBuffer(rawSgf, result) {
             var sgf = rawSgf || sgfContent || sessionStorage.getItem('sgf_content') || '';
-            var origSgf = originalSgfContent || sessionStorage.getItem('sgf_original') || sgf;
+            var origSgf = originalSgfContent || null;
 
             if (!sgf) {
                 sgf = "(;FF[4]GM[1]SZ[19]PB[Go Seigen]PW[Honinbo Shusai]\nDT[1933.10.16]KM[0]RE[W+R]\n\n;B[qd]AW[dd]\n;W[dp]AB[pp][pd]\n;B[pq];W[dc];B[ce];W[ed];B[jc]\n(;ff[4] B[oc];W[qj];B[qh])\n(;B[nd];W[qf];B[pi]ab[dp]))";
@@ -4407,7 +4407,7 @@
                 }
             }
 
-            var hasDiff = origSgf && origSgf !== sgf;
+            var hasDiff = !!origSgf && origSgf !== sgf;
             var diffItems = hasDiff ? computeLineDiff(origSgf, sgf) : [];
 
             var addedCount = 0;
