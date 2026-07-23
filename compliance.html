@@ -3013,19 +3013,30 @@
                 });
             }, 100);
 
-            const weightOrder = { mandatory: 0, recommended: 1, optional: 2, conditional: 3, structural: 3 };
+            const tagWeightMap = {
+                mandatory: 0,
+                structural: 1,
+                recommended: 2,
+                conditional: 3,
+                optional: 4
+            };
 
-            const categoryOrder = [
+            const categoryBaselineOrder = [
                 "Game Identity",
-                "Root Configuration",
                 "Game Tree Structure",
+                "Root Configuration",
                 "Move Annotations",
+                "Setup (conditional)",
                 "Position Annotations",
                 "Board Markup",
                 "Timing",
-                "Miscellaneous",
-                "Setup (conditional)"
+                "Miscellaneous"
             ];
+
+            function getCategoryIndex(catName) {
+                const idx = categoryBaselineOrder.indexOf(catName);
+                return idx !== -1 ? idx : 99;
+            }
 
             function renderGroupedItems(containerEl, items, type) {
                 containerEl.innerHTML = '';
@@ -3036,9 +3047,6 @@
                 }
 
                 const categoryMap = new Map();
-                for (let catName of categoryOrder) {
-                    categoryMap.set(catName, []);
-                }
                 for (let item of items) {
                     const catName = item.category || 'Miscellaneous';
                     if (!categoryMap.has(catName)) {
@@ -3047,22 +3055,41 @@
                     categoryMap.get(catName).push(item);
                 }
 
+                const groups = [];
                 for (let [catName, catItems] of categoryMap.entries()) {
                     if (catItems.length === 0) continue;
 
-                    catItems.sort(function(a, b) {
-                        return (weightOrder[a.tag] ?? 3) - (weightOrder[b.tag] ?? 3);
+                    catItems.sort((a, b) => {
+                        return (tagWeightMap[a.tag] ?? 4) - (tagWeightMap[b.tag] ?? 4);
                     });
 
+                    const minImportance = Math.min(...catItems.map(item => tagWeightMap[item.tag] ?? 4));
+
+                    groups.push({
+                        name: catName,
+                        items: catItems,
+                        importance: minImportance,
+                        baseIdx: getCategoryIndex(catName)
+                    });
+                }
+
+                groups.sort((a, b) => {
+                    if (a.importance !== b.importance) {
+                        return a.importance - b.importance;
+                    }
+                    return a.baseIdx - b.baseIdx;
+                });
+
+                for (let group of groups) {
                     const groupEl = document.createElement('div');
                     groupEl.className = 'maximize-cat-group';
 
                     const catHeader = document.createElement('div');
                     catHeader.className = 'maximize-cat-header';
-                    catHeader.textContent = catName;
+                    catHeader.textContent = group.name;
                     groupEl.appendChild(catHeader);
 
-                    for (let itemData of catItems) {
+                    for (let itemData of group.items) {
                         const item = document.createElement('div');
                         if (type === 'strength') {
                             item.className = 'maximize-item strength';
