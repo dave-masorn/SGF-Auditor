@@ -1138,29 +1138,13 @@
             otProp = 'OT[' + otText + ']';
         }
 
-        // Find root node and inject TM (and OT if present) after FF[x] or after ;
+        // Find root node and inject TM after FF[x] or after ;
         var rootMatch = fixed.match(/\(\s*;FF\s*\[(\d+)\]/);
         if (!rootMatch) rootMatch = fixed.match(/\(\s*;/);
         if (rootMatch) {
             var insertPos = rootMatch.index + rootMatch[0].length;
             var inject = compliantTM + otProp;
             fixed = fixed.substring(0, insertPos) + inject + fixed.substring(insertPos);
-        }
-
-        // Inject BL on first B move, WL on first W move (after the closing ] of the move value)
-        if (parsed.black !== null) {
-            var bMove = fixed.match(/;B\[[^\]]*\]/);
-            if (bMove) {
-                var bEnd = bMove.index + bMove[0].length;
-                fixed = fixed.substring(0, bEnd) + 'BL[' + parsed.black + ']' + fixed.substring(bEnd);
-            }
-        }
-        if (parsed.white !== null) {
-            var wMove = fixed.match(/;W\[[^\]]*\]/);
-            if (wMove) {
-                var wEnd = wMove.index + wMove[0].length;
-                fixed = fixed.substring(0, wEnd) + 'WL[' + parsed.white + ']' + fixed.substring(wEnd);
-            }
         }
 
         // Remove old C[System Clock Metadata:...] if present
@@ -1260,7 +1244,7 @@
                 '<span class="step-label">Why:</span> SGF FF[4] requires exactly one TM property in the root node. Chinese Go servers inject per-player clock strings (e.g. "TM[\u9ED1: 06:06 \u767D: 05:07]") which are not valid \u2014 TM must be a single Real number in seconds. Duplicate or misplaced TM properties break parsers.' +
                 '<br><span class="step-label">Fix:</span> Consolidated ' + r4.changes + ' TM propert' + (r4.changes > 1 ? 'ies' : 'y') + ' to root node as ' + tmDetail + '.' +
                 (tmParsed.black !== tmParsed.white ?
-                    '<br>Additionally injected BL[' + tmParsed.black + '] on first Black move and WL[' + tmParsed.white + '] on first White move to preserve the asymmetric clock allocation. Added OT property with original clock metadata.' : '')
+                    '<br>Added OT property with original clock metadata to preserve asymmetry.' : '')
             );
             fixed = r4.fixed;
         }
@@ -1389,30 +1373,6 @@
                     }
                 }
 
-                // Inject BL on first B move, WL on first W move (after closing ] of move value)
-                if (parsed.black !== null) {
-                    var bMove = fixed.match(/;B\[[^\]]*\]/);
-                    if (bMove) {
-                        var bEnd = bMove.index + bMove[0].length;
-                        fixed = fixed.substring(0, bEnd) + 'BL[' + parsed.black + ']' + fixed.substring(bEnd);
-                        archive.push(
-                            '<span class="step-label">Why:</span> Engines track remaining time via BL (Black clock) on move nodes. Without it, Black\'s actual time (' + parsed.black + 's) would be lost after normalization.' +
-                            '<br><span class="step-label">Fix:</span> Injected BL[' + parsed.black + '] on first Black move so the engine starts with the correct clock.'
-                        );
-                    }
-                }
-                if (parsed.white !== null) {
-                    var wMove = fixed.match(/;W\[[^\]]*\]/);
-                    if (wMove) {
-                        var wEnd = wMove.index + wMove[0].length;
-                        fixed = fixed.substring(0, wEnd) + 'WL[' + parsed.white + ']' + fixed.substring(wEnd);
-                        archive.push(
-                            '<span class="step-label">Why:</span> Same as BL above \u2014 engines need WL (White clock) on move nodes to track remaining time. White\'s actual time (' + parsed.white + 's) must be preserved.' +
-                            '<br><span class="step-label">Fix:</span> Injected WL[' + parsed.white + '] on first White move so the engine starts with the correct clock.'
-                        );
-                    }
-                }
-
                 // Remove old C[System Clock Metadata:...] if present
                 var oldComment = fixed.match(/\s*C\[System Clock Metadata:[^\]]*\]/);
                 if (oldComment) {
@@ -1466,27 +1426,6 @@
                     }
                 }
 
-                // BL on first B move (after closing ] of move value)
-                if (parsed.black !== null) {
-                    var bMove = fixed.match(/;B\[[^\]]*\]/);
-                    if (bMove) {
-                        var bEnd = bMove.index + bMove[0].length;
-                        fixed = fixed.substring(0, bEnd) + 'BL[' + parsed.black + ']' + fixed.substring(bEnd);
-                        changeNum++;
-                        archive.push('[' + String(changeNum).padStart(3, '0') + '] \u2014 Injected BL[' + parsed.black + '] on first B move');
-                    }
-                }
-
-                // WL on first W move (after closing ] of move value)
-                if (parsed.white !== null) {
-                    var wMove = fixed.match(/;W\[[^\]]*\]/);
-                    if (wMove) {
-                        var wEnd = wMove.index + wMove[0].length;
-                        fixed = fixed.substring(0, wEnd) + 'WL[' + parsed.white + ']' + fixed.substring(wEnd);
-                        changeNum++;
-                        archive.push('[' + String(changeNum).padStart(3, '0') + '] \u2014 Injected WL[' + parsed.white + '] on first W move');
-                    }
-                }
             }
         }
 

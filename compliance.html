@@ -3753,18 +3753,46 @@
                     }
                 }
 
-                // ── Phase 2.5: Stray data before game-tree (front-of-tree warning) ──
-                if (!fixed && /front of game-tree/i.test(msg)) {
-                    const firstParen = sgfContent.indexOf('(');
-                    if (firstParen > 0) {
-                        const strayData = sgfContent.substring(0, firstParen).trim();
-                        if (strayData.length > 0) {
-                            const oldContent = sgfContent;
-                            sgfContent = sgfContent.substring(firstParen);
-                            sessionStorage.setItem('sgf_content', sgfContent);
-                            fixed = true;
-                            fixExplanation = [`Stray data "${strayData.substring(0, 80)}" before game-tree ---> stripped (SGFC W-C correction)`];
+                // ── Phase 2.5: Stray data before game-tree + broken start mark ──
+                if (!fixed && (/front of game-tree/i.test(msg) || /no SGF data/i.test(msg) || /start mark.*missing/i.test(msg))) {
+                    var changed = false;
+                    var explanations = [];
+                    var content = sgfContent;
+
+                    // Find the first game-tree start '(;' — stray data may contain stray '(' chars
+                    var startMark = content.indexOf('(;');
+                    if (startMark === -1) startMark = content.indexOf('(');
+                    if (startMark === -1) startMark = content.length;
+
+                    if (startMark > 0) {
+                        var stray = content.substring(0, startMark).trim();
+                        if (stray.length > 0) {
+                            content = content.substring(startMark);
+                            explanations.push(`Stray data "${stray.substring(0, 80)}" before game-tree ---> stripped`);
+                            changed = true;
                         }
+                    }
+
+                    // Repair broken '(;' — if content starts with '(' but not '(;', insert ';'
+                    if (content.charAt(0) === '(' && content.charAt(1) !== ';') {
+                        content = '(' + ';' + content.substring(1);
+                        explanations.push("Missing ';' after '(' at start mark ---> inserted");
+                        changed = true;
+                    }
+
+                    // If no '(' at all but SGF data exists, prepend '(;'
+                    if (content.charAt(0) !== '(' && content.indexOf(';FF[') !== -1) {
+                        content = '(;' + content;
+                        explanations.push("Missing game-tree start '(;' ---> prepended");
+                        changed = true;
+                    }
+
+                    if (changed) {
+                        var oldContent = sgfContent;
+                        sgfContent = content;
+                        sessionStorage.setItem('sgf_content', sgfContent);
+                        fixed = true;
+                        fixExplanation = explanations;
                     }
                 }
 
@@ -3851,18 +3879,33 @@
                     }
                 }
 
-                // ── Stray data before game-tree (front-of-tree warning) ──
-                if (!fixed && /front of game-tree/i.test(msg)) {
-                    const firstParen = sgfContent.indexOf('(');
-                    if (firstParen > 0) {
-                        const strayData = sgfContent.substring(0, firstParen).trim();
-                        if (strayData.length > 0) {
-                            const oldContent = sgfContent;
-                            sgfContent = sgfContent.substring(firstParen);
-                            sessionStorage.setItem('sgf_content', sgfContent);
-                            fixed = true;
-                            fixExplanation = [`Stray data "${strayData.substring(0, 80)}" before game-tree ---> stripped (SGFC W-C correction)`];
+                // ── Stray data before game-tree + broken start mark ──
+                if (!fixed && (/front of game-tree/i.test(msg) || /no SGF data/i.test(msg) || /start mark.*missing/i.test(msg))) {
+                    var changed = false;
+                    var explanations = [];
+                    var content = sgfContent;
+
+                    var fp = content.indexOf('(');
+                    if (fp > 0) {
+                        var stray = content.substring(0, fp).trim();
+                        if (stray.length > 0) {
+                            content = content.substring(fp);
+                            explanations.push(`Stray data "${stray.substring(0, 80)}" before game-tree ---> stripped`);
+                            changed = true;
                         }
+                    }
+
+                    if (content.charAt(0) === '(' && content.charAt(1) !== ';') {
+                        content = '(' + ';' + content.substring(1);
+                        explanations.push("Missing ';' after '(' at start mark ---> inserted");
+                        changed = true;
+                    }
+
+                    if (changed) {
+                        sgfContent = content;
+                        sessionStorage.setItem('sgf_content', sgfContent);
+                        fixed = true;
+                        fixExplanation = explanations;
                     }
                 }
 
@@ -3958,7 +4001,7 @@
                     }
                 }
 
-                // Phase B2: Strip stray data before game-tree (SGFC W-C)
+                // Phase B2: Strip stray data before game-tree + repair broken start mark
                 var firstParen = sgfContent.indexOf('(');
                 if (firstParen > 0) {
                     var strayBefore = sgfContent.substring(0, firstParen).trim();
@@ -3968,6 +4011,12 @@
                         fixedAny = true;
                         archive.push('<span class="step-label">Custom:</span> Stray data before game-tree ---> stripped.');
                     }
+                }
+                if (sgfContent.charAt(0) === '(' && sgfContent.charAt(1) !== ';') {
+                    sgfContent = '(' + ';' + sgfContent.substring(1);
+                    sessionStorage.setItem('sgf_content', sgfContent);
+                    fixedAny = true;
+                    archive.push('<span class="step-label">Custom:</span> Missing \';\' after \'(\' at start mark ---> inserted.');
                 }
 
                 // Phase C: Strip non-FF[4] server-injected properties (FoxWq: TT, RL, TC, AP)
