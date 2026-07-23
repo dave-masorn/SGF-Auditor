@@ -1151,6 +1151,28 @@
             gap: 6px;
         }
 
+        .maximize-cat-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 14px;
+        }
+
+        .maximize-cat-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .maximize-cat-header {
+            font-size: 0.73rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--color-muted);
+            padding: 4px 2px 2px 2px;
+            border-bottom: 1px solid var(--color-border);
+            margin-bottom: 2px;
+        }
+
         .maximize-item {
             display: flex;
             align-items: flex-start;
@@ -2991,63 +3013,100 @@
                 });
             }, 100);
 
-            const weightOrder = { mandatory: 0, recommended: 1, optional: 2 };
+            const weightOrder = { mandatory: 0, recommended: 1, optional: 2, conditional: 3, structural: 3 };
+
+            const categoryOrder = [
+                "Game Identity",
+                "Root Configuration",
+                "Game Tree Structure",
+                "Move Annotations",
+                "Position Annotations",
+                "Board Markup",
+                "Timing",
+                "Miscellaneous",
+                "Setup (conditional)"
+            ];
+
+            function renderGroupedItems(containerEl, items, type) {
+                containerEl.innerHTML = '';
+                if (!items || items.length === 0) {
+                    const emptyText = type === 'strength' ? 'No strengths found.' : 'Full FF[4] coverage achieved!';
+                    containerEl.innerHTML = `<div class="maximize-empty">${emptyText}</div>`;
+                    return;
+                }
+
+                const categoryMap = new Map();
+                for (let catName of categoryOrder) {
+                    categoryMap.set(catName, []);
+                }
+                for (let item of items) {
+                    const catName = item.category || 'Miscellaneous';
+                    if (!categoryMap.has(catName)) {
+                        categoryMap.set(catName, []);
+                    }
+                    categoryMap.get(catName).push(item);
+                }
+
+                for (let [catName, catItems] of categoryMap.entries()) {
+                    if (catItems.length === 0) continue;
+
+                    catItems.sort(function(a, b) {
+                        return (weightOrder[a.tag] ?? 3) - (weightOrder[b.tag] ?? 3);
+                    });
+
+                    const groupEl = document.createElement('div');
+                    groupEl.className = 'maximize-cat-group';
+
+                    const catHeader = document.createElement('div');
+                    catHeader.className = 'maximize-cat-header';
+                    catHeader.textContent = catName;
+                    groupEl.appendChild(catHeader);
+
+                    for (let itemData of catItems) {
+                        const item = document.createElement('div');
+                        if (type === 'strength') {
+                            item.className = 'maximize-item strength';
+                            item.innerHTML = `
+                                <span class="mi-icon">✓</span>
+                                <span class="mi-text">${itemData.desc} <small style="opacity:0.7">(${itemData.id === '__branches__' ? 'tree' : itemData.id === '__nodeNames__' ? 'N' : itemData.id === '__rootComment__' ? 'C' : itemData.id})</small></span>
+                                <span class="mi-tag ${itemData.tag}">${itemData.tag}</span>
+                            `;
+                        } else {
+                            item.className = 'maximize-item opportunity';
+                            item.innerHTML = `
+                                <span class="mi-icon">\u25B6</span>
+                                <span class="mi-body">
+                                    <span class="mi-text">${itemData.desc} <small style="opacity:0.7">(${itemData.id === '__branches__' ? 'tree' : itemData.id === '__nodeNames__' ? 'N' : itemData.id === '__rootComment__' ? 'C' : itemData.id})</small></span>
+                                    <span class="mi-tag ${itemData.tag}">${itemData.tag}</span>
+                                    <div class="mi-detail">${itemData.detail || 'No additional details available.'}</div>
+                                </span>
+                            `;
+                            item.addEventListener('click', function() {
+                                const wasExpanded = this.classList.contains('expanded');
+                                document.querySelectorAll('.maximize-item.opportunity.expanded').forEach(el => {
+                                    el.classList.remove('expanded');
+                                });
+                                if (!wasExpanded) {
+                                    this.classList.add('expanded');
+                                }
+                            });
+                        }
+                        groupEl.appendChild(item);
+                    }
+
+                    containerEl.appendChild(groupEl);
+                }
+            }
 
             // Strengths list
             const strList = document.getElementById('strengths-list');
-            strList.innerHTML = '';
             document.getElementById('strength-count').textContent = `(${maxResult.strengths.length})`;
-            if (maxResult.strengths.length === 0) {
-                strList.innerHTML = '<div class="maximize-empty">No strengths found.</div>';
-            } else {
-                var sortedStrengths = maxResult.strengths.slice().sort(function(a, b) {
-                    return (weightOrder[a.tag] ?? 3) - (weightOrder[b.tag] ?? 3);
-                });
-                for (let s of sortedStrengths) {
-                    const item = document.createElement('div');
-                    item.className = 'maximize-item strength';
-                    item.innerHTML = `
-                        <span class="mi-icon">✓</span>
-                        <span class="mi-text">${s.desc} <small style="opacity:0.7">(${s.id === '__branches__' ? 'tree' : s.id === '__nodeNames__' ? 'N' : s.id === '__rootComment__' ? 'C' : s.id})</small></span>
-                        <span class="mi-tag ${s.tag}">${s.tag}</span>
-                    `;
-                    strList.appendChild(item);
-                }
-            }
+            renderGroupedItems(strList, maxResult.strengths, 'strength');
 
             // Opportunities list
             const oppList = document.getElementById('opportunities-list');
-            oppList.innerHTML = '';
             document.getElementById('opportunity-count').textContent = `(${maxResult.opportunities.length})`;
-            if (maxResult.opportunities.length === 0) {
-                oppList.innerHTML = '<div class="maximize-empty">Full FF[4] coverage achieved!</div>';
-            } else {
-                var sortedOpportunities = maxResult.opportunities.slice().sort(function(a, b) {
-                    return (weightOrder[a.tag] ?? 3) - (weightOrder[b.tag] ?? 3);
-                });
-                for (let o of sortedOpportunities) {
-                    const item = document.createElement('div');
-                    item.className = 'maximize-item opportunity';
-                    item.innerHTML = `
-                        <span class="mi-icon">\u25B6</span>
-                        <span class="mi-body">
-                            <span class="mi-text">${o.desc} <small style="opacity:0.7">(${o.id === '__branches__' ? 'tree' : o.id === '__nodeNames__' ? 'N' : o.id === '__rootComment__' ? 'C' : o.id})</small></span>
-                            <span class="mi-tag ${o.tag}">${o.tag}</span>
-                            <div class="mi-detail">${o.detail || 'No additional details available.'}</div>
-                        </span>
-                    `;
-                    item.addEventListener('click', function() {
-                        const wasExpanded = this.classList.contains('expanded');
-                        document.querySelectorAll('.maximize-item.opportunity.expanded').forEach(el => {
-                            el.classList.remove('expanded');
-                        });
-                        if (!wasExpanded) {
-                            this.classList.add('expanded');
-                        }
-                    });
-                    oppList.appendChild(item);
-                }
-            }
+            renderGroupedItems(oppList, maxResult.opportunities, 'opportunity');
 
             // Slide the maximize card into view
             const mw = document.getElementById('maximize-wrapper');

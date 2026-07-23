@@ -1,6 +1,6 @@
 {
   "name": "sgf-auditor",
-  "version": "0.2.038",
+  "version": "0.2.040",
   "description": "Smart Game Format (SGF) FF[4] Auditor wrapping Wasm-compiled SGFC core engine for Go game kifu validation & repair",
   "main": "SGFAuditor.js",
   "scripts": {
