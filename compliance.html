@@ -3762,8 +3762,8 @@
                     // Find the first game-tree start '(;' — stray data may contain stray '(' chars
                     var startMark = content.indexOf('(;');
                     if (startMark === -1) startMark = content.indexOf('(');
-                    if (startMark === -1) startMark = content.length;
 
+                    // Only strip if we found a real start mark AND there's junk before it
                     if (startMark > 0) {
                         var stray = content.substring(0, startMark).trim();
                         if (stray.length > 0) {
@@ -3773,17 +3773,16 @@
                         }
                     }
 
-                    // Repair broken '(;' — if content starts with '(' but not '(;', insert ';'
-                    if (content.charAt(0) === '(' && content.charAt(1) !== ';') {
-                        content = '(' + ';' + content.substring(1);
-                        explanations.push("Missing ';' after '(' at start mark ---> inserted");
-                        changed = true;
-                    }
-
-                    // If no '(' at all but SGF data exists, prepend '(;'
-                    if (content.charAt(0) !== '(' && content.indexOf(';FF[') !== -1) {
+                    // No '(' found at all — prepend '(;' to salvage the game tree
+                    if (content.charAt(0) !== '(') {
                         content = '(;' + content;
                         explanations.push("Missing game-tree start '(;' ---> prepended");
+                        changed = true;
+                    }
+                    // '(' found but not followed by ';' — insert ';'
+                    else if (content.charAt(1) !== ';') {
+                        content = '(' + ';' + content.substring(1);
+                        explanations.push("Missing ';' after '(' at start mark ---> inserted");
                         changed = true;
                     }
 
@@ -3885,17 +3884,27 @@
                     var explanations = [];
                     var content = sgfContent;
 
-                    var fp = content.indexOf('(');
-                    if (fp > 0) {
-                        var stray = content.substring(0, fp).trim();
+                    // Find the first '(;' or '(' — only strip junk before it
+                    var startMark = content.indexOf('(;');
+                    if (startMark === -1) startMark = content.indexOf('(');
+
+                    if (startMark > 0) {
+                        var stray = content.substring(0, startMark).trim();
                         if (stray.length > 0) {
-                            content = content.substring(fp);
+                            content = content.substring(startMark);
                             explanations.push(`Stray data "${stray.substring(0, 80)}" before game-tree ---> stripped`);
                             changed = true;
                         }
                     }
 
-                    if (content.charAt(0) === '(' && content.charAt(1) !== ';') {
+                    // No '(' found at all — prepend '(;' to salvage the game tree
+                    if (content.charAt(0) !== '(') {
+                        content = '(;' + content;
+                        explanations.push("Missing game-tree start '(;' ---> prepended");
+                        changed = true;
+                    }
+                    // '(' found but not followed by ';' — insert ';'
+                    else if (content.charAt(1) !== ';') {
                         content = '(' + ';' + content.substring(1);
                         explanations.push("Missing ';' after '(' at start mark ---> inserted");
                         changed = true;
@@ -4002,17 +4011,24 @@
                 }
 
                 // Phase B2: Strip stray data before game-tree + repair broken start mark
-                var firstParen = sgfContent.indexOf('(');
-                if (firstParen > 0) {
-                    var strayBefore = sgfContent.substring(0, firstParen).trim();
+                var startMark = sgfContent.indexOf('(;');
+                if (startMark === -1) startMark = sgfContent.indexOf('(');
+
+                if (startMark > 0) {
+                    var strayBefore = sgfContent.substring(0, startMark).trim();
                     if (strayBefore.length > 0) {
-                        sgfContent = sgfContent.substring(firstParen);
+                        sgfContent = sgfContent.substring(startMark);
                         sessionStorage.setItem('sgf_content', sgfContent);
                         fixedAny = true;
                         archive.push('<span class="step-label">Custom:</span> Stray data before game-tree ---> stripped.');
                     }
                 }
-                if (sgfContent.charAt(0) === '(' && sgfContent.charAt(1) !== ';') {
+                if (sgfContent.charAt(0) !== '(') {
+                    sgfContent = '(;' + sgfContent;
+                    sessionStorage.setItem('sgf_content', sgfContent);
+                    fixedAny = true;
+                    archive.push('<span class="step-label">Custom:</span> Missing game-tree start \'(;\' ---> prepended.');
+                } else if (sgfContent.charAt(1) !== ';') {
                     sgfContent = '(' + ';' + sgfContent.substring(1);
                     sessionStorage.setItem('sgf_content', sgfContent);
                     fixedAny = true;
