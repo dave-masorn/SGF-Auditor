@@ -3753,6 +3753,21 @@
                     }
                 }
 
+                // ── Phase 2.5: Stray data before game-tree (front-of-tree warning) ──
+                if (!fixed && /front of game-tree/i.test(msg)) {
+                    const firstParen = sgfContent.indexOf('(');
+                    if (firstParen > 0) {
+                        const strayData = sgfContent.substring(0, firstParen).trim();
+                        if (strayData.length > 0) {
+                            const oldContent = sgfContent;
+                            sgfContent = sgfContent.substring(firstParen);
+                            sessionStorage.setItem('sgf_content', sgfContent);
+                            fixed = true;
+                            fixExplanation = [`Stray data "${strayData.substring(0, 80)}" before game-tree ---> stripped (SGFC W-C correction)`];
+                        }
+                    }
+                }
+
                 // ── Phase 3: FoxWq non-FF[4] properties ──
                 if (!fixed) {
                     var isFoxwqProp = /unknown property/i.test(msg) && /<(TT|RL|TC)>/i.test(msg) ||
@@ -3833,6 +3848,21 @@
                         }
                     } catch (e) {
                         console.error('sanitizeSGFStream error:', e);
+                    }
+                }
+
+                // ── Stray data before game-tree (front-of-tree warning) ──
+                if (!fixed && /front of game-tree/i.test(msg)) {
+                    const firstParen = sgfContent.indexOf('(');
+                    if (firstParen > 0) {
+                        const strayData = sgfContent.substring(0, firstParen).trim();
+                        if (strayData.length > 0) {
+                            const oldContent = sgfContent;
+                            sgfContent = sgfContent.substring(firstParen);
+                            sessionStorage.setItem('sgf_content', sgfContent);
+                            fixed = true;
+                            fixExplanation = [`Stray data "${strayData.substring(0, 80)}" before game-tree ---> stripped (SGFC W-C correction)`];
+                        }
                     }
                 }
 
@@ -3925,6 +3955,18 @@
                         sessionStorage.setItem('sgf_content', sgfContent);
                         fixedAny = true;
                         archive = archive.concat(sanResult.archive);
+                    }
+                }
+
+                // Phase B2: Strip stray data before game-tree (SGFC W-C)
+                var firstParen = sgfContent.indexOf('(');
+                if (firstParen > 0) {
+                    var strayBefore = sgfContent.substring(0, firstParen).trim();
+                    if (strayBefore.length > 0) {
+                        sgfContent = sgfContent.substring(firstParen);
+                        sessionStorage.setItem('sgf_content', sgfContent);
+                        fixedAny = true;
+                        archive.push('<span class="step-label">Custom:</span> Stray data before game-tree ---> stripped.');
                     }
                 }
 
