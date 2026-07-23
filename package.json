@@ -1,0 +1,22 @@
+{
+  "name": "sgf-auditor",
+  "version": "0.2.037",
+  "description": "Smart Game Format (SGF) FF[4] Auditor wrapping Wasm-compiled SGFC core engine for Go game kifu validation & repair",
+  "main": "SGFAuditor.js",
+  "scripts": {
+    "test": "node -e \"const SGFAuditor = require('./SGFAuditor'); new SGFAuditor().auditAsync('(;FF[4]GM[1]SZ[19];B[pd])').then(r => console.log(r));\""
+  },
+  "keywords": [
+    "sgf",
+    "sgfc",
+    "auditor",
+    "go",
+    "baduk",
+    "weiqi",
+    "kifu",
+    "wasm",
+    "webassembly"
+  ],
+  "author": "",
+  "license": "MIT"
+}

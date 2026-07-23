@@ -2156,8 +2156,8 @@
 
                 wasmModule.FS.writeFile('/input.sgf', sgfContent);
                 try {
-                    // Pass -c to write output even on critical errors
-                    wasmModule.callMain(['-U', '-c', '/input.sgf', '/output.sgf']);
+                    // Pass -c to write output even on critical errors; -p preserves private properties (KataGo/Leela Zero)
+                    wasmModule.callMain(['-p', '-U', '-c', '/input.sgf', '/output.sgf']);
                 } catch (e) {
                     // Normal exit exception
                 }
@@ -2267,7 +2267,7 @@
                 // in a single callMain invocation. (Emscripten WASM can only call
                 // main() once — subsequent callMain calls hang the engine.)
                 try {
-                    wasmModule.callMain(['-c', '-U', '/input.sgf', '/output.sgf']);
+                    wasmModule.callMain(['-p', '-c', '-U', '/input.sgf', '/output.sgf']);
                 } catch (e) {
                     // Normal exit exception
                 }
