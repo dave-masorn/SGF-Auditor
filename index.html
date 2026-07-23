@@ -224,7 +224,6 @@
             cursor: wait;
         }
 
-        /* ── 
         .foxwq-status {
             font-size: 0.78rem;
             color: var(--color-muted);
@@ -233,13 +232,14 @@
             width: 100%;
             text-align: center;
         }
-         ── */
 
         .foxwq-status.error {
+            display: block;
             color: var(--danger);
         }
 
         .foxwq-status.ok {
+            display: block;
             color: var(--color-success);
         }
 
@@ -365,7 +365,7 @@
         }
 
         .tech-log-btn {
-            position: absolute;
+            position: fixed;
             bottom: 30px;
             left: 30px;
             background-color: var(--color-secondary);
@@ -382,6 +382,30 @@
         .tech-log-btn:hover {
             background-color: #45210D;
             border-color: #45210D;
+        }
+
+        .github-link {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 2px solid var(--color-border);
+            transition: border-color 0.2s ease;
+        }
+
+        .github-link:hover {
+            border-color: var(--color-primary);
+        }
+
+        .github-link img {
+            display: block;
+            width: 24px;
+            height: 24px;
         }
 
         @media (max-width: 640px) {
@@ -773,6 +797,9 @@
     <h1>SGF Auditor</h1>
     <div class="red-subheader">We only accept SGF files of Go (WeiQi/Baduk) game records.</div>
     <a href="tech-log.html" class="tech-log-btn">Technical-log</a>
+    <a href="https://github.com/dave-masorn/SGF-Auditor" target="_blank" rel="noopener noreferrer" class="github-link">
+        <img src="https://avatars.githubusercontent.com/u/183219679?s=48&amp;v=4" alt="Owner avatar" width="24" height="24">
+    </a>
 
     <div class="upload-container">
         <div class="drop-zone" id="drop-zone">
@@ -802,7 +829,7 @@
         </div>
         <div class="foxwq-gamelist" id="foxwq-gamelist"></div>
     </div>
-    <!-- <div class="foxwq-status" id="foxwq-status"></div> -->
+    <div class="foxwq-status" id="foxwq-status" style="display:none"></div>
 
     <div class="eidogo-section">
         <a class="eidogo-logo" href="http://eidogo.com/games" target="_blank" rel="noopener noreferrer"><img src="img/eidogo-fav.ico" alt="EidoGo" onerror="this.style.display='none'"><span class="eido-regular">EIDO</span><span class="eido-bold">GO</span></a>
@@ -1345,12 +1372,14 @@
             if (!url) {
                 status.className = 'foxwq-status error';
                 status.textContent = 'Please paste a FoxWq game URL.';
+                setTimeout(function() { status.style.display = 'none'; }, 4000);
                 return;
             }
 
             if (url.indexOf('foxwq.com') === -1) {
                 status.className = 'foxwq-status error';
                 status.textContent = 'Not a valid FoxWq URL. Expected: foxwq.com game link.';
+                setTimeout(function() { status.style.display = 'none'; }, 4000);
                 return;
             }
 
@@ -1360,6 +1389,7 @@
             status.textContent = 'Fetching SGF from FoxWq...';
 
             FoxwqSGF.fetch(url).then(function(result) {
+                status.style.display = '';
                 status.className = 'foxwq-status ok';
                 status.textContent = 'Loaded: ' + result.filename + ' — opening reviewer...';
                 setTimeout(function() {
@@ -1368,8 +1398,10 @@
             }).catch(function(err) {
                 btn.disabled = false;
                 btn.textContent = 'Fetch';
+                status.style.display = '';
                 status.className = 'foxwq-status error';
                 status.textContent = 'Error: ' + err.message;
+                setTimeout(function() { status.style.display = 'none'; }, 4000);
             });
         }
 
