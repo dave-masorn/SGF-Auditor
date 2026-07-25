@@ -3817,7 +3817,35 @@
                                     sgfContent = foxwqResult.fixed;
                                     sessionStorage.setItem('sgf_content', sgfContent);
                                     fixed = true;
-                                    fixExplanation = foxwqResult.archive;
+
+                                    // Split FoxWq archive: assign each explanation to its matching issue message
+                                    var propMsgMap = { 'TT': 'unknown property <TT> found', 'RL': 'unknown property <RL> found', 'TC': 'not defined in FF[4]', 'AP': '<AP>' };
+                                    foxwqResult.archive.forEach(function(entry) {
+                                        var matchedProp = null;
+                                        Object.keys(propMsgMap).forEach(function(prop) {
+                                            if (entry.indexOf('Removed ' + prop + '[') !== -1 || entry.indexOf('Replaced AP[') !== -1 || entry.indexOf('Removed AP[') !== -1) {
+                                                matchedProp = prop;
+                                            }
+                                        });
+                                        if (matchedProp && auditResult) {
+                                            // Find the matching issue message in current audit
+                                            var targetMsg = null;
+                                            auditResult.issues.forEach(function(issue) {
+                                                if (issue.message && issue.message.indexOf('<' + matchedProp + '>') !== -1) {
+                                                    targetMsg = issue.message;
+                                                }
+                                            });
+                                            if (matchedProp === 'AP') {
+                                                targetMsg = msg; // AP issues keep current msg
+                                            }
+                                            if (targetMsg) {
+                                                if (!fixedIssuesMap[targetMsg]) fixedIssuesMap[targetMsg] = [];
+                                                fixedIssuesMap[targetMsg].push(entry);
+                                            }
+                                        }
+                                    });
+                                    // Store remaining (unmatched) entries under current msg
+                                    fixExplanation = [];
                                 }
                             } catch (e) {
                                 console.error('autoFixFoxwqProps error:', e);
@@ -3828,10 +3856,9 @@
             }
 
             if (fixed) {
-                if (fixExplanation.length === 0) {
-                    fixExplanation = [`Correction applied successfully (normalized to SGF FF[4])`];
+                if (fixExplanation.length > 0) {
+                    fixedIssuesMap[msg] = fixExplanation;
                 }
-                fixedIssuesMap[msg] = fixExplanation;
             }
 
             setTimeout(() => {
@@ -3933,7 +3960,31 @@
                                 sgfContent = foxwqResult.fixed;
                                 sessionStorage.setItem('sgf_content', sgfContent);
                                 fixed = true;
-                                fixExplanation = foxwqResult.archive;
+
+                                // Split FoxWq archive: assign each explanation to its matching issue message
+                                var propMsgMap2 = { 'TT': 'unknown property <TT> found', 'RL': 'unknown property <RL> found', 'TC': 'not defined in FF[4]', 'AP': '<AP>' };
+                                foxwqResult.archive.forEach(function(entry) {
+                                    var matchedProp = null;
+                                    Object.keys(propMsgMap2).forEach(function(prop) {
+                                        if (entry.indexOf('Removed ' + prop + '[') !== -1 || entry.indexOf('Replaced AP[') !== -1 || entry.indexOf('Removed AP[') !== -1) {
+                                            matchedProp = prop;
+                                        }
+                                    });
+                                    if (matchedProp && auditResult) {
+                                        var targetMsg = null;
+                                        auditResult.issues.forEach(function(issue) {
+                                            if (issue.message && issue.message.indexOf('<' + matchedProp + '>') !== -1) {
+                                                targetMsg = issue.message;
+                                            }
+                                        });
+                                        if (matchedProp === 'AP') targetMsg = msg;
+                                        if (targetMsg) {
+                                            if (!fixedIssuesMap[targetMsg]) fixedIssuesMap[targetMsg] = [];
+                                            fixedIssuesMap[targetMsg].push(entry);
+                                        }
+                                    }
+                                });
+                                fixExplanation = [];
                             }
                         } catch (e) {
                             console.error('autoFixFoxwqProps error:', e);
@@ -4047,7 +4098,30 @@
                         sgfContent = foxwqResult.fixed;
                         sessionStorage.setItem('sgf_content', sgfContent);
                         fixedAny = true;
-                        archive = archive.concat(foxwqResult.archive);
+
+                        // Split FoxWq archive: assign each explanation to its matching issue message
+                        var propMsgMapFA = { 'TT': 'unknown property <TT> found', 'RL': 'unknown property <RL> found', 'TC': 'not defined in FF[4]', 'AP': '<AP>' };
+                        foxwqResult.archive.forEach(function(entry) {
+                            var matchedProp = null;
+                            Object.keys(propMsgMapFA).forEach(function(prop) {
+                                if (entry.indexOf('Removed ' + prop + '[') !== -1 || entry.indexOf('Replaced AP[') !== -1 || entry.indexOf('Removed AP[') !== -1) {
+                                    matchedProp = prop;
+                                }
+                            });
+                            if (matchedProp && auditResult) {
+                                var targetMsg = null;
+                                auditResult.issues.forEach(function(issue) {
+                                    if (issue.message && issue.message.indexOf('<' + matchedProp + '>') !== -1) {
+                                        targetMsg = issue.message;
+                                    }
+                                });
+                                if (matchedProp === 'AP') targetMsg = matchedProp;
+                                if (targetMsg) {
+                                    if (!fixedIssuesMap[targetMsg]) fixedIssuesMap[targetMsg] = [];
+                                    fixedIssuesMap[targetMsg].push(entry);
+                                }
+                            }
+                        });
                     }
                 }
 
