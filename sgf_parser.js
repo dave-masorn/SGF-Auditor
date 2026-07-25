@@ -1606,6 +1606,144 @@
         return result;
     }
 
+    /**
+     * SGF Diagnostic Formatter
+     * Extracts SGF from markdown pollution and enforces SGFC-strict vertical layout
+     * WITHOUT altering, auditing, or deleting any intrinsic property values.
+     * Used strictly for diagnostic inspection.
+     */
+    var SgfDiagnosticFormatter = {
+        format: function(rawSgf) {
+            var startIdx = rawSgf.indexOf('(;');
+            if (startIdx === -1) return '';
+            var text = rawSgf.slice(startIdx);
+
+            var nodes = [];
+            var currentNode = null;
+            var currentProp = '';
+            var currentValues = [];
+
+            var inValue = false;
+            var valueBuffer = '';
+            var escape = false;
+            var parenCount = 0;
+
+            for (var i = 0; i < text.length; i++) {
+                var c = text[i];
+
+                if (inValue) {
+                    if (escape) {
+                        valueBuffer += c;
+                        escape = false;
+                    } else if (c === '\\') {
+                        valueBuffer += '\\';
+                        escape = true;
+                    } else if (c === ']') {
+                        currentValues.push(valueBuffer);
+                        valueBuffer = '';
+                        inValue = false;
+                    } else {
+                        valueBuffer += c;
+                    }
+                } else {
+                    if (c === '(') {
+                        parenCount++;
+                    } else if (c === ')') {
+                        if (currentNode && currentProp && currentValues.length > 0) {
+                            currentNode.props.set(currentProp, currentValues);
+                            currentProp = ''; currentValues = [];
+                        }
+                        parenCount--;
+                        if (parenCount === 0) break;
+                    } else if (c === ';') {
+                        if (currentNode && currentProp && currentValues.length > 0) {
+                            currentNode.props.set(currentProp, currentValues);
+                            currentProp = ''; currentValues = [];
+                        }
+                        currentNode = { props: new Map() };
+                        nodes.push(currentNode);
+                    } else if (c === '[') {
+                        inValue = true;
+                        valueBuffer = '';
+                    } else if (/[A-Z]/.test(c)) {
+                        if (currentProp !== '' && currentValues.length > 0) {
+                            currentNode.props.set(currentProp, currentValues);
+                            currentProp = ''; currentValues = [];
+                        }
+                        currentProp += c;
+                    }
+                }
+            }
+
+            if (nodes.length === 0) return '';
+
+            var root = nodes[0].props;
+
+            if (!root.has('FF')) root.set('FF', ['4']);
+            if (!root.has('CA')) root.set('CA', ['UTF-8']);
+            if (!root.has('GM')) root.set('GM', ['1']);
+
+            var out = '(\n\n;';
+
+            var headerProps = ['FF', 'CA', 'GM', 'SZ', 'AP'];
+            headerProps.forEach(function(p) {
+                if (root.has(p)) out += p + '[' + root.get(p).join('][') + ']';
+            });
+            out += '\n\n';
+
+            if (root.has('EV')) {
+                out += 'EV[' + root.get('EV').join('][') + ']\n\n';
+            }
+
+            var verticalProps = ['PB', 'BR', 'PW', 'WR', 'KM', 'DT', 'PC', 'RE'];
+            verticalProps.forEach(function(p) {
+                if (root.has(p)) out += p + '[' + root.get(p).join('][') + ']\n';
+            });
+            out += '\n';
+
+            var orderedProps = new Set(headerProps);
+            orderedProps.add('EV');
+            verticalProps.forEach(function(p) { orderedProps.add(p); });
+            var hasOtherProps = false;
+            root.forEach(function(v, k) {
+                if (!orderedProps.has(k)) {
+                    out += k + '[' + v.join('][') + ']';
+                    hasOtherProps = true;
+                }
+            });
+            if (hasOtherProps) out += '\n\n';
+
+            var moveCount = 0;
+            for (var j = 1; j < nodes.length; j++) {
+                var node = nodes[j].props;
+                var nodeStr = ';';
+                var hasComment = node.has('C');
+
+                node.forEach(function(v, k) {
+                    nodeStr += k + '[' + v.join('][') + ']';
+                });
+
+                if (hasComment) {
+                    if (moveCount > 0) out += '\n';
+                    out += nodeStr + '\n';
+                    moveCount = 0;
+                } else {
+                    out += nodeStr;
+                    moveCount++;
+                    if (moveCount >= 10) {
+                        out += '\n';
+                        moveCount = 0;
+                    }
+                }
+            }
+
+            if (moveCount > 0) out += '\n';
+            out += '\n)\n';
+
+            return out;
+        }
+    };
+
     // Expose APIs
     global.SGFAuditor = {
         parseSGF,
@@ -1617,6 +1755,7 @@
         autoFixSGFProperties,
         sanitizeSGFStream,
         sanitizeAndFormatSGF,
+        SgfDiagnosticFormatter,
         fixEscapedBrackets,
         fixStrayArtifacts,
         fixStrayNonASCII,

@@ -2057,6 +2057,11 @@
                 return;
             }
 
+            // Format SGF for human-readable diagnostic inspection before any audit/display
+            if (typeof SGFAuditor !== 'undefined' && SGFAuditor.SgfDiagnosticFormatter) {
+                sgfContent = SGFAuditor.SgfDiagnosticFormatter.format(sgfContent);
+            }
+
             if (typeof renderSgfBuffer === 'function') renderSgfBuffer(sgfContent);
 
             // Display main containers
