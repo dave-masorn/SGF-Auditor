@@ -1615,6 +1615,7 @@
     var SgfDiagnosticFormatter = {
         format: function(rawSgf) {
             var startIdx = rawSgf.indexOf('(;');
+            var hasParen = startIdx !== -1;
             if (startIdx === -1) startIdx = rawSgf.indexOf(';');
             if (startIdx === -1) return '';
             var text = rawSgf.slice(startIdx);
@@ -1684,7 +1685,7 @@
             if (!root.has('CA')) root.set('CA', ['UTF-8']);
             if (!root.has('GM')) root.set('GM', ['1']);
 
-            var out = '(\n\n;';
+            var out = hasParen ? '(\n\n;' : ';';
 
             var headerProps = ['FF', 'CA', 'GM', 'SZ', 'AP'];
             headerProps.forEach(function(p) {
@@ -1739,7 +1740,7 @@
             }
 
             if (moveCount > 0) out += '\n';
-            out += '\n)\n';
+            out += hasParen ? '\n)\n' : '\n';
 
             return out;
         }
