@@ -1615,6 +1615,7 @@
     var SgfDiagnosticFormatter = {
         format: function(rawSgf) {
             var startIdx = rawSgf.indexOf('(;');
+            if (startIdx === -1) startIdx = rawSgf.indexOf(';');
             if (startIdx === -1) return '';
             var text = rawSgf.slice(startIdx);
 
