@@ -832,12 +832,25 @@
             currentSgfText = rawSgf;
             try {
                 if (window.SGFAuditor) {
-                    treeRoot = window.SGFAuditor.parseSGF(rawSgf);
-                    const audit = window.SGFAuditor.auditSGF(treeRoot);
-                    gameInfo = audit.gameInfo || {};
-                    movesList = audit.movesList || [];
+                    try {
+                        treeRoot = window.SGFAuditor.parseSGF(rawSgf);
+                        const audit = window.SGFAuditor.auditSGF(treeRoot);
+                        gameInfo = audit.gameInfo || {};
+                        movesList = audit.movesList || [];
+                    } catch(err) {
+                        console.warn("SGFAuditor parse failed, using fallback parser:", err);
+                        movesList = parseSgfMovesFallback(rawSgf);
+                        gameInfo = parseSgfGameInfoFallback(rawSgf);
+                    }
                 } else {
                     movesList = parseSgfMovesFallback(rawSgf);
+                    gameInfo = parseSgfGameInfoFallback(rawSgf);
+                }
+
+                if (!movesList || movesList.length === 0) {
+                    movesList = parseSgfMovesFallback(rawSgf);
+                }
+                if (!gameInfo || Object.keys(gameInfo).length === 0) {
                     gameInfo = parseSgfGameInfoFallback(rawSgf);
                 }
 
@@ -856,7 +869,7 @@
 
             } catch(e) {
                 console.error("SGF Load Error:", e);
-                alert("Failed to parse SGF file format.");
+                alert("Failed to parse SGF file format: " + (e.message || e));
             }
         }
 
@@ -869,6 +882,18 @@
             document.getElementById('meta-board').textContent = (gameInfo.SZ || '19') + 'x' + (gameInfo.SZ || '19');
             document.getElementById('meta-rules').textContent = gameInfo.RU || 'Japanese';
             document.getElementById('meta-komi').textContent = gameInfo.KM || '6.5';
+        }
+
+        function getSimGrid(sim, sz) {
+            const g = {};
+            for (let r = 0; r < sz; r++) {
+                for (let c = 0; c < sz; c++) {
+                    if (sim.board[r][c]) {
+                        g[r + ',' + c] = sim.board[r][c];
+                    }
+                }
+            }
+            return g;
         }
 
         function buildBoardStates() {
@@ -893,31 +918,33 @@
 
             for (let i = 0; i < movesList.length; i++) {
                 const m = movesList[i];
-                if (sim) {
-                    sim.playMove(m.color, m.col, m.row);
-                    // Copy grid from sim
-                    const g = {};
-                    for (let r = 0; r < sz; r++) {
-                        for (let c = 0; c < sz; c++) {
-                            if (sim.board[r][c]) {
-                                g[r + ',' + c] = sim.board[r][c];
-                            }
-                        }
-                    }
+                const col = (m.x !== undefined) ? m.x : m.col;
+                const row = (m.y !== undefined) ? m.y : m.row;
+
+                if (m.isPass || col === undefined || row === undefined || col < 0 || row < 0) {
                     boardStates.push({
-                        grid: g,
-                        lastMove: [m.row, m.col],
+                        grid: sim ? getSimGrid(sim, sz) : Object.assign({}, gridState),
+                        lastMove: null,
+                        captures: sim ? { B: sim.captures.B, W: sim.captures.W } : { B: 0, W: 0 },
+                        comment: m.comment || "Pass"
+                    });
+                    continue;
+                }
+
+                if (sim) {
+                    sim.play(m.color, col, row);
+                    boardStates.push({
+                        grid: getSimGrid(sim, sz),
+                        lastMove: [row, col],
                         captures: { B: sim.captures.B, W: sim.captures.W },
                         comment: m.comment || ""
                     });
                 } else {
                     // Fallback grid placement
-                    if (m.col >= 0 && m.row >= 0) {
-                        gridState[m.row + ',' + m.col] = m.color;
-                    }
+                    gridState[row + ',' + col] = m.color;
                     boardStates.push({
                         grid: Object.assign({}, gridState),
-                        lastMove: [m.row, m.col],
+                        lastMove: [row, col],
                         captures: { B: 0, W: 0 },
                         comment: m.comment || ""
                     });
@@ -1177,15 +1204,17 @@
 
         // Fallbacks if SGFAuditor is loading
         function parseSgfMovesFallback(text) {
-            const re = /;([BW])\[([a-s]{2})\]/g;
+            const re = /;([BW])\[([a-s]{2})?\]/g;
             const moves = [];
             let m;
             while ((m = re.exec(text)) !== null) {
-                moves.push({
-                    color: m[1],
-                    col: m[2].charCodeAt(0) - 97,
-                    row: m[2].charCodeAt(1) - 97
-                });
+                if (!m[2] || m[2] === '' || m[2] === 'tt') {
+                    moves.push({ color: m[1], isPass: true });
+                } else {
+                    const c = m[2].charCodeAt(0) - 97;
+                    const r = m[2].charCodeAt(1) - 97;
+                    moves.push({ color: m[1], x: c, y: r, col: c, row: r, isPass: false });
+                }
             }
             return moves;
         }
