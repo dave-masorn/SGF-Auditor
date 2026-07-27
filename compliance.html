@@ -285,71 +285,7 @@
             color: var(--color-text);
         }
 
-        /* Right Section Status Banner */
-        .right-section-container {
-            width: 220px;
-            flex-shrink: 0;
-            display: flex;
-            justify-content: flex-start;
-            box-sizing: border-box;
-        }
 
-        .right-status-banner {
-            width: 100%;
-            border-radius: 4px;
-            padding: 16px;
-            display: none;
-            opacity: 0;
-            transition: opacity 0.15s ease;
-            box-sizing: border-box;
-            text-align: left;
-        }
-
-        .right-status-banner.visible {
-            display: block;
-            opacity: 1;
-        }
-
-        .right-status-banner.pass {
-            background-color: var(--color-success-bg);
-            border: 1px solid var(--color-success);
-            color: var(--color-success-text);
-        }
-
-        .right-status-banner.warning {
-            background-color: var(--color-warning-bg);
-            border: 1px solid var(--color-accent);
-            color: var(--color-secondary);
-        }
-
-        .right-status-banner.fail {
-            background-color: var(--color-danger-bg);
-            border: 1px solid var(--color-secondary);
-            color: var(--color-danger-text);
-        }
-
-        .autofix-btn {
-            background-color: var(--color-secondary);
-            color: white;
-            border: 1px solid var(--color-secondary);
-            padding: 8px 16px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            box-sizing: border-box;
-            margin-top: 12px;
-        }
-
-        .autofix-btn:hover {
-            background-color: #45210D;
-            border-color: #45210D;
-        }
 
         /* Play Button — circular */
         .circular-play-btn {
@@ -1293,7 +1229,7 @@
                 gap: 6px;
             }
             .step-label { text-align: center; font-size: 0.7rem; }
-            .right-section-container { width: 100%; }
+
             .play-button-container { order: -1; }
 
             .stats-grid {
@@ -1873,27 +1809,7 @@
                 </button>
             </div>
 
-            <!-- Right Column Status Banner -->
-            <div class="right-section-container">
-                <div class="right-status-banner" id="right-banner">
-                    <div style="font-weight: 700; font-size: 0.98rem; display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
-                        <span id="right-banner-icon">✓</span>
-                        <span id="right-banner-title">100% Compliant</span>
-                    </div>
-                    <div id="right-banner-desc" style="font-size: 0.8rem; line-height: 1.4; opacity: 0.9;">
-                        This SGF file is fully compliant with the SGF FF[4] standard for Go.
-                    </div>
-                    <button class="autofix-btn" id="fix-all-btn" style="display: none;" onclick="fixAllIssues()">
-                        Fix All Issues
-                    </button>
-                    <button class="autofix-btn" id="recheck-btn" style="display: none;" onclick="reCheckAudit()">
-                        Re-Check SGF Compliance
-                    </button>
-                    <button class="autofix-btn" id="autofix-download-btn" style="display: none;" onclick="downloadCorrectedSgf()">
-                        Auto-Fix &amp; Download SGF
-                    </button>
-                </div>
-            </div>
+
         </div>
 
         <!-- Statistics Grid -->
@@ -2966,9 +2882,9 @@
 
             // After Step 2 completes, show the Download button
             const dlBtn = document.getElementById('autofix-download-btn');
-            dlBtn.style.display = 'block';
-            dlBtn.textContent = 'Download Audited SGF';
-            document.getElementById('recheck-btn').style.display = 'none';
+            if (dlBtn) { dlBtn.style.display = 'block'; dlBtn.textContent = 'Download Audited SGF'; }
+            const rcBtn = document.getElementById('recheck-btn');
+            if (rcBtn) rcBtn.style.display = 'none';
 
             diagnosticsRunning = false;
             document.getElementById('play-btn').classList.remove('running');
@@ -3161,42 +3077,7 @@
             document.getElementById('filter-error-count').textContent = errors.length;
             document.getElementById('filter-warning-count').textContent = warnings.length;
 
-            // Populate right-side banner
-            const rightBanner = document.getElementById('right-banner');
-            const rightIcon = document.getElementById('right-banner-icon');
-            const rightTitle = document.getElementById('right-banner-title');
-            const rightDesc = document.getElementById('right-banner-desc');
-
-            if (auditResult.compliant && warnings.length === 0) {
-                rightBanner.className = 'right-status-banner pass visible';
-                rightIcon.textContent = '✓';
-                rightTitle.textContent = '100% Compliant';
-                rightDesc.innerHTML = `This SGF file is fully compliant with the SGF FF[4] standard for Go. <br><small>(Audited via SGFC WebAssembly engine + Properties Validation)</small>`;
-            } else if (auditResult.compliant && warnings.length > 0) {
-                rightBanner.className = 'right-status-banner warning visible';
-                rightIcon.textContent = '⚠';
-                rightTitle.textContent = 'Compliant (Warnings)';
-                rightDesc.innerHTML = `The SGF is functionally compliant but has ${warnings.length} warning(s). <br><small>(Audited via SGFC WebAssembly engine + Properties Validation)</small>`;
-            } else {
-                rightBanner.className = 'right-status-banner fail visible';
-                rightIcon.textContent = '✗';
-                rightTitle.textContent = 'Non-Compliant';
-                rightDesc.innerHTML = `Found ${errors.length} error(s) and ${warnings.length} warning(s) violating SGF specifications. <br><small>(Audited via SGFC WebAssembly engine + Properties Validation)</small>`;
-            }
-
-            // Toggle Fix All button (visible when errors exist)
-            const fixAllBtn = document.getElementById('fix-all-btn');
-            const autofixBtn = document.getElementById('autofix-download-btn');
-            const recheckBtn = document.getElementById('recheck-btn');
-            if (errors.length > 0 || warnings.length > 0) {
-                fixAllBtn.style.display = 'block';
-                autofixBtn.style.display = 'none';
-                recheckBtn.style.display = 'none';
-            } else {
-                fixAllBtn.style.display = 'none';
-                autofixBtn.style.display = 'none';
-                recheckBtn.style.display = 'none';
-            }
+            // Populate right-side banner (removed panel — skip if elements absent)
 
             renderIssuesList();
 
@@ -3446,12 +3327,12 @@
         // ── Re-Check: re-audit working copy after Fix All (JS-only, no second callMain) ──
         function reCheckAudit() {
             document.getElementById('results-wrapper').classList.remove('visible');
-            document.getElementById('recheck-btn').style.display = 'none';
-            document.getElementById('fix-all-btn').style.display = 'none';
-            document.getElementById('autofix-download-btn').style.display = 'none';
+            var _rc = document.getElementById('recheck-btn'); if (_rc) _rc.style.display = 'none';
+            var _fa = document.getElementById('fix-all-btn'); if (_fa) _fa.style.display = 'none';
+            var _ad = document.getElementById('autofix-download-btn'); if (_ad) _ad.style.display = 'none';
 
             const rightBanner = document.getElementById('right-banner');
-            rightBanner.className = 'right-status-banner';
+            if (rightBanner) rightBanner.className = 'right-status-banner';
 
             const stepNode1 = document.getElementById('step-node-1');
             stepNode1.classList.remove('completed');
@@ -3501,38 +3382,12 @@
                         stepNode1.classList.add('completed');
                         document.getElementById('results-wrapper').classList.add('visible');
 
-                        // Update right-side banner
-                        const rb = document.getElementById('right-banner');
-                        const ri = document.getElementById('right-banner-icon');
-                        const rt = document.getElementById('right-banner-title');
-                        const rd = document.getElementById('right-banner-desc');
-                        if (pass && warns === 0) {
-                            rb.className = 'right-status-banner pass visible';
-                            ri.textContent = '✓';
-                            rt.textContent = '100% Compliant';
-                            rd.innerHTML = 'This SGF file is fully compliant with the SGF FF[4] standard for Go.';
-                        } else if (pass) {
-                            rb.className = 'right-status-banner warning visible';
-                            ri.textContent = '⚠';
-                            rt.textContent = 'Compliant (Warnings)';
-                            rd.innerHTML = 'Functionally compliant with ' + warns + ' warning(s).';
-                        } else {
-                            rb.className = 'right-status-banner fail visible';
-                            ri.textContent = '✗';
-                            rt.textContent = 'Non-Compliant';
-                            rd.innerHTML = 'Found ' + errs + ' error(s) and ' + warns + ' warning(s).';
-                        }
+                        // Update right-side banner (removed panel — skip if elements absent)
                         document.getElementById('step-bar-badge').textContent = "STEP 1";
 
-                        if (pass) {
-                            document.getElementById('recheck-btn').style.display = 'none';
-                            document.getElementById('fix-all-btn').style.display = 'none';
-                            document.getElementById('autofix-download-btn').style.display = 'block';
-                        } else {
-                            document.getElementById('fix-all-btn').style.display = 'block';
-                            document.getElementById('recheck-btn').style.display = 'none';
-                            document.getElementById('autofix-download-btn').style.display = 'none';
-                        }
+                        var _rb = document.getElementById('recheck-btn'); if (_rb) _rb.style.display = 'none';
+                        var _fb = document.getElementById('fix-all-btn'); if (_fb) _fb.style.display = 'none';
+                        var _db = document.getElementById('autofix-download-btn'); if (_db) _db.style.display = 'none';
                     });
                     return;
                 }
@@ -4179,10 +4034,10 @@
                         }
                     });
 
-                    // Hide Fix All, show Re-Check
-                    document.getElementById('fix-all-btn').style.display = 'none';
-                    document.getElementById('recheck-btn').style.display = 'block';
-                    document.getElementById('autofix-download-btn').style.display = 'none';
+                    // Hide Fix All, show Re-Check (removed panel — skip if absent)
+                    var _fa2 = document.getElementById('fix-all-btn'); if (_fa2) _fa2.style.display = 'none';
+                    var _rc2 = document.getElementById('recheck-btn'); if (_rc2) _rc2.style.display = 'block';
+                    var _ad2 = document.getElementById('autofix-download-btn'); if (_ad2) _ad2.style.display = 'none';
                 });
             } catch (e) {
                 console.error('fixAllIssues error:', e);
