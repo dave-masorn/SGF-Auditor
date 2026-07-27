@@ -1,0 +1,1707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <title>SGF Inspector - FF[4] Structural Audit</title>
+    <meta name="description" content="Block-by-block structural validation and game tree inspection according to SGF FF[4] specification.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <script src="version.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Code:ital,wght,MONO@0,300..800,1;1,300..800,1&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Theme Palette */
+            --color-header-bg: #09261E;
+            --color-header-border: #133D32;
+            --color-bg: #F4F6F5;
+            --color-surface: #FFFFFF;
+            --color-surface-muted: #F8FAFC;
+            --color-border: #E2E8F0;
+            --color-border-subtle: #F1F5F9;
+            --color-text-main: #0F172A;
+            --color-text-muted: #64748B;
+            --color-text-light: #94A3B8;
+
+            /* Category Colors */
+            --cat-syntax-bg: #ECFDF5;
+            --cat-syntax-text: #047857;
+            --cat-syntax-border: #A7F3D0;
+            --cat-syntax-dot: #10B981;
+
+            --cat-root-bg: #F0F9FF;
+            --cat-root-text: #0369A1;
+            --cat-root-border: #BAE6FD;
+            --cat-root-dot: #0284C7;
+
+            --cat-gameinfo-bg: #F0FDFA;
+            --cat-gameinfo-text: #0F766E;
+            --cat-gameinfo-border: #99F6E4;
+            --cat-gameinfo-dot: #14B8A6;
+
+            --cat-setup-bg: #FFFBEB;
+            --cat-setup-text: #B45309;
+            --cat-setup-border: #FDE68A;
+            --cat-setup-dot: #F59E0B;
+
+            --cat-move-bg: #F3E8FF;
+            --cat-move-text: #6B21A8;
+            --cat-move-border: #D8B4FE;
+            --cat-move-dot: #A855F7;
+
+            --cat-other-bg: #F1F5F9;
+            --cat-other-text: #475569;
+            --cat-other-border: #CBD5E1;
+            --cat-other-dot: #64748B;
+
+            --status-valid-bg: #DCFCE7;
+            --status-valid-text: #15803D;
+            --status-valid-border: #86EFAC;
+
+            --status-error-bg: #FEE2E2;
+            --status-error-text: #B91C1C;
+            --status-error-border: #FCA5A5;
+
+            --status-warning-bg: #FFEDD5;
+            --status-warning-text: #C2410C;
+            --status-warning-border: #FDBA74;
+
+            --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --font-mono: "Google Sans Code", "Fira Code", monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--color-bg);
+            color: var(--color-text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── Top Header Bar ── */
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 24px;
+            background-color: var(--color-header-bg);
+            border-bottom: 1px solid var(--color-header-border);
+            color: #FFFFFF;
+            height: 56px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-logo {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: #FFFFFF;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-logo-icon {
+            width: 20px;
+            height: 20px;
+            fill: #34D399;
+        }
+
+        .nav-divider {
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.9rem;
+        }
+
+        .header-title {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .badge-header {
+            background-color: rgba(52, 211, 153, 0.15);
+            color: #34D399;
+            border: 1px solid rgba(52, 211, 153, 0.3);
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+            letter-spacing: 0.5px;
+            font-family: var(--font-mono);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .nav-btn {
+            color: rgba(255, 255, 255, 0.75);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: color 0.15s ease;
+        }
+
+        .nav-btn:hover {
+            color: #FFFFFF;
+        }
+
+        .nav-btn.legacy-link {
+            color: rgba(255, 255, 255, 0.5);
+            font-style: italic;
+        }
+        .nav-btn.legacy-link:hover {
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .header-version {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* ── Main Dashboard Layout ── */
+        .inspector-container {
+            max-width: 1600px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            flex: 1;
+        }
+
+        /* Dashboard Sub-Header */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .dashboard-title-group h2 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--color-text-main);
+        }
+
+        .dashboard-title-group .subtitle {
+            font-size: 0.88rem;
+            color: var(--color-text-muted);
+            margin-top: 2px;
+        }
+
+        .dashboard-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .file-select-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            padding: 6px 12px;
+            border-radius: 8px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+            font-size: 0.85rem;
+        }
+
+        .file-icon {
+            width: 16px;
+            height: 16px;
+            stroke: var(--color-text-muted);
+        }
+
+        .file-label {
+            color: var(--color-text-muted);
+            font-weight: 500;
+        }
+
+        .file-select {
+            border: none;
+            background: transparent;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--color-text-main);
+            cursor: pointer;
+            outline: none;
+            max-width: 260px;
+            text-overflow: ellipsis;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            border: 1px solid transparent;
+        }
+
+        .btn-export {
+            background-color: var(--color-surface);
+            border-color: var(--color-border);
+            color: var(--color-text-main);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        }
+        .btn-export:hover {
+            background-color: #F8FAFC;
+            border-color: #CBD5E1;
+        }
+        .btn-export svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* ── Metrics Cards Grid ── */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 14px;
+        }
+
+        @media (max-width: 1200px) {
+            .metrics-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        @media (max-width: 640px) {
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .metric-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 10px;
+            padding: 14px 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .metric-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--color-text-muted);
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .info-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 1px solid var(--color-text-light);
+            color: var(--color-text-light);
+            font-size: 0.65rem;
+            font-weight: 600;
+            cursor: help;
+        }
+
+        .metric-number {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--color-text-main);
+            margin: 6px 0 2px 0;
+            font-family: var(--font-mono);
+
+        }
+
+        .metric-subtext {
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+        }
+
+        /* Overall Status Card Specifics */
+        .overall-status-card {
+            background: linear-gradient(180deg, #FFFFFF 0%, #F8FAF9 100%);
+            border-left: 4px solid var(--status-valid-text);
+        }
+        .overall-status-card.status-error-border {
+            border-left-color: var(--status-error-text);
+        }
+        .overall-status-card.status-warning-border {
+            border-left-color: var(--status-warning-text);
+        }
+
+        .metric-status-val {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 6px 0 2px 0;
+        }
+
+        .status-icon {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 800;
+        }
+
+        .status-icon.success-icon {
+            background-color: var(--status-valid-bg);
+            color: var(--status-valid-text);
+            border: 1px solid var(--status-valid-border);
+        }
+        .status-icon.error-icon {
+            background-color: var(--status-error-bg);
+            color: var(--status-error-text);
+            border: 1px solid var(--status-error-border);
+        }
+        .status-icon.warning-icon {
+            background-color: var(--status-warning-bg);
+            color: var(--status-warning-text);
+            border: 1px solid var(--status-warning-border);
+        }
+
+        .status-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+
+        /* ── Workspace 3-Column Layout ── */
+        .inspector-workspace {
+            display: grid;
+            grid-template-columns: 270px 1fr 340px;
+            gap: 16px;
+            min-height: 680px;
+            align-items: start;
+        }
+
+        @media (max-width: 1400px) {
+            .inspector-workspace {
+                grid-template-columns: 240px 1fr 310px;
+            }
+        }
+        @media (max-width: 1080px) {
+            .inspector-workspace {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+            display: flex;
+            flex-direction: column;
+            height: 720px;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--color-border-subtle);
+            background-color: #FAFCFB;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .panel-header h3 {
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.6px;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+        }
+
+        /* ── Column 1: Tree View ── */
+        .tree-container {
+            flex: 1;
+            padding: 14px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+        }
+
+        .tree-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.12s ease;
+            margin-bottom: 2px;
+            color: var(--color-text-main);
+        }
+
+        .tree-item:hover {
+            background-color: #F1F5F9;
+        }
+
+        .tree-item.selected {
+            background-color: #ECFDF5;
+            color: #047857;
+            font-weight: 600;
+            border-left: 3px solid #10B981;
+        }
+
+        .tree-indent {
+            display: inline-block;
+            width: 16px;
+        }
+
+        .tree-toggle-icon {
+            font-size: 0.75rem;
+            color: var(--color-text-light);
+            width: 12px;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .tree-label {
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+        }
+
+        .tree-badge {
+            font-size: 0.68rem;
+            padding: 1px 6px;
+            border-radius: 4px;
+            margin-left: auto;
+            font-weight: 600;
+        }
+
+        .tree-legend {
+            padding: 14px 18px;
+            border-top: 1px solid var(--color-border-subtle);
+            background-color: #FAFCFB;
+        }
+
+        .tree-legend h4 {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--color-text-muted);
+            letter-spacing: 0.6px;
+            margin-bottom: 10px;
+        }
+
+        .legend-items {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 6px;
+            font-size: 0.76rem;
+            color: var(--color-text-muted);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+        .dot-syntax { background-color: var(--cat-syntax-dot); }
+        .dot-root { background-color: var(--cat-root-dot); }
+        .dot-gameinfo { background-color: var(--cat-gameinfo-dot); }
+        .dot-setup { background-color: var(--cat-setup-dot); }
+        .dot-move { background-color: var(--cat-move-dot); }
+        .dot-other { background-color: var(--cat-other-dot); }
+        .dot-error { background-color: #EF4444; }
+        .dot-warning { background-color: #F59E0B; }
+
+        /* ── Column 2: Block Timeline ── */
+        .timeline-header {
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .timeline-title-group {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+        }
+
+        .timeline-sub {
+            font-size: 0.75rem;
+            color: var(--color-text-light);
+            font-weight: 400;
+        }
+
+        .timeline-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .filter-select {
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid var(--color-border);
+            background: var(--color-surface);
+            font-size: 0.78rem;
+            color: var(--color-text-main);
+            outline: none;
+            cursor: pointer;
+        }
+
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.78rem;
+            color: var(--color-text-muted);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .toggle-switch input {
+            display: none;
+        }
+
+        .switch-slider {
+            width: 28px;
+            height: 16px;
+            background-color: #CBD5E1;
+            border-radius: 10px;
+            position: relative;
+            transition: background-color 0.15s ease;
+        }
+
+        .switch-slider::before {
+            content: "";
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            left: 2px;
+            top: 2px;
+            background-color: #FFFFFF;
+            border-radius: 50%;
+            transition: transform 0.15s ease;
+        }
+
+        .toggle-switch input:checked + .switch-slider {
+            background-color: #10B981;
+        }
+
+        .toggle-switch input:checked + .switch-slider::before {
+            transform: translateX(12px);
+        }
+
+        .timeline-container {
+            flex: 1;
+            padding: 16px 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: relative;
+        }
+
+        /* Continuous timeline vertical line */
+        .timeline-container::before {
+            content: "";
+            position: absolute;
+            top: 24px;
+            bottom: 24px;
+            left: 36px;
+            width: 2px;
+            background-color: var(--color-border);
+            z-index: 1;
+        }
+
+        .timeline-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            position: relative;
+            z-index: 2;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--color-border);
+            background: var(--color-surface);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .timeline-card:hover {
+            border-color: #CBD5E1;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            transform: translateX(2px);
+        }
+
+        .timeline-card.selected {
+            border-color: #10B981;
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.15);
+            background-color: #FAFFFC;
+        }
+
+        .timeline-dot-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--color-surface);
+            border: 2px solid var(--color-border);
+            margin-top: 4px;
+            flex-shrink: 0;
+        }
+
+        .timeline-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .timeline-index {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--color-text-light);
+            width: 28px;
+            flex-shrink: 0;
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        .timeline-token-chip {
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background-color: var(--color-surface-muted);
+            border: 1px solid var(--color-border);
+            min-width: 60px;
+            text-align: center;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .timeline-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            overflow: hidden;
+        }
+
+        .timeline-title-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .block-type-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--color-text-main);
+        }
+
+        .tag-category {
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 4px;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+        }
+
+        .cat-syntax { background: var(--cat-syntax-bg); color: var(--cat-syntax-text); border: 1px solid var(--cat-syntax-border); }
+        .cat-root { background: var(--cat-root-bg); color: var(--cat-root-text); border: 1px solid var(--cat-root-border); }
+        .cat-gameinfo { background: var(--cat-gameinfo-bg); color: var(--cat-gameinfo-text); border: 1px solid var(--cat-gameinfo-border); }
+        .cat-setup { background: var(--cat-setup-bg); color: var(--cat-setup-text); border: 1px solid var(--cat-setup-border); }
+        .cat-move { background: var(--cat-move-bg); color: var(--cat-move-text); border: 1px solid var(--cat-move-border); }
+        .cat-other { background: var(--cat-other-bg); color: var(--cat-other-text); border: 1px solid var(--cat-other-border); }
+
+        .timeline-desc {
+            font-size: 0.78rem;
+            color: var(--color-text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .timeline-meta-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.72rem;
+            color: var(--color-text-muted);
+            margin-top: 4px;
+            font-family: var(--font-mono);
+        }
+
+        .timeline-status-badge {
+            margin-left: auto;
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 12px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .badge-valid { background: var(--status-valid-bg); color: var(--status-valid-text); border: 1px solid var(--status-valid-border); }
+        .badge-error { background: var(--status-error-bg); color: var(--status-error-text); border: 1px solid var(--status-error-border); }
+        .badge-warning { background: var(--status-warning-bg); color: var(--status-warning-text); border: 1px solid var(--status-warning-border); }
+
+        /* ── Column 3: Details Panel ── */
+        .details-header {
+            padding: 12px 18px;
+        }
+
+        .block-nav-buttons {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-nav {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            border: 1px solid var(--color-border);
+            background: var(--color-surface);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            cursor: pointer;
+            color: var(--color-text-main);
+        }
+        .btn-nav:hover {
+            background-color: #F1F5F9;
+        }
+
+        .block-nav-counter {
+            font-size: 0.75rem;
+            font-family: var(--font-mono);
+            color: var(--color-text-muted);
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .details-content {
+            flex: 1;
+            padding: 18px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .token-preview-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #FAFCFB;
+            border: 1px solid var(--color-border);
+            border-radius: 10px;
+            padding: 16px;
+        }
+
+        .token-big-box {
+            font-family: var(--font-mono);
+            font-size: 1.1rem;
+            font-weight: 700;
+            padding: 6px 14px;
+            background: #FFFFFF;
+            border: 1px solid #CBD5E1;
+            border-radius: 8px;
+            color: #047857;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        }
+
+        .details-section-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--color-text-muted);
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            border-bottom: 1px solid var(--color-border-subtle);
+            padding-bottom: 4px;
+        }
+
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+
+        .info-table td {
+            padding: 5px 0;
+            vertical-align: top;
+        }
+
+        .info-table td.label-col {
+            color: var(--color-text-muted);
+            width: 40%;
+        }
+
+        .info-table td.val-col {
+            color: var(--color-text-main);
+            font-weight: 500;
+        }
+
+        .explanation-box {
+            background-color: #F8FAFC;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 0.8rem;
+            color: var(--color-text-main);
+            line-height: 1.45;
+        }
+
+        .ref-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: #0284C7;
+            text-decoration: none;
+            font-size: 0.78rem;
+            font-weight: 600;
+            margin-top: 6px;
+        }
+        .ref-link:hover {
+            text-decoration: underline;
+        }
+
+        .context-chips {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 6px;
+        }
+
+        .chip-ctx {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background: #F1F5F9;
+            border: 1px solid #E2E8F0;
+            color: var(--color-text-muted);
+        }
+        .chip-ctx.active {
+            background: #ECFDF5;
+            border-color: #A7F3D0;
+            color: #047857;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Fixed Header -->
+    <header class="top-header">
+        <div class="header-left">
+            <a href="index.html" class="header-logo">
+                <svg class="header-logo-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                SGF Auditor
+            </a>
+            <span class="nav-divider">/</span>
+            <span class="header-title">SGF Inspector</span>
+            <span class="badge badge-header" id="header-status-badge">FF[4] ADHERENT</span>
+        </div>
+        <div class="header-right">
+            <a href="index.html" class="nav-btn">← Auditor Home</a>
+            <a href="compliance.html" class="nav-btn legacy-link">Compliance Page</a>
+            <a href="tech-log.html" class="nav-btn">Tech Log</a>
+            <span class="header-version"></span>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="inspector-container">
+        <!-- Dashboard Sub-Header -->
+        <div class="dashboard-header">
+            <div class="dashboard-title-group">
+                <h2>SGF Inspector <span class="badge badge-valid" id="hero-badge">FF[4] ADHERENT</span></h2>
+                <p class="subtitle">Block-by-block validation according to SGF FF[4] specification</p>
+            </div>
+            <div class="dashboard-actions">
+                <div class="file-select-wrapper">
+                    <svg class="file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                    <span class="file-label">Editing:</span>
+                    <select id="file-selector" class="file-select">
+                        <option value="current" id="current-filename-opt">current_file.sgf</option>
+                        <option value="sample_valid">Sample: Valid FF[4] Game.sgf</option>
+                        <option value="sample_syntax_err">Sample: Syntax Failure (;FF[4]...).sgf</option>
+                        <option value="sample_mixed_setup">Sample: Mixed Setup & Move Error.sgf</option>
+                    </select>
+                </div>
+                <button class="btn btn-export" id="btn-export" onclick="exportDiagnosticReport()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    Export Report
+                </button>
+            </div>
+        </div>
+
+        <!-- Metrics Cards Row -->
+        <div class="metrics-grid">
+            <div class="metric-card overall-status-card" id="metric-status-card">
+                <div class="metric-label">OVERALL STATUS <span class="info-icon" title="FF[4] Specification compliance status">i</span></div>
+                <div class="metric-status-val" id="overall-status-text">
+                    <span class="status-icon success-icon" id="status-main-icon">✓</span>
+                    <span class="status-title" id="status-main-title">VALID</span>
+                </div>
+                <div class="metric-subtext" id="overall-status-sub">No critical errors</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">BLOCKS</div>
+                <div class="metric-number" id="metric-blocks-count">0</div>
+                <div class="metric-subtext">Total blocks</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">NODES</div>
+                <div class="metric-number" id="metric-nodes-count">0</div>
+                <div class="metric-subtext">Total nodes</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">PROPERTIES</div>
+                <div class="metric-number" id="metric-props-count">0</div>
+                <div class="metric-subtext">Total properties</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">VARIATIONS</div>
+                <div class="metric-number" id="metric-vars-count">0</div>
+                <div class="metric-subtext">Total variations</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">BOARD SIZE</div>
+                <div class="metric-number" id="metric-board-size">19 × 19</div>
+                <div class="metric-subtext" id="metric-board-size-sub">From SZ[19]</div>
+            </div>
+        </div>
+
+        <!-- Three-Column Layout Area -->
+        <div class="inspector-workspace">
+            <!-- Left Column: Document Structure (Tree View) -->
+            <aside class="panel panel-left">
+                <div class="panel-header">
+                    <h3>DOCUMENT STRUCTURE</h3>
+                </div>
+                <div class="tree-container" id="tree-container">
+                    <!-- Dynamic Tree populated by JS -->
+                </div>
+                <div class="tree-legend">
+                    <h4>LEGEND</h4>
+                    <div class="legend-items">
+                        <div class="legend-item"><span class="dot dot-syntax"></span> Structure / Syntax</div>
+                        <div class="legend-item"><span class="dot dot-root"></span> Root Property</div>
+                        <div class="legend-item"><span class="dot dot-gameinfo"></span> Game Info (Root)</div>
+                        <div class="legend-item"><span class="dot dot-setup"></span> Setup Property</div>
+                        <div class="legend-item"><span class="dot dot-move"></span> Move Property</div>
+                        <div class="legend-item"><span class="dot dot-other"></span> Other Property</div>
+                        <div class="legend-item"><span class="dot dot-error"></span> Error</div>
+                        <div class="legend-item"><span class="dot dot-warning"></span> Warning</div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Center Column: Block Timeline -->
+            <section class="panel panel-center">
+                <div class="panel-header timeline-header">
+                    <div class="timeline-title-group">
+                        <h3>BLOCK TIMELINE</h3>
+                        <span class="timeline-sub">Validated in file order</span>
+                    </div>
+                    <div class="timeline-controls">
+                        <select id="filter-blocks" class="filter-select" onchange="renderTimeline()">
+                            <option value="all">All Blocks</option>
+                            <option value="root">Root Properties</option>
+                            <option value="move">Move Properties</option>
+                            <option value="setup">Setup Properties</option>
+                            <option value="structure">Structure Tokens</option>
+                            <option value="issues">Errors & Warnings Only</option>
+                        </select>
+                        <label class="toggle-switch">
+                            <span>Show Details</span>
+                            <input type="checkbox" id="toggle-details" checked onchange="renderTimeline()">
+                            <span class="switch-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="timeline-container" id="timeline-container">
+                    <!-- Dynamic Timeline Items populated by JS -->
+                </div>
+            </section>
+
+            <!-- Right Column: Details for Selected Block -->
+            <aside class="panel panel-right">
+                <div class="panel-header details-header">
+                    <h3>DETAILS FOR SELECTED BLOCK</h3>
+                    <div class="block-nav-buttons">
+                        <button class="btn-nav" id="btn-prev-block" onclick="navigateBlock(-1)">‹</button>
+                        <span class="block-nav-counter" id="block-nav-counter">1 of 1</span>
+                        <button class="btn-nav" id="btn-next-block" onclick="navigateBlock(1)">›</button>
+                    </div>
+                </div>
+
+                <div class="details-content" id="details-content">
+                    <!-- Dynamic Selected Block Details populated by JS -->
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <script>
+        /* ── SGF Inspector Engine & Property Rules Definitions ── */
+        const SGF_PROPERTY_RULES = {
+            'FF': { name: 'File Format', category: 'root', type: 'Root Property', format: 'Number', range: '1-4', req: 'Yes (Recommended)', multi: 'No', scope: 'Root Node', exp: 'Defines the SGF file format version. For modern engines this should strictly be 4.', ref: 'SGF FF[4] Section 7.6 File Format (FF)' },
+            'CA': { name: 'Character Set', category: 'root', type: 'Root Property', format: 'SimpleText', range: 'Charset (e.g., UTF-8)', req: 'Optional (Default ISO-8859-1)', multi: 'No', scope: 'Root Node', exp: 'Provides the character set used for SimpleText and Text types in the file. UTF-8 is universally preferred.', ref: 'SGF FF[4] Section 7.6 Charset (CA)' },
+            'GM': { name: 'Game', category: 'root', type: 'Root Property', format: 'Number', range: '1-16 (1 = Go)', req: 'Yes (Recommended)', multi: 'No', scope: 'Root Node', exp: 'Defines the type of game stored in the GameTree. 1 indicates Go (WeiQi/Baduk).', ref: 'SGF FF[4] Section 7.6 Game (GM)' },
+            'SZ': { name: 'Board Size', category: 'root', type: 'Root Property', format: 'Number', range: '1-52 (Default 19)', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Defines the size of the Go board (e.g. 19 for 19x19).', ref: 'SGF FF[4] Section 7.6 Board Size (SZ)' },
+            'AP': { name: 'Application', category: 'root', type: 'Root Property', format: 'SimpleText', range: 'Name:Version', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Identifies the application that created or modified this SGF file.', ref: 'SGF FF[4] Section 7.6 Application (AP)' },
+            'ST': { name: 'Style', category: 'root', type: 'Root Property', format: 'Number', range: '0-3', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Defines variation rendering style in UI viewers.', ref: 'SGF FF[4] Section 7.6 Style (ST)' },
+            'RU': { name: 'Rules', category: 'root', type: 'Root Property', format: 'SimpleText', range: 'Ruleset Name', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Specifies the Go ruleset applied (e.g., Japanese, Chinese, AGA).', ref: 'SGF FF[4] Section 7.6 Rules (RU)' },
+            'KM': { name: 'Komi', category: 'root', type: 'Root Property', format: 'Real', range: 'Real Number (e.g. 6.5)', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Komi compensation given to White.', ref: 'SGF FF[4] Section 7.6 Komi (KM)' },
+            'HA': { name: 'Handicap', category: 'root', type: 'Root Property', format: 'Number', range: 'Handicap count (>= 2)', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Number of handicap stones given to Black.', ref: 'SGF FF[4] Section 7.6 Handicap (HA)' },
+            'TM': { name: 'Time Limit', category: 'root', type: 'Root Property', format: 'Real', range: 'Seconds', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Time limit in seconds per player.', ref: 'SGF FF[4] Section 7.6 Time Limit (TM)' },
+            'OT': { name: 'Overtime', category: 'root', type: 'Root Property', format: 'SimpleText', range: 'Byo-yomi description', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Description of overtime rules.', ref: 'SGF FF[4] Section 7.6 Overtime (OT)' },
+
+            'PB': { name: 'Black Player', category: 'gameinfo', type: 'Game Info', format: 'SimpleText', range: 'Player Name', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Name of the player playing Black.', ref: 'SGF FF[4] Section 7.7 Player Black (PB)' },
+            'PW': { name: 'White Player', category: 'gameinfo', type: 'Game Info', format: 'SimpleText', range: 'Player Name', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Name of the player playing White.', ref: 'SGF FF[4] Section 7.7 Player White (PW)' },
+            'BR': { name: 'Black Rank', category: 'gameinfo', type: 'Game Info', format: 'SimpleText', range: 'Rank (e.g. 9p, 1d)', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Rank of Black player.', ref: 'SGF FF[4] Section 7.7 Black Rank (BR)' },
+            'WR': { name: 'White Rank', category: 'gameinfo', type: 'Game Info', format: 'SimpleText', range: 'Rank (e.g. 9p, 1d)', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Rank of White player.', ref: 'SGF FF[4] Section 7.7 White Rank (WR)' },
+            'DT': { name: 'Date', category: 'gameinfo', type: 'Game Info', format: 'SimpleText', range: 'YYYY-MM-DD', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Date when the game was played.', ref: 'SGF FF[4] Section 7.7 Date (DT)' },
+            'EV': { name: 'Event', category: 'gameinfo', type: 'Game Info', format: 'SimpleText', range: 'Tournament Name', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Event or tournament name.', ref: 'SGF FF[4] Section 7.7 Event (EV)' },
+            'RO': { name: 'Round', category: 'gameinfo', type: 'Game Info', format: 'SimpleText', range: 'Round Number', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Round number or match description.', ref: 'SGF FF[4] Section 7.7 Round (RO)' },
+            'PC': { name: 'Place', category: 'gameinfo', type: 'Game Info', format: 'SimpleText', range: 'City / Location', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Location where the game took place.', ref: 'SGF FF[4] Section 7.7 Place (PC)' },
+            'RE': { name: 'Result', category: 'gameinfo', type: 'Game Info', format: 'SimpleText', range: 'B+R, W+3.5, etc.', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Final result of the game.', ref: 'SGF FF[4] Section 7.7 Result (RE)' },
+            'GN': { name: 'Game Name', category: 'gameinfo', type: 'Game Info', format: 'SimpleText', range: 'Game Title', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Title or name given to this game record.', ref: 'SGF FF[4] Section 7.7 Game Name (GN)' },
+            'GC': { name: 'Game Comment', category: 'gameinfo', type: 'Game Info', format: 'Text', range: 'Multi-line Text', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Background commentary or summary of the game.', ref: 'SGF FF[4] Section 7.7 Game Comment (GC)' },
+            'SO': { name: 'Source', category: 'gameinfo', type: 'Game Info', format: 'SimpleText', range: 'Source Name', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Source of the SGF file (publication or database).', ref: 'SGF FF[4] Section 7.7 Source (SO)' },
+            'US': { name: 'User / Creator', category: 'gameinfo', type: 'Game Info', format: 'SimpleText', range: 'User Name', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Person who transcribed the SGF record.', ref: 'SGF FF[4] Section 7.7 User (US)' },
+            'AN': { name: 'Annotator', category: 'gameinfo', type: 'Game Info', format: 'SimpleText', range: 'Annotator Name', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Person who provided commentary.', ref: 'SGF FF[4] Section 7.7 Annotator (AN)' },
+            'CP': { name: 'Copyright', category: 'gameinfo', type: 'Game Info', format: 'SimpleText', range: 'Copyright Text', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Copyright declaration for game record.', ref: 'SGF FF[4] Section 7.7 Copyright (CP)' },
+
+            'B': { name: 'Black Move', category: 'move', type: 'Move Property', format: 'Point', range: 'Go Coordinate (e.g. pd)', req: 'Optional', multi: 'No', scope: 'Any Node', exp: 'Places a Black stone on specified board point.', ref: 'SGF FF[4] Section 7.1 Move Black (B)' },
+            'W': { name: 'White Move', category: 'move', type: 'Move Property', format: 'Point', range: 'Go Coordinate (e.g. dd)', req: 'Optional', multi: 'No', scope: 'Any Node', exp: 'Places a White stone on specified board point.', ref: 'SGF FF[4] Section 7.1 Move White (W)' },
+            'KO': { name: 'Ko Move', category: 'move', type: 'Move Property', format: 'None', range: 'None', req: 'Optional', multi: 'No', scope: 'Move Node', exp: 'Declares move as forced (illegal move executed due to Ko).', ref: 'SGF FF[4] Section 7.1 Ko (KO)' },
+            'MN': { name: 'Move Number', category: 'move', type: 'Move Property', format: 'Number', range: 'Move count', req: 'Optional', multi: 'No', scope: 'Move Node', exp: 'Explicitly sets move number.', ref: 'SGF FF[4] Section 7.1 Move Number (MN)' },
+            'BL': { name: 'Black Time Left', category: 'move', type: 'Move Property', format: 'Real', range: 'Seconds', req: 'Optional', multi: 'No', scope: 'Move Node', exp: 'Time remaining for Black after move.', ref: 'SGF FF[4] Section 7.1 Time Left Black (BL)' },
+            'WL': { name: 'White Time Left', category: 'move', type: 'Move Property', format: 'Real', range: 'Seconds', req: 'Optional', multi: 'No', scope: 'Move Node', exp: 'Time remaining for White after move.', ref: 'SGF FF[4] Section 7.1 Time Left White (WL)' },
+
+            'AB': { name: 'Add Black', category: 'setup', type: 'Setup Property', format: 'List of Point', range: 'Point list / Rect (pd:dd)', req: 'Optional', multi: 'Yes', scope: 'Setup Node', exp: 'Adds Black handicap or diagram stones.', ref: 'SGF FF[4] Section 7.2 Add Black (AB)' },
+            'AW': { name: 'Add White', category: 'setup', type: 'Setup Property', format: 'List of Point', range: 'Point list / Rect', req: 'Optional', multi: 'Yes', scope: 'Setup Node', exp: 'Adds White diagram stones.', ref: 'SGF FF[4] Section 7.2 Add White (AW)' },
+            'AE': { name: 'Add Empty', category: 'setup', type: 'Setup Property', format: 'List of Point', range: 'Point list', req: 'Optional', multi: 'Yes', scope: 'Setup Node', exp: 'Removes stones from specified points.', ref: 'SGF FF[4] Section 7.2 Add Empty (AE)' },
+            'PL': { name: 'Player Next', category: 'setup', type: 'Setup Property', format: 'Color', range: 'B or W', req: 'Optional', multi: 'No', scope: 'Setup Node', exp: 'Explicitly sets whose turn it is to play next.', ref: 'SGF FF[4] Section 7.2 Player (PL)' },
+
+            'C': { name: 'Comment', category: 'other', type: 'Annotation', format: 'Text', range: 'Comment String', req: 'Optional', multi: 'No', scope: 'Any Node', exp: 'Commentary or annotations for the node.', ref: 'SGF FF[4] Section 7.3 Comment (C)' },
+            'N': { name: 'Node Name', category: 'other', type: 'Annotation', format: 'SimpleText', range: 'Name String', req: 'Optional', multi: 'No', scope: 'Any Node', exp: 'Title or name given to this specific node.', ref: 'SGF FF[4] Section 7.3 Node Name (N)' },
+            'TR': { name: 'Triangle Mark', category: 'other', type: 'Markup Property', format: 'List of Point', range: 'Point list', req: 'Optional', multi: 'Yes', scope: 'Any Node', exp: 'Marks points with a triangle.', ref: 'SGF FF[4] Section 7.5 Markup (TR)' },
+            'CR': { name: 'Circle Mark', category: 'other', type: 'Markup Property', format: 'List of Point', range: 'Point list', req: 'Optional', multi: 'Yes', scope: 'Any Node', exp: 'Marks points with a circle.', ref: 'SGF FF[4] Section 7.5 Markup (CR)' },
+            'MA': { name: 'Mark (X)', category: 'other', type: 'Markup Property', format: 'List of Point', range: 'Point list', req: 'Optional', multi: 'Yes', scope: 'Any Node', exp: 'Marks points with an X.', ref: 'SGF FF[4] Section 7.5 Markup (MA)' },
+            'SQ': { name: 'Square Mark', category: 'other', type: 'Markup Property', format: 'List of Point', range: 'Point list', req: 'Optional', multi: 'Yes', scope: 'Any Node', exp: 'Marks points with a square.', ref: 'SGF FF[4] Section 7.5 Markup (SQ)' },
+            'LB': { name: 'Label', category: 'other', type: 'Markup Property', format: 'List of Point:Text', range: 'point:char list', req: 'Optional', multi: 'Yes', scope: 'Any Node', exp: 'Places text/letter labels on board points.', ref: 'SGF FF[4] Section 7.5 Label (LB)' }
+        };
+
+        // Sample SGF datasets for file selector
+        const SAMPLES = {
+            'sample_valid': `(;FF[4]CA[UTF-8]GM[1]SZ[19]PB[Lee Sedol]PW[AlphaGo]KM[7.5]DT[2016-03-09]RE[W+Resign];B[pd];W[dd](;B[pq];W[dp])(;B[dp];W[pp]))`,
+            'sample_syntax_err': `;FF[4]CA[UTF-8]GM[1]SZ[19]PB[Lee Sedol]PW[AlphaGo];B[pd];W[dd]`,
+            'sample_mixed_setup': `(;FF[4]GM[1]SZ[19];AB[dd][dp]B[pd];W[pp])`
+        };
+
+        /* State Variables */
+        let currentRawSgf = '';
+        let parsedBlocks = [];
+        let parsedNodes = [];
+        let parsedTree = [];
+        let selectedBlockIndex = 0;
+        let selectedNodeIndex = null;
+
+        /* Initialization */
+        window.addEventListener('DOMContentLoaded', () => {
+            loadSgfFromStorage();
+
+            document.getElementById('file-selector').addEventListener('change', (e) => {
+                const val = e.target.value;
+                if (val === 'current') {
+                    loadSgfFromStorage();
+                } else if (SAMPLES[val]) {
+                    processSgfString(SAMPLES[val], val + '.sgf');
+                }
+            });
+        });
+
+        function loadSgfFromStorage() {
+            const sgf = sessionStorage.getItem('sgf_content') || sessionStorage.getItem('sgf_original') || SAMPLES['sample_valid'];
+            const filename = sessionStorage.getItem('sgf_filename') || 'game.sgf';
+            
+            const currOpt = document.getElementById('current-filename-opt');
+            if (currOpt) currOpt.textContent = filename;
+
+            processSgfString(sgf, filename);
+        }
+
+        /* Convert SGF Coordinate (e.g. pd) to human readable (e.g. pd (16-4)) */
+        function formatSgfPoint(pt) {
+            if (!pt || pt === 'tt') return 'Pass';
+            if (pt.length !== 2) return pt;
+            const col = pt.charCodeAt(0) - 96;
+            const row = pt.charCodeAt(1) - 96;
+            return `${pt} (${col}-${row})`;
+        }
+
+        /* Main Inspector Tokenization & Parsing Pipeline */
+        function processSgfString(sgfStr, filename) {
+            currentRawSgf = sgfStr;
+            parsedBlocks = [];
+            parsedNodes = [];
+            parsedTree = [];
+            selectedBlockIndex = 0;
+            selectedNodeIndex = null;
+
+            const trimmed = sgfStr.trim();
+            const tokenRegex = /(\(|\)|;|[A-Z]{1,2}(?:\s*\[[^\]]*\])+)/g;
+            const rawTokens = trimmed.match(tokenRegex) || [];
+
+            let totalNodes = 0;
+            let totalProps = 0;
+            let totalVars = 0;
+            let boardSize = 19;
+            let currentNodeIndex = -1;
+            let currentTreeDepth = 0;
+            let hasCriticalError = false;
+            let hasWarnings = false;
+
+            if (rawTokens.length === 0) {
+                // Empty file error
+                parsedBlocks.push({
+                    index: 1,
+                    token: '',
+                    block_type: 'Syntax Error',
+                    is_valid: false,
+                    issue_level: 'error',
+                    category: 'syntax',
+                    explanation: 'SGF file is empty or missing valid tokens.',
+                    expected_format: '( ... )',
+                    node_index: 0,
+                    tree_depth: 0,
+                    spec_ref: 'SGF FF[4] Section 4.1 EBNF'
+                });
+                hasCriticalError = true;
+            } else {
+                // 1. Root Syntax Check: Must start with '('
+                if (rawTokens[0] !== '(') {
+                    parsedBlocks.push({
+                        index: 1,
+                        token: rawTokens[0],
+                        block_type: 'Syntax Error',
+                        is_valid: false,
+                        issue_level: 'error',
+                        category: 'syntax',
+                        explanation: 'An SGF Collection must begin with a GameTree opening parenthesis "(". A node marker ";" cannot open a collection.',
+                        expected_format: '(',
+                        node_index: 0,
+                        tree_depth: 0,
+                        spec_ref: 'SGF FF[4] Section 4.1 Gametree Definition'
+                    });
+                    hasCriticalError = true;
+                }
+
+                // Node tracking maps
+                let nodePropsMap = {}; // nodeIndex -> Array of property identifiers
+
+                for (let i = 0; i < rawTokens.length; i++) {
+                    const token = rawTokens[i];
+                    const blockIdx = parsedBlocks.length + 1;
+
+                    if (token === '(') {
+                        currentTreeDepth++;
+                        if (currentTreeDepth > 1) totalVars++;
+                        parsedBlocks.push({
+                            index: blockIdx,
+                            token: '(',
+                            block_type: currentTreeDepth === 1 ? 'GameTree Start' : 'Variation Start',
+                            is_valid: true,
+                            issue_level: 'none',
+                            category: 'syntax',
+                            explanation: currentTreeDepth === 1 ? 'Opens a new GameTree. Every SGF file must begin with this character.' : 'Opens a new variation branch from the parent node.',
+                            expected_format: '(',
+                            node_index: currentNodeIndex >= 0 ? currentNodeIndex : 0,
+                            tree_depth: currentTreeDepth,
+                            spec_ref: 'SGF FF[4] Section 4.1'
+                        });
+                    } else if (token === ')') {
+                        parsedBlocks.push({
+                            index: blockIdx,
+                            token: ')',
+                            block_type: currentTreeDepth === 1 ? 'GameTree End' : 'Variation End',
+                            is_valid: true,
+                            issue_level: 'none',
+                            category: 'syntax',
+                            explanation: 'Closes current GameTree or variation sequence.',
+                            expected_format: ')',
+                            node_index: currentNodeIndex >= 0 ? currentNodeIndex : 0,
+                            tree_depth: currentTreeDepth,
+                            spec_ref: 'SGF FF[4] Section 4.1'
+                        });
+                        currentTreeDepth = Math.max(0, currentTreeDepth - 1);
+                    } else if (token === ';') {
+                        totalNodes++;
+                        currentNodeIndex++;
+                        nodePropsMap[currentNodeIndex] = [];
+
+                        parsedNodes.push({
+                            node_index: currentNodeIndex,
+                            tree_depth: currentTreeDepth,
+                            is_root: currentNodeIndex === 0,
+                            block_index: blockIdx
+                        });
+
+                        parsedBlocks.push({
+                            index: blockIdx,
+                            token: ';',
+                            block_type: currentNodeIndex === 0 ? 'Node Start (Root Node)' : `Node Start (Node ${currentNodeIndex})`,
+                            is_valid: true,
+                            issue_level: 'none',
+                            category: 'syntax',
+                            explanation: currentNodeIndex === 0 ? 'Opens the Root Node of the sequence to hold root properties & game metadata.' : 'Opens a new Node within the sequence.',
+                            expected_format: ';',
+                            node_index: currentNodeIndex,
+                            tree_depth: currentTreeDepth,
+                            spec_ref: 'SGF FF[4] Section 4.1 Node Definition'
+                        });
+                    } else {
+                        // Property Block parsing
+                        totalProps++;
+                        const identMatch = token.match(/^([A-Z]{1,2})/);
+                        const ident = identMatch ? identMatch[1] : '?';
+                        const values = [...token.matchAll(/\[([^\]]*)\]/g)].map(m => m[1]);
+
+                        if (currentNodeIndex >= 0 && nodePropsMap[currentNodeIndex]) {
+                            nodePropsMap[currentNodeIndex].push(ident);
+                        }
+
+                        const rule = SGF_PROPERTY_RULES[ident];
+                        let isValid = true;
+                        let issueLevel = 'none';
+                        let expText = '';
+                        let formatStr = '';
+
+                        if (rule) {
+                            formatStr = `${rule.format} [${rule.range}]`;
+                            expText = rule.exp;
+
+                            // Rule Validation Checks
+                            // 1. Root Property outside Root Node
+                            if (rule.category === 'root' && currentNodeIndex > 0) {
+                                issueLevel = 'warning';
+                                hasWarnings = true;
+                                expText = `[WARNING] Root property ${ident} should strictly appear in the Root Node (Node 0), but found in Node ${currentNodeIndex}.`;
+                            }
+
+                            // 2. Specific Property Value Validation
+                            if (ident === 'FF') {
+                                const valNum = parseInt(values[0], 10);
+                                if (valNum !== 4) {
+                                    issueLevel = 'warning';
+                                    hasWarnings = true;
+                                    expText = `File format version is FF[${values[0]}]. Standard for modern engines is FF[4].`;
+                                }
+                            } else if (ident === 'SZ') {
+                                boardSize = parseInt(values[0], 10) || 19;
+                                if (boardSize < 1 || boardSize > 52) {
+                                    isValid = false;
+                                    issueLevel = 'error';
+                                    hasCriticalError = true;
+                                    expText = `[ERROR] Invalid Go board size ${boardSize}. SGF spec requires 1 to 52.`;
+                                }
+                            } else if (ident === 'B' || ident === 'W') {
+                                const pt = values[0] || '';
+                                formatStr = `Point  Value: ${formatSgfPoint(pt)}`;
+                            }
+
+                            // 3. Mixed Setup & Move Properties Check
+                            if (currentNodeIndex >= 0 && nodePropsMap[currentNodeIndex]) {
+                                const pList = nodePropsMap[currentNodeIndex];
+                                const hasMove = pList.some(p => p === 'B' || p === 'W' || p === 'KO' || p === 'MN');
+                                const hasSetup = pList.some(p => p === 'AB' || p === 'AW' || p === 'AE' || p === 'PL');
+                                if (hasMove && hasSetup) {
+                                    isValid = false;
+                                    issueLevel = 'error';
+                                    hasCriticalError = true;
+                                    expText = `[CRITICAL ERROR] SGF Section 3 Violation: Illegal to mix Move properties (B/W) and Setup properties (AB/AW) in the same node.`;
+                                }
+                            }
+
+                            parsedBlocks.push({
+                                index: blockIdx,
+                                token: token,
+                                block_type: `Property: ${ident} (${rule.name})`,
+                                ident: ident,
+                                values: values,
+                                is_valid: isValid,
+                                issue_level: issueLevel,
+                                category: rule.category,
+                                explanation: expText,
+                                expected_format: formatStr,
+                                node_index: currentNodeIndex >= 0 ? currentNodeIndex : 0,
+                                tree_depth: currentTreeDepth,
+                                spec_ref: rule.ref,
+                                rule_details: rule
+                            });
+                        } else {
+                            // Unknown Property
+                            parsedBlocks.push({
+                                index: blockIdx,
+                                token: token,
+                                block_type: `Property: ${ident}`,
+                                ident: ident,
+                                values: values,
+                                is_valid: true,
+                                issue_level: 'warning',
+                                category: 'other',
+                                explanation: `Standard or private/custom SGF property.`,
+                                expected_format: `SimpleText / Text`,
+                                node_index: currentNodeIndex >= 0 ? currentNodeIndex : 0,
+                                tree_depth: currentTreeDepth,
+                                spec_ref: 'SGF FF[4] Section 4.2.3 Unknown Properties'
+                            });
+                        }
+                    }
+                }
+            }
+
+            // Update Metrics Cards
+            document.getElementById('metric-blocks-count').textContent = parsedBlocks.length;
+            document.getElementById('metric-nodes-count').textContent = totalNodes;
+            document.getElementById('metric-props-count').textContent = totalProps;
+            document.getElementById('metric-vars-count').textContent = totalVars;
+            document.getElementById('metric-board-size').textContent = `${boardSize} × ${boardSize}`;
+            document.getElementById('metric-board-size-sub').textContent = `From SZ[${boardSize}]`;
+
+            // Update Overall Status UI Card
+            const statusCard = document.getElementById('metric-status-card');
+            const iconEl = document.getElementById('status-main-icon');
+            const titleEl = document.getElementById('status-main-title');
+            const subEl = document.getElementById('overall-status-sub');
+            const heroBadge = document.getElementById('hero-badge');
+            const headerBadge = document.getElementById('header-status-badge');
+
+            statusCard.className = 'metric-card overall-status-card';
+
+            if (hasCriticalError) {
+                statusCard.classList.add('status-error-border');
+                iconEl.className = 'status-icon error-icon';
+                iconEl.textContent = '✕';
+                titleEl.textContent = 'SYNTAX ERROR';
+                subEl.textContent = 'Critical spec violations found';
+                if (heroBadge) { heroBadge.className = 'badge badge-error'; heroBadge.textContent = 'SYNTAX ERROR'; }
+                if (headerBadge) { headerBadge.className = 'badge badge-error'; headerBadge.textContent = 'SYNTAX ERROR'; }
+            } else if (hasWarnings) {
+                statusCard.classList.add('status-warning-border');
+                iconEl.className = 'status-icon warning-icon';
+                iconEl.textContent = '!';
+                titleEl.textContent = 'WARNINGS';
+                subEl.textContent = 'Non-standard properties found';
+                if (heroBadge) { heroBadge.className = 'badge badge-warning'; heroBadge.textContent = 'FF[4] WARNINGS'; }
+                if (headerBadge) { headerBadge.className = 'badge badge-warning'; headerBadge.textContent = 'FF[4] WARNINGS'; }
+            } else {
+                iconEl.className = 'status-icon success-icon';
+                iconEl.textContent = '✓';
+                titleEl.textContent = 'VALID';
+                subEl.textContent = 'No critical errors';
+                if (heroBadge) { heroBadge.className = 'badge badge-valid'; heroBadge.textContent = 'FF[4] ADHERENT'; }
+                if (headerBadge) { headerBadge.className = 'badge badge-valid'; headerBadge.textContent = 'FF[4] ADHERENT'; }
+            }
+
+            renderTree();
+            renderTimeline();
+            selectBlock(0);
+        }
+
+        /* Render Left Panel Document Structure Tree */
+        function renderTree() {
+            const container = document.getElementById('tree-container');
+            container.innerHTML = '';
+
+            const collectionNode = document.createElement('div');
+            collectionNode.className = 'tree-item';
+            collectionNode.innerHTML = `<span class="tree-toggle-icon">▼</span> <span class="tree-label">Collection</span>`;
+            container.appendChild(collectionNode);
+
+            const treeNode = document.createElement('div');
+            treeNode.className = 'tree-item';
+            treeNode.style.paddingLeft = '18px';
+            treeNode.innerHTML = `<span class="tree-toggle-icon">▼</span> <span class="tree-label">GameTree #1</span>`;
+            container.appendChild(treeNode);
+
+            parsedNodes.forEach((node, idx) => {
+                const item = document.createElement('div');
+                item.className = 'tree-item';
+                if (selectedNodeIndex === node.node_index) item.classList.add('selected');
+                
+                const indentPx = 18 + (node.tree_depth * 14);
+                item.style.paddingLeft = `${indentPx}px`;
+
+                const label = node.is_root ? `Root Node (0)` : (node.tree_depth > 1 ? `Variation Node (${node.node_index})` : `Node (${node.node_index})`);
+                item.innerHTML = `<span class="tree-label">${label}</span>`;
+                
+                item.onclick = () => {
+                    selectedNodeIndex = node.node_index;
+                    renderTree();
+                    // Select first block of this node
+                    const blockIdx = parsedBlocks.findIndex(b => b.node_index === node.node_index);
+                    if (blockIdx >= 0) selectBlock(blockIdx);
+                };
+
+                container.appendChild(item);
+            });
+        }
+
+        /* Render Center Panel Block Timeline */
+        function renderTimeline() {
+            const container = document.getElementById('timeline-container');
+            container.innerHTML = '';
+
+            const filterVal = document.getElementById('filter-blocks').value;
+            const showDetails = document.getElementById('toggle-details').checked;
+
+            const filtered = parsedBlocks.filter(block => {
+                if (filterVal === 'all') return true;
+                if (filterVal === 'root') return block.category === 'root';
+                if (filterVal === 'move') return block.category === 'move';
+                if (filterVal === 'setup') return block.category === 'setup';
+                if (filterVal === 'structure') return block.category === 'syntax';
+                if (filterVal === 'issues') return block.issue_level === 'error' || block.issue_level === 'warning';
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div style="text-align:center; padding: 40px; color: var(--color-text-muted); font-size: 0.88rem;">No blocks matching filter criteria.</div>`;
+                return;
+            }
+
+            filtered.forEach((block, arrayIdx) => {
+                const card = document.createElement('div');
+                card.className = 'timeline-card';
+                const originalIndex = parsedBlocks.indexOf(block);
+                if (originalIndex === selectedBlockIndex) card.classList.add('selected');
+
+                const numPadded = String(block.index).padStart(3, '0');
+                
+                let badgeHtml = `<span class="timeline-status-badge badge-valid">VALID</span>`;
+                if (block.issue_level === 'error') badgeHtml = `<span class="timeline-status-badge badge-error">ERROR</span>`;
+                if (block.issue_level === 'warning') badgeHtml = `<span class="timeline-status-badge badge-warning">WARN</span>`;
+
+                card.innerHTML = `
+                    <div class="timeline-index">${numPadded}</div>
+                    <div class="timeline-dot-wrapper">
+                        <span class="timeline-dot dot-${block.category}"></span>
+                    </div>
+                    <div class="timeline-token-chip">${escapeHtml(block.token)}</div>
+                    <div class="timeline-info">
+                        <div class="timeline-title-row">
+                            <span class="block-type-label">${escapeHtml(block.block_type)}</span>
+                            <span class="tag-category cat-${block.category}">${block.category}</span>
+                            ${badgeHtml}
+                        </div>
+                        ${showDetails ? `<div class="timeline-desc">${escapeHtml(block.explanation)}</div>` : ''}
+                    </div>
+                `;
+
+                card.onclick = () => {
+                    selectBlock(originalIndex);
+                };
+
+                container.appendChild(card);
+            });
+        }
+
+        /* Select Block & Render Details Panel */
+        function selectBlock(idx) {
+            if (idx < 0 || idx >= parsedBlocks.length) return;
+            selectedBlockIndex = idx;
+
+            const block = parsedBlocks[idx];
+            selectedNodeIndex = block.node_index;
+
+            // Highlight timeline & tree
+            renderTimeline();
+            renderTree();
+
+            // Scroll timeline selected card into view
+            const cards = document.querySelectorAll('.timeline-card');
+            cards.forEach(c => {
+                if (c.classList.contains('selected')) {
+                    c.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            });
+
+            // Update Counter Header
+            document.getElementById('block-nav-counter').textContent = `${idx + 1} of ${parsedBlocks.length}`;
+
+            // Render Right Details Panel
+            const detailsContent = document.getElementById('details-content');
+            
+            let statusBadge = `<span class="badge badge-valid">VALID</span>`;
+            if (block.issue_level === 'error') statusBadge = `<span class="badge badge-error">SYNTAX ERROR</span>`;
+            if (block.issue_level === 'warning') statusBadge = `<span class="badge badge-warning">WARNING</span>`;
+
+            // Surrounding tokens context
+            const prevToken = idx > 0 ? parsedBlocks[idx - 1].token : '...';
+            const nextToken = idx < parsedBlocks.length - 1 ? parsedBlocks[idx + 1].token : '...';
+            const prev2Token = idx > 1 ? parsedBlocks[idx - 2].token : '...';
+
+            detailsContent.innerHTML = `
+                <div class="token-preview-card">
+                    <div class="token-big-box">${escapeHtml(block.token)}</div>
+                    ${statusBadge}
+                </div>
+
+                <div>
+                    <div class="details-section-title">BASIC INFORMATION</div>
+                    <table class="info-table">
+                        <tr><td class="label-col">Block Type</td><td class="val-col">${escapeHtml(block.block_type)}</td></tr>
+                        <tr><td class="label-col">Identifier</td><td class="val-col">${block.ident ? block.ident : '-'}</td></tr>
+                        <tr><td class="label-col">Block #</td><td class="val-col">${String(block.index).padStart(3, '0')}</td></tr>
+                        <tr><td class="label-col">Node Index</td><td class="val-col">${block.node_index} ${block.node_index === 0 ? '(Root Node)' : ''}</td></tr>
+                        <tr><td class="label-col">Category</td><td class="val-col"><span class="dot dot-${block.category}"></span> ${capitalize(block.category)}</td></tr>
+                    </table>
+                </div>
+
+                <div>
+                    <div class="details-section-title">SPECIFICATION (${block.ident || 'EBNF'})</div>
+                    <table class="info-table">
+                        <tr><td class="label-col">Type</td><td class="val-col">${block.rule_details ? block.rule_details.type : 'Syntax Token'}</td></tr>
+                        <tr><td class="label-col">Format</td><td class="val-col">${block.rule_details ? block.rule_details.format : 'EBNF Delimiter'}</td></tr>
+                        <tr><td class="label-col">Value Range</td><td class="val-col">${block.rule_details ? block.rule_details.range : 'N/A'}</td></tr>
+                        <tr><td class="label-col">Required</td><td class="val-col">${block.rule_details ? block.rule_details.req : 'Required Structure'}</td></tr>
+                        <tr><td class="label-col">Appears In</td><td class="val-col">${block.rule_details ? block.rule_details.scope : 'Any Node'}</td></tr>
+                    </table>
+                </div>
+
+                <div>
+                    <div class="details-section-title">EXPLANATION</div>
+                    <div class="explanation-box">
+                        ${escapeHtml(block.explanation)}
+                    </div>
+                </div>
+
+                <div>
+                    <div class="details-section-title">REFERENCE</div>
+                    <div style="font-size:0.8rem; font-weight:600; color:var(--color-text-main);">${escapeHtml(block.spec_ref || 'SGF FF[4] Specification')}</div>
+                    <a href="https://www.red-bean.com/sgf/sgf4.html" target="_blank" rel="noopener" class="ref-link">View in Specification →</a>
+                </div>
+
+                <div>
+                    <div class="details-section-title">BLOCK CONTEXT (SURROUNDING TOKENS)</div>
+                    <div class="context-chips">
+                        <span class="chip-ctx">${escapeHtml(prev2Token)}</span>
+                        <span class="chip-ctx">${escapeHtml(prevToken)}</span>
+                        <span class="chip-ctx active">${escapeHtml(block.token)}</span>
+                        <span class="chip-ctx">${escapeHtml(nextToken)}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function navigateBlock(direction) {
+            const nextIdx = selectedBlockIndex + direction;
+            if (nextIdx >= 0 && nextIdx < parsedBlocks.length) {
+                selectBlock(nextIdx);
+            }
+        }
+
+        function exportDiagnosticReport() {
+            let reportText = `=====================================================\n`;
+            reportText += `SGF INSPECTOR - BLOCK-BY-BLOCK DIAGNOSTIC REPORT\n`;
+            reportText += `Generated: ${new Date().toISOString()}\n`;
+            reportText += `Total Blocks: ${parsedBlocks.length}\n`;
+            reportText += `=====================================================\n\n`;
+
+            parsedBlocks.forEach(b => {
+                const status = b.is_valid ? 'VALID' : 'INVALID/ERROR';
+                reportText += `[Block #${String(b.index).padStart(3, '0')}] Token: ${b.token} | Type: ${b.block_type} | Status: ${status}\n`;
+                reportText += `  Explanation: ${b.explanation}\n`;
+                reportText += `  Spec Reference: ${b.spec_ref}\n\n`;
+            });
+
+            const blob = new Blob([reportText], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `SGF_Inspector_Report_${Date.now()}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        function capitalize(str) {
+            if (!str) return '';
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+    </script>
+</body>
+</html>
