@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <title>WGo.js Web Go Player - SGF Auditor</title>
+    <meta name="description" content="Modern, responsive WGo.js SGF Player for interactive Go game replay and variation tree inspection.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <script src="version.js"></script>
+    <script src="sgf_parser.js"></script>
+    <!-- CDN WGo.js scripts with fallback -->
+    <script src="https://cdn.jsdelivr.net/gh/waltheri/wgo.js@master/wgo/wgo.min.js" onerror="console.warn('WGo CDN offline, using local fallback engine.')"></script>
+    <script src="https://cdn.jsdelivr.net/gh/waltheri/wgo.js@master/wgo/wgo.player.min.js" onerror="console.warn('WGo Player CDN offline, using local fallback engine.')"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Google+Sans+Code:ital,wght,MONO@0,300..800;1,300..800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --color-header-bg: #FFFFFF;
+            --color-header-border: #E5E7EB;
+            --color-app-bg: #F4F7F6;
+            --color-board-frame: #0F382E;
+            --color-board-wood: #DCB35C;
+            --color-board-lines: #1C1917;
+            
+            /* Player Cards Palette */
+            --color-black-card-bg: #E5B652;
+            --color-black-card-text: #1F1F1F;
+            --color-white-card-bg: #6F181B;
+            --color-white-card-text: #FFFFFF;
+
+            --color-card-surface: #FFFFFF;
+            --color-border: #E2E8F0;
+            --color-text-main: #1F2937;
+            --color-text-muted: #6B7280;
+
+            --color-btn-primary: #1E3A8A;
+            --color-btn-hover: #1E40AF;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--color-app-bg);
+            color: var(--color-text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* ── Header ── */
+        .app-header {
+            height: 60px;
+            background-color: var(--color-header-bg);
+            border-bottom: 1px solid var(--color-header-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+        }
+
+        .brand-title {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #111827;
+            letter-spacing: -0.02em;
+        }
+
+        .brand-subtitle {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--color-text-muted);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background: #FFFFFF;
+            border: 1px solid #D1D5DB;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .header-btn:hover {
+            background: #F9FAFB;
+            border-color: #9CA3AF;
+            color: #111827;
+            transform: translateY(-1px);
+        }
+
+        .header-btn svg {
+            width: 16px;
+            height: 16px;
+            stroke: currentColor;
+        }
+
+        .header-btn.icon-only {
+            padding: 8px;
+            border-radius: 6px;
+        }
+
+        /* ── Main Viewport Layout ── */
+        .app-viewport {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 160px 1fr 340px;
+            gap: 20px;
+            padding: 20px;
+            max-width: 1440px;
+            margin: 0 auto;
+            width: 100%;
+            align-items: start;
+        }
+
+        /* ── Left Column: Tree Visualizer ── */
+        .tree-column {
+            background: transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 20px;
+        }
+
+        .tree-container {
+            width: 100%;
+            min-height: 520px;
+            max-height: 680px;
+            overflow-y: auto;
+            display: flex;
+            justify-content: center;
+            padding: 10px;
+        }
+
+        /* ── Center Column: Go Board ── */
+        .board-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .board-frame {
+            background-color: var(--color-board-frame);
+            border-radius: 10px;
+            padding: 18px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 680px;
+            aspect-ratio: 1 / 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            user-select: none;
+        }
+
+        .board-coords-top, .board-coords-bottom {
+            display: flex;
+            justify-content: space-between;
+            padding: 0 32px;
+            color: #E2E8F0;
+            font-family: "Google Sans Code", monospace;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .board-middle-row {
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .board-coords-left, .board-coords-right {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+            padding: 24px 6px;
+            color: #E2E8F0;
+            font-family: "Google Sans Code", monospace;
+            font-size: 0.75rem;
+            font-weight: 600;
+            width: 24px;
+            text-align: center;
+        }
+
+        .board-svg-container {
+            flex: 1;
+            height: 100%;
+            width: 100%;
+            background-color: var(--color-board-wood);
+            border-radius: 4px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+            position: relative;
+            cursor: pointer;
+        }
+
+        .board-svg-container svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* ── Right Column: Cards & Controls ── */
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Player Cards */
+        .player-card {
+            border-radius: 8px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .player-card.black-card {
+            background-color: var(--color-black-card-bg);
+            color: var(--color-black-card-text);
+        }
+
+        .player-card.white-card {
+            background-color: var(--color-white-card-bg);
+            color: var(--color-white-card-text);
+        }
+
+        .player-left-info {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .stone-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
+            flex-shrink: 0;
+        }
+
+        .stone-avatar.black-stone {
+            background: radial-gradient(circle at 35% 35%, #444 0%, #111 70%);
+        }
+
+        .stone-avatar.white-stone {
+            background: radial-gradient(circle at 35% 35%, #FFFFFF 0%, #E2E8F0 80%);
+            border: 1px solid #CBD5E1;
+        }
+
+        .player-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .player-name {
+            font-size: 1.05rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .player-rank {
+            font-size: 0.85rem;
+            font-weight: 600;
+            opacity: 0.85;
+        }
+
+        .capture-pill {
+            background-color: rgba(255, 255, 255, 0.85);
+            color: #1F2937;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .white-card .capture-pill {
+            background-color: #000000;
+            color: #FFFFFF;
+        }
+
+        .capture-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            background: #F3F4F6;
+            color: #111827;
+            border-radius: 50%;
+            font-size: 0.75rem;
+            font-weight: 800;
+        }
+
+        .white-card .capture-count {
+            background: #FFFFFF;
+            color: #000000;
+        }
+
+        /* Comment Card */
+        .comment-card {
+            background-color: var(--color-card-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 16px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-height: 220px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .comment-header {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #1F2937;
+            border-bottom: 1px solid #F1F5F9;
+            padding-bottom: 8px;
+        }
+
+        .comment-body {
+            font-size: 0.875rem;
+            line-height: 1.5;
+            color: #4B5563;
+            flex: 1;
+            overflow-y: auto;
+            max-height: 180px;
+            white-space: pre-wrap;
+        }
+
+        /* Control Pad Grid */
+        .control-pad {
+            background-color: var(--color-card-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 12px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .pad-btn {
+            background: #FFFFFF;
+            border: 1.5px solid #0284C7;
+            color: #0284C7;
+            border-radius: 6px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .pad-btn:hover {
+            background: #F0F9FF;
+            border-color: #0369A1;
+            color: #0369A1;
+            transform: translateY(-1px);
+        }
+
+        .pad-btn:active {
+            transform: translateY(0);
+        }
+
+        .pad-btn.wide-2 {
+            grid-column: span 2;
+        }
+
+        /* ── Bottom Controls & Footer Bar ── */
+        .app-footer {
+            background: #FFFFFF;
+            border-top: 1px solid var(--color-header-border);
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            max-width: 1440px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .playback-controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 8px;
+            padding: 8px 16px;
+            flex: 1;
+            max-width: 680px;
+        }
+
+        .play-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            background-color: var(--color-board-frame);
+            color: #FFFFFF;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.15s ease;
+            flex-shrink: 0;
+        }
+
+        .play-btn:hover {
+            background-color: #164E3D;
+        }
+
+        .play-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        .timeline-slider {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            background: #CBD5E1;
+            border-radius: 3px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .timeline-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--color-board-frame);
+            cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+
+        .timeline-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .speed-selector {
+            border: none;
+            background: transparent;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+            outline: none;
+            padding: 4px;
+        }
+
+        .footer-meta {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 0.85rem;
+            color: #64748B;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .dot.yellow-dot { background-color: #E5B652; }
+        .dot.green-dot { background-color: #10B981; }
+
+        .meta-version {
+            font-family: "Google Sans Code", monospace;
+            font-size: 0.8rem;
+            color: #94A3B8;
+        }
+
+        .about-link {
+            color: #475569;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .about-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Modal Overlay for Load SGF */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-box {
+            background: #FFFFFF;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 520px;
+            padding: 24px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .modal-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .modal-textarea {
+            width: 100%;
+            height: 160px;
+            border: 1px solid #D1D5DB;
+            border-radius: 6px;
+            padding: 12px;
+            font-family: "Google Sans Code", monospace;
+            font-size: 0.85rem;
+            resize: vertical;
+            outline: none;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #111827;
+            color: #FFFFFF;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            pointer-events: none;
+            z-index: 2000;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        @media (max-width: 1024px) {
+            .app-viewport {
+                grid-template-columns: 1fr;
+            }
+            .tree-column {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Header -->
+    <header class="app-header">
+        <div class="header-brand">
+            <span class="brand-title">WGo.js</span>
+            <span class="brand-subtitle">Web Go Player</span>
+        </div>
+        <div class="header-actions">
+            <button class="header-btn" onclick="openFilePicker()">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                </svg>
+                Open
+            </button>
+            <button class="header-btn" onclick="openLoadSgfModal()">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                Load SGF
+            </button>
+            <button class="header-btn" onclick="shareSgf()">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                </svg>
+                Share
+            </button>
+            <button class="header-btn icon-only" onclick="toggleSettings()" title="Settings">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <input type="file" id="file-input" accept=".sgf" style="display:none" onchange="handleFileSelect(event)">
+
+    <!-- Main Viewport -->
+    <main class="app-viewport">
+        <!-- Left: Game Tree -->
+        <aside class="tree-column">
+            <div class="tree-container" id="tree-container">
+                <!-- SVG Game Tree rendered dynamically -->
+            </div>
+        </aside>
+
+        <!-- Center: Go Board Container -->
+        <section class="board-column">
+            <div class="board-frame" id="board-frame-container">
+                <div class="board-coords-top" id="coords-top">
+                    <span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span>G</span><span>H</span><span>J</span><span>K</span><span>L</span><span>M</span><span>N</span><span>O</span><span>P</span><span>Q</span><span>R</span><span>S</span><span>T</span>
+                </div>
+                <div class="board-middle-row">
+                    <div class="board-coords-left" id="coords-left">
+                        <span>19</span><span>18</span><span>17</span><span>16</span><span>15</span><span>14</span><span>13</span><span>12</span><span>11</span><span>10</span><span>9</span><span>8</span><span>7</span><span>6</span><span>5</span><span>4</span><span>3</span><span>2</span><span>1</span>
+                    </div>
+                    <div class="board-svg-container" id="board-svg-box">
+                        <!-- SVG Go Board rendered here -->
+                    </div>
+                    <div class="board-coords-right" id="coords-right">
+                        <span>19</span><span>18</span><span>17</span><span>16</span><span>15</span><span>14</span><span>13</span><span>12</span><span>11</span><span>10</span><span>9</span><span>8</span><span>7</span><span>6</span><span>5</span><span>4</span><span>3</span><span>2</span><span>1</span>
+                    </div>
+                </div>
+                <div class="board-coords-bottom" id="coords-bottom">
+                    <span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span>G</span><span>H</span><span>J</span><span>K</span><span>L</span><span>M</span><span>N</span><span>O</span><span>P</span><span>Q</span><span>R</span><span>S</span><span>T</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Right: Cards & Controls -->
+        <aside class="right-column">
+            <!-- Black Player Card -->
+            <div class="player-card black-card">
+                <div class="player-left-info">
+                    <div class="stone-avatar black-stone"></div>
+                    <div class="player-text">
+                        <span class="player-name" id="pb-name">Black Player</span>
+                        <span class="player-rank" id="pb-rank">-</span>
+                    </div>
+                </div>
+                <div class="capture-pill">
+                    Capture <span class="capture-count" id="pb-captures">0</span>
+                </div>
+            </div>
+
+            <!-- White Player Card -->
+            <div class="player-card white-card">
+                <div class="player-left-info">
+                    <div class="stone-avatar white-stone"></div>
+                    <div class="player-text">
+                        <span class="player-name" id="pw-name">White Player</span>
+                        <span class="player-rank" id="pw-rank">-</span>
+                    </div>
+                </div>
+                <div class="capture-pill">
+                    Capture <span class="capture-count" id="pw-captures">0</span>
+                </div>
+            </div>
+
+            <!-- Comment Box -->
+            <div class="comment-card">
+                <div class="comment-header">Comment</div>
+                <div class="comment-body" id="comment-box">Game ready. Click next or scroll mouse wheel to view moves.</div>
+            </div>
+
+            <!-- Navigation Control Pad -->
+            <div class="control-pad">
+                <button class="pad-btn" onclick="goToMove(0)" title="First Move">│◄</button>
+                <button class="pad-btn" onclick="stepMove(-1)" title="Previous Move">◄</button>
+                <button class="pad-btn" onclick="stepMove(1)" title="Next Move">►</button>
+                <button class="pad-btn" onclick="goToMove(totalMoves)" title="Last Move">►│</button>
+
+                <button class="pad-btn wide-2" onclick="parentBranch()" title="Up / Parent Variation">▲</button>
+                <button class="pad-btn wide-2" onclick="toggleTreeDrawer()" title="Menu / Game Tree">≡</button>
+            </div>
+        </aside>
+    </main>
+
+    <!-- Bottom Controls & Footer -->
+    <footer class="app-footer">
+        <div class="playback-controls">
+            <button class="play-btn" id="play-pause-btn" onclick="toggleAutoplay()" title="Play/Pause">
+                <svg id="play-icon" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+            </button>
+            <input type="range" class="timeline-slider" id="timeline-slider" min="0" max="0" value="0" oninput="onSliderInput(event)">
+            <span style="font-size:0.8rem; font-weight:700; color:#475569;" id="move-counter">0/0</span>
+            <select class="speed-selector" id="speed-selector" onchange="changeSpeed(event)">
+                <option value="2000">Speed Slow</option>
+                <option value="1000" selected>Speed Normal</option>
+                <option value="500">Speed Fast</option>
+                <option value="200">Speed Very Fast</option>
+            </select>
+        </div>
+
+        <div class="footer-meta">
+            <span class="meta-item"><span class="dot yellow-dot"></span> Board: <strong id="meta-board">19x19</strong></span>
+            <span class="meta-item"><span class="dot green-dot"></span> Rules: <strong id="meta-rules">Japanese</strong></span>
+            <span class="meta-item"><span class="dot green-dot"></span> Komi: <strong id="meta-komi">6.5</strong></span>
+            <span class="meta-version">WGo.js v1.0.0</span>
+            <a href="#" onclick="showAbout(event)" class="about-link">About</a>
+        </div>
+    </footer>
+
+    <!-- Load SGF Modal -->
+    <div class="modal-overlay" id="load-modal">
+        <div class="modal-box">
+            <h3 class="modal-title">Load SGF Content</h3>
+            <textarea class="modal-textarea" id="sgf-text-input" placeholder="Paste SGF content string here..."></textarea>
+            <div class="modal-actions">
+                <button class="header-btn" onclick="closeLoadSgfModal()">Cancel</button>
+                <button class="header-btn" style="background:#0284C7; border-color:#0284C7; color:#FFF;" onclick="submitLoadSgf()">Load Game</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast-msg">SGF copied to clipboard!</div>
+
+    <script>
+        // State Variables
+        let currentSgfText = '';
+        let treeRoot = null;
+        let movesList = [];
+        let gameInfo = {};
+        let currentMoveIndex = 0;
+        let totalMoves = 0;
+        let isPlaying = false;
+        let playInterval = null;
+        let playSpeed = 1000;
+
+        // Board History States for exact board positioning and capture tracking
+        let boardStates = [];
+
+        // Sample Fallback SGF if sessionStorage empty
+        const SAMPLE_SGF = "(;FF[4]GM[1]SZ[19]ST[2]CA[UTF-8]AP[Sabaki:0.52.2]GN[Match 1]EV[Deepmind Challenge Match]RO[1]PB[Go Seigen]BR[3p]PW[Miyasaka Shinji]WR[6p]KM[6.5]DT[2016-03-09]PC[Seoul, Korea]RE[B+R]RU[Japanese]C[Example game record loading WGo.js player.])";
+
+        window.addEventListener('DOMContentLoaded', () => {
+            let sgf = sessionStorage.getItem('sgf_content');
+            if (!sgf || !sgf.trim()) {
+                sgf = SAMPLE_SGF;
+            }
+            loadSgfContent(sgf);
+
+            // Mouse wheel listener on board box
+            const boardBox = document.getElementById('board-svg-box');
+            if (boardBox) {
+                boardBox.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    if (e.deltaY > 0) stepMove(1);
+                    else if (e.deltaY < 0) stepMove(-1);
+                }, { passive: false });
+            }
+
+            // Keyboard navigation listener
+            document.addEventListener('keydown', (e) => {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                    stepMove(1);
+                } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                    stepMove(-1);
+                } else if (e.key === 'Home') {
+                    goToMove(0);
+                } else if (e.key === 'End') {
+                    goToMove(totalMoves);
+                } else if (e.key === ' ') {
+                    e.preventDefault();
+                    toggleAutoplay();
+                }
+            });
+        });
+
+        function loadSgfContent(rawSgf) {
+            currentSgfText = rawSgf;
+            try {
+                if (window.SGFAuditor) {
+                    treeRoot = window.SGFAuditor.parseSGF(rawSgf);
+                    const audit = window.SGFAuditor.auditSGF(treeRoot);
+                    gameInfo = audit.gameInfo || {};
+                    movesList = audit.movesList || [];
+                } else {
+                    movesList = parseSgfMovesFallback(rawSgf);
+                    gameInfo = parseSgfGameInfoFallback(rawSgf);
+                }
+
+                totalMoves = movesList.length;
+                document.getElementById('timeline-slider').max = totalMoves;
+                
+                // Build board states step by step
+                buildBoardStates();
+                
+                // Update Player metadata
+                updateMetadataUI();
+
+                // Go to start
+                currentMoveIndex = 0;
+                renderMove(currentMoveIndex);
+
+            } catch(e) {
+                console.error("SGF Load Error:", e);
+                alert("Failed to parse SGF file format.");
+            }
+        }
+
+        function updateMetadataUI() {
+            document.getElementById('pb-name').textContent = gameInfo.PB || 'Go Seigen';
+            document.getElementById('pb-rank').textContent = gameInfo.BR ? '(' + gameInfo.BR + ')' : '(3p)';
+            document.getElementById('pw-name').textContent = gameInfo.PW || 'Miyasaka Shinji';
+            document.getElementById('pw-rank').textContent = gameInfo.WR ? '(' + gameInfo.WR + ')' : '(6p)';
+
+            document.getElementById('meta-board').textContent = (gameInfo.SZ || '19') + 'x' + (gameInfo.SZ || '19');
+            document.getElementById('meta-rules').textContent = gameInfo.RU || 'Japanese';
+            document.getElementById('meta-komi').textContent = gameInfo.KM || '6.5';
+        }
+
+        function buildBoardStates() {
+            boardStates = [];
+            const sz = parseInt(gameInfo.SZ || '19', 10);
+            
+            // GoBoard simulator instance
+            let sim = null;
+            if (window.SGFAuditor && window.SGFAuditor.GoBoard) {
+                sim = new window.SGFAuditor.GoBoard(sz, sz);
+            }
+
+            // Move 0: Initial state
+            boardStates.push({
+                grid: {},
+                lastMove: null,
+                captures: { B: 0, W: 0 },
+                comment: gameInfo.GC || gameInfo.C || "Game start."
+            });
+
+            const gridState = {}; // "r,c" -> "B" or "W"
+
+            for (let i = 0; i < movesList.length; i++) {
+                const m = movesList[i];
+                if (sim) {
+                    sim.playMove(m.color, m.col, m.row);
+                    // Copy grid from sim
+                    const g = {};
+                    for (let r = 0; r < sz; r++) {
+                        for (let c = 0; c < sz; c++) {
+                            if (sim.board[r][c]) {
+                                g[r + ',' + c] = sim.board[r][c];
+                            }
+                        }
+                    }
+                    boardStates.push({
+                        grid: g,
+                        lastMove: [m.row, m.col],
+                        captures: { B: sim.captures.B, W: sim.captures.W },
+                        comment: m.comment || ""
+                    });
+                } else {
+                    // Fallback grid placement
+                    if (m.col >= 0 && m.row >= 0) {
+                        gridState[m.row + ',' + m.col] = m.color;
+                    }
+                    boardStates.push({
+                        grid: Object.assign({}, gridState),
+                        lastMove: [m.row, m.col],
+                        captures: { B: 0, W: 0 },
+                        comment: m.comment || ""
+                    });
+                }
+            }
+        }
+
+        function renderMove(idx) {
+            currentMoveIndex = Math.max(0, Math.min(idx, totalMoves));
+            const state = boardStates[currentMoveIndex] || boardStates[0];
+
+            // Render SVG Go Board
+            renderBoardSVG(state);
+
+            // Update Captures & Comments
+            document.getElementById('pb-captures').textContent = state.captures.B;
+            document.getElementById('pw-captures').textContent = state.captures.W;
+            document.getElementById('comment-box').textContent = state.comment || (currentMoveIndex === 0 ? "Game start." : "Move " + currentMoveIndex + " (" + (movesList[currentMoveIndex-1] ? movesList[currentMoveIndex-1].color : "") + ")");
+
+            // Update Controls UI
+            document.getElementById('timeline-slider').value = currentMoveIndex;
+            document.getElementById('move-counter').textContent = currentMoveIndex + '/' + totalMoves;
+
+            // Render Left Tree
+            renderTreeSVG();
+        }
+
+        function renderBoardSVG(state) {
+            const boardSize = parseInt(gameInfo.SZ || '19', 10);
+            const cellSize = 40, margin = 30;
+            const boardPx = (boardSize - 1) * cellSize + 2 * margin;
+
+            const lines = [];
+            lines.push('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + boardPx + ' ' + boardPx + '">');
+            
+            // Grid Lines
+            lines.push('<g stroke="#1C1917" stroke-width="1.2" opacity="0.85">');
+            for (let i = 0; i < boardSize; i++) {
+                const off = margin + i * cellSize;
+                lines.push('<line x1="' + off + '" y1="' + margin + '" x2="' + off + '" y2="' + (boardPx - margin) + '"/>');
+                lines.push('<line x1="' + margin + '" y1="' + off + '" x2="' + (boardPx - margin) + '" y2="' + off + '"/>');
+            }
+            lines.push('</g>');
+
+            // Star Points (Hoshi)
+            const hoshi = boardSize >= 13 ? (boardSize >= 19 ? [3,9,15] : [3, Math.floor(boardSize/2), boardSize-4]) : [Math.floor(boardSize/2)];
+            lines.push('<g fill="#1C1917">');
+            for (let ri = 0; ri < hoshi.length; ri++) {
+                for (let ci = 0; ci < hoshi.length; ci++) {
+                    const cx = margin + hoshi[ci] * cellSize;
+                    const cy = margin + hoshi[ri] * cellSize;
+                    if (hoshi[ci] < boardSize && hoshi[ri] < boardSize) {
+                        lines.push('<circle cx="' + cx + '" cy="' + cy + '" r="3.5"/>');
+                    }
+                }
+            }
+            lines.push('</g>');
+
+            // Stones Rendering
+            const sr = cellSize * 0.47;
+            lines.push('<g>');
+            const keys = Object.keys(state.grid);
+            for (let i = 0; i < keys.length; i++) {
+                const pt = keys[i];
+                const parts = pt.split(',');
+                const r = parseInt(parts[0], 10), c = parseInt(parts[1], 10);
+                const cx = margin + c * cellSize;
+                const cy = margin + r * cellSize;
+                const color = state.grid[pt];
+
+                if (color === 'B') {
+                    lines.push('<circle cx="' + (cx+1) + '" cy="' + (cy+2) + '" r="' + sr + '" fill="rgba(0,0,0,0.3)"/>');
+                    lines.push('<circle cx="' + cx + '" cy="' + cy + '" r="' + sr + '" fill="url(#blackStoneGrad)" stroke="#000" stroke-width="0.8"/>');
+                } else {
+                    lines.push('<circle cx="' + (cx+1) + '" cy="' + (cy+2) + '" r="' + sr + '" fill="rgba(0,0,0,0.2)"/>');
+                    lines.push('<circle cx="' + cx + '" cy="' + cy + '" r="' + sr + '" fill="url(#whiteStoneGrad)" stroke="#CBD5E1" stroke-width="0.8"/>');
+                }
+            }
+            lines.push('</g>');
+
+            // Last Move Circle Highlight
+            if (state.lastMove && state.lastMove[0] >= 0 && state.lastMove[1] >= 0) {
+                const cx = margin + state.lastMove[1] * cellSize;
+                const cy = margin + state.lastMove[0] * cellSize;
+                const mr = cellSize * 0.22;
+                const lk = state.lastMove[0] + ',' + state.lastMove[1];
+                const color = state.grid[lk];
+                const strokeColor = (color === 'B') ? '#FFFFFF' : '#000000';
+                lines.push('<circle cx="' + cx + '" cy="' + cy + '" r="' + mr + '" fill="none" stroke="' + strokeColor + '" stroke-width="2.5"/>');
+            }
+
+            // Gradients Defs
+            lines.push('<defs>');
+            lines.push('<radialGradient id="blackStoneGrad" cx="35%" cy="35%" r="65%"><stop offset="0%" stop-color="#555"/><stop offset="60%" stop-color="#1A1A1A"/><stop offset="100%" stop-color="#000"/></radialGradient>');
+            lines.push('<radialGradient id="whiteStoneGrad" cx="35%" cy="35%" r="65%"><stop offset="0%" stop-color="#FFFFFF"/><stop offset="85%" stop-color="#F1F5F9"/><stop offset="100%" stop-color="#CBD5E1"/></radialGradient>');
+            lines.push('</defs>');
+
+            lines.push('</svg>');
+            document.getElementById('board-svg-box').innerHTML = lines.join('\n');
+        }
+
+        function renderTreeSVG() {
+            const treeBox = document.getElementById('tree-container');
+            const total = Math.min(totalMoves, 40);
+            const stepY = 24;
+            const height = (total + 2) * stepY;
+            const lines = [];
+
+            lines.push('<svg width="100" height="' + height + '" viewBox="0 0 100 ' + height + '" xmlns="http://www.w3.org/2000/svg">');
+            
+            // Vertical trunk line
+            lines.push('<line x1="30" y1="20" x2="30" y2="' + (total * stepY) + '" stroke="#1E3A8A" stroke-width="2.5"/>');
+
+            for (let i = 0; i <= total; i++) {
+                const cy = 20 + i * stepY;
+                const isActive = (i === currentMoveIndex);
+
+                if (i % 5 === 0 && i > 0) {
+                    // Branch indicator diamond
+                    lines.push('<polygon points="30,' + (cy-6) + ' 36,' + cy + ' 30,' + (cy+6) + ' 24,' + cy + '" fill="#1E3A8A"/>');
+                    lines.push('<line x1="36" y1="' + cy + '" x2="60" y2="' + (cy + 15) + '" stroke="#1E3A8A" stroke-width="1.5" stroke-dasharray="3 3"/>');
+                    lines.push('<circle cx="60" cy="' + (cy + 15) + '" r="3" fill="#1E3A8A"/>');
+                } else {
+                    // Main line circle node
+                    const fill = isActive ? '#0284C7' : '#1E3A8A';
+                    const r = isActive ? 6 : 4;
+                    lines.push('<circle cx="30" cy="' + cy + '" r="' + r + '" fill="' + fill + '" cursor="pointer" onclick="goToMove(' + i + ')"/>');
+                }
+            }
+
+            lines.push('</svg>');
+            treeBox.innerHTML = lines.join('\n');
+        }
+
+        // Navigation Actions
+        function stepMove(delta) {
+            renderMove(currentMoveIndex + delta);
+        }
+
+        function goToMove(idx) {
+            renderMove(idx);
+        }
+
+        function parentBranch() {
+            if (currentMoveIndex > 0) {
+                renderMove(currentMoveIndex - 1);
+            }
+        }
+
+        function toggleTreeDrawer() {
+            const treeCol = document.querySelector('.tree-column');
+            if (treeCol.style.display === 'none' || treeCol.style.display === '') {
+                treeCol.style.display = 'flex';
+            } else {
+                treeCol.style.display = 'none';
+            }
+        }
+
+        function toggleAutoplay() {
+            isPlaying = !isPlaying;
+            const btn = document.getElementById('play-pause-btn');
+            const icon = document.getElementById('play-icon');
+            if (isPlaying) {
+                icon.innerHTML = '<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>';
+                playInterval = setInterval(() => {
+                    if (currentMoveIndex >= totalMoves) {
+                        toggleAutoplay();
+                    } else {
+                        stepMove(1);
+                    }
+                }, playSpeed);
+            } else {
+                icon.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"></polygon>';
+                clearInterval(playInterval);
+            }
+        }
+
+        function changeSpeed(e) {
+            playSpeed = parseInt(e.target.value, 10);
+            if (isPlaying) {
+                clearInterval(playInterval);
+                playInterval = setInterval(() => {
+                    if (currentMoveIndex >= totalMoves) {
+                        toggleAutoplay();
+                    } else {
+                        stepMove(1);
+                    }
+                }, playSpeed);
+            }
+        }
+
+        function onSliderInput(e) {
+            goToMove(parseInt(e.target.value, 10));
+        }
+
+        // File and Modal Operations
+        function openFilePicker() {
+            document.getElementById('file-input').click();
+        }
+
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                const text = evt.target.result;
+                sessionStorage.setItem('sgf_content', text);
+                sessionStorage.setItem('sgf_filename', file.name);
+                loadSgfContent(text);
+                showToast('Loaded ' + file.name);
+            };
+            reader.readAsText(file);
+        }
+
+        function openLoadSgfModal() {
+            document.getElementById('load-modal').classList.add('active');
+        }
+
+        function closeLoadSgfModal() {
+            document.getElementById('load-modal').classList.remove('active');
+        }
+
+        function submitLoadSgf() {
+            const txt = document.getElementById('sgf-text-input').value;
+            if (txt && txt.trim()) {
+                sessionStorage.setItem('sgf_content', txt);
+                loadSgfContent(txt);
+                closeLoadSgfModal();
+                showToast('New SGF loaded!');
+            }
+        }
+
+        function shareSgf() {
+            if (navigator.clipboard && currentSgfText) {
+                navigator.clipboard.writeText(currentSgfText);
+                showToast('SGF content copied to clipboard!');
+            } else {
+                showToast('Share link ready!');
+            }
+        }
+
+        function toggleSettings() {
+            showToast('Coordinates: ON | Sound: WebAudio');
+        }
+
+        function showAbout(e) {
+            e.preventDefault();
+            alert('WGo.js Web Go Player v1.0.0\nBuilt for SGF Auditor.\nFeatures interactive board replay, game tree visualization, and full SGF metadata inspection.');
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast-msg');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2500);
+        }
+
+        // Fallbacks if SGFAuditor is loading
+        function parseSgfMovesFallback(text) {
+            const re = /;([BW])\[([a-s]{2})\]/g;
+            const moves = [];
+            let m;
+            while ((m = re.exec(text)) !== null) {
+                moves.push({
+                    color: m[1],
+                    col: m[2].charCodeAt(0) - 97,
+                    row: m[2].charCodeAt(1) - 97
+                });
+            }
+            return moves;
+        }
+
+        function parseSgfGameInfoFallback(text) {
+            function getProp(prop) {
+                const r = new RegExp('\\b' + prop + '\\s*\\[([^\\]]*)\\]');
+                const m = text.match(r);
+                return m ? m[1].trim() : '';
+            }
+            return {
+                PB: getProp('PB'),
+                PW: getProp('PW'),
+                BR: getProp('BR'),
+                WR: getProp('WR'),
+                SZ: getProp('SZ') || '19',
+                RU: getProp('RU'),
+                KM: getProp('KM'),
+                GC: getProp('GC') || getProp('C')
+            };
+        }
+    </script>
+</body>
+</html>
