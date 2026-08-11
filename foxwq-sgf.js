@@ -13,6 +13,7 @@
         '최철한':   'Cho_Chikun',
         '변상일':   'Byun_Sangil',
         '김명원':   'Kim_Mingwon',
+        '박진솔':   'Park_Jinsol',
         '강동윤':   'Kang_Dongyun',
         '이동훈':   'Lee_Donghoon',
         '원성진':   'Won_Seongjin',

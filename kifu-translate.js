@@ -149,6 +149,7 @@ export const PLAYER_LOOKUP = {
     '신진서': 'Shin Jinseo',
     '박정환': 'Park Junghwan',
     '이세돌': 'Lee Sedol',
+    '박진솔': 'Park Jinsol',
     '최철한': 'Choi Cheolhan',
     '변상일': 'Byun Sangil',
     '김명원': 'Kim Mingwon',
@@ -232,6 +233,124 @@ export const GO_TERMS = {
     '置碁': 'handicap game', '置棋': 'handicap game',
     '目': 'point',
 };
+
+/* Korean surnames → romanization. Korean names always put the (single-syllable)
+ * family name first, but Google sometimes reorders them to Western order, so we
+ * detect the surname from the original Hangul and force it to the front. */
+const KOREAN_SURNAMES = {
+    '김': ['Kim'], '이': ['Lee', 'Yi', 'Yee', 'I'], '박': ['Park', 'Pak'], '최': ['Choi', 'Choe'],
+    '정': ['Jung', 'Jeong', 'Chung', 'Jong'], '강': ['Kang', 'Gang'], '조': ['Cho', 'Jo'],
+    '윤': ['Yoon', 'Yun'], '장': ['Jang', 'Chang'], '임': ['Lim', 'Yim', 'Im'], '한': ['Han'],
+    '오': ['Oh', 'O'], '서': ['Seo', 'Suh'], '신': ['Shin', 'Sin'], '권': ['Kwon', 'Gwon'],
+    '황': ['Hwang'], '안': ['Ahn', 'An'], '송': ['Song'], '전': ['Jeon', 'Jun', 'Chun'],
+    '홍': ['Hong'], '유': ['Yoo', 'Yu'], '고': ['Ko', 'Go'], '문': ['Moon', 'Mun'],
+    '양': ['Yang'], '손': ['Son', 'Sohn'], '배': ['Bae', 'Bai'], '백': ['Baek', 'Paek', 'Baik'],
+    '허': ['Heo', 'Hur', 'Huh'], '남': ['Nam'], '심': ['Shim', 'Sim'], '노': ['Noh', 'No', 'Roh'],
+    '하': ['Ha', 'Hah'], '곽': ['Kwak', 'Gwak'], '성': ['Sung', 'Seong'], '차': ['Cha'],
+    '주': ['Joo', 'Ju', 'Chu'], '우': ['Woo'], '구': ['Koo', 'Gu'], '진': ['Jin', 'Chin'],
+    '지': ['Ji'], '엄': ['Eom', 'Um', 'Uhm'], '채': ['Chae', 'Chai'], '원': ['Won'],
+    '천': ['Cheon', 'Chun'], '방': ['Bang', 'Pang'], '공': ['Kong', 'Gong'], '현': ['Hyun', 'Hyeon'],
+    '함': ['Ham'], '변': ['Byun', 'Byeon', 'Pyun'], '염': ['Yeom', 'Yom'], '여': ['Yeo', 'Yuh'],
+    '추': ['Chu', 'Choo'], '도': ['Do', 'Doh'], '소': ['So', 'Soh'], '석': ['Seok', 'Suk'],
+    '선': ['Sun', 'Seon'], '설': ['Seol', 'Sul'], '마': ['Ma'], '길': ['Gil', 'Kil'],
+    '연': ['Yeon', 'Yun'], '위': ['Wi'], '표': ['Pyo'], '명': ['Myung', 'Myeong'],
+    '기': ['Ki', 'Gee'], '반': ['Ban', 'Pan'], '왕': ['Wang'], '금': ['Geum', 'Kum'], '옥': ['Ok'],
+    '육': ['Yuk', 'Yook'], '인': ['In'], '맹': ['Maeng'], '제': ['Je', 'Jae'], '모': ['Mo'],
+    '탁': ['Tak', 'Tark'], '국': ['Kook', 'Guk'], '어': ['Eo', 'Uh'], '은': ['Eun', 'Un'],
+    '편': ['Pyeon', 'Pyun'], '용': ['Yong'], '예': ['Ye', 'Yea'], '경': ['Kyung', 'Kyoung', 'Gyeong'],
+    '봉': ['Bong'], '사': ['Sa'], '부': ['Boo', 'Pu'], '가': ['Ga', 'Kah'], '복': ['Bok'],
+    '태': ['Tae', 'Tay'], '목': ['Mok'], '형': ['Hyung', 'Hyoung'], '피': ['Pi', 'Pee'],
+    '두': ['Doo', 'Du'], '감': ['Gam', 'Kam'], '음': ['Eum', 'Um'], '빈': ['Bin', 'Been'],
+    '동': ['Dong', 'Tong'], '온': ['On'], '호': ['Ho', 'Hoh'], '범': ['Beom', 'Bum'],
+    '좌': ['Jwa', 'Chwa'], '팽': ['Paeng', 'Peng'], '승': ['Seung', 'Sung'], '간': ['Gan'],
+    '상': ['Sang'], '시': ['Si', 'Shi'], '갈': ['Gal'], '단': ['Dan'], '매': ['Mae'],
+    '순': ['Soon', 'Sun'],
+};
+
+/* Japanese surnames (kanji) → romanization. Google also reorders Japanese names,
+ * so we detect a known 2-3 kanji surname from the original and force it first.
+ * Single-kanji surnames (林, 王, 田, ...) are omitted to avoid clashing with
+ * common Chinese surnames, which Google already renders surname-first. */
+const JAPANESE_SURNAMES = {
+    '井山': ['Iyama'], '芝野': ['Shibano'], '一力': ['Ichiriki'], '山下': ['Yamashita'],
+    '高尾': ['Takao'], '依田': ['Yoda'], '小林': ['Kobayashi'], '武宮': ['Takemiya'],
+    '小松': ['Komatsu'], '山城': ['Yamashiro'], '石田': ['Ishida'], '淡路': ['Awaji'],
+    '片岡': ['Kataoka'], '羽根': ['Hane'], '結城': ['Yuki'], '今村': ['Imamura'],
+    '三村': ['Mimura'], '彦坂': ['Hikosaka'], '本田': ['Honda'], '小県': ['Ogata'],
+    '石井': ['Ishii'], '本因坊': ['Honinbo'], '安井': ['Yasui'], '半田': ['Handa'],
+    '加藤': ['Kato', 'Katoh'], '大平': ['Ohira'], '藤沢': ['Fujisawa'], '高川': ['Takagawa'],
+    '橋本': ['Hashimoto'], '木谷': ['Kitani'], '坂田': ['Sakata'], '大竹': ['Otake'],
+    '梶原': ['Kajiwara'], '宮下': ['Miyashita'], '宮本': ['Miyamoto'], '山部': ['Yamabe'],
+    '杉内': ['Sugiuchi'], '中村': ['Nakamura'], '岩田': ['Iwata'], '島村': ['Shimamura'],
+    '関山': ['Sekiyama'], '工藤': ['Kudo', 'Kudoh'], '窪内': ['Kubouchi'], '榊原': ['Sakakibara'],
+    '鈴木': ['Suzuki'], '高橋': ['Takahashi'], '岩本': ['Iwamoto'], '瀬越': ['Segoe'],
+    '佐藤': ['Sato', 'Satoh'], '田中': ['Tanaka'], '伊藤': ['Ito', 'Itoh'], '渡辺': ['Watanabe'],
+    '山本': ['Yamamoto'], '吉田': ['Yoshida'], '山田': ['Yamada'], '山口': ['Yamaguchi'],
+    '松本': ['Matsumoto'], '井上': ['Inoue'], '木村': ['Kimura'], '斎藤': ['Saito', 'Saitoh'],
+    '清水': ['Shimizu'], '山崎': ['Yamazaki'], '池田': ['Ikeda'], '阿部': ['Abe'],
+    '石川': ['Ishikawa'], '中島': ['Nakajima', 'Nakashima'], '前田': ['Maeda'], '藤田': ['Fujita'],
+    '小川': ['Ogawa'], '後藤': ['Goto', 'Gotoh'], '岡田': ['Okada'], '長谷川': ['Hasegawa'],
+    '村上': ['Murakami'], '近藤': ['Kondo', 'Kondoh'], '坂本': ['Sakamoto'], '遠藤': ['Endo', 'Endoh'],
+    '青木': ['Aoki'], '藤井': ['Fujii'], '西村': ['Nishimura'], '福田': ['Fukuda'],
+    '太田': ['Ota', 'Ohta'], '三浦': ['Miura'], '岡本': ['Okamoto'], '松田': ['Matsuda'],
+    '中川': ['Nakagawa'], '中野': ['Nakano'], '原田': ['Harada'], '小野': ['Ono'],
+    '田村': ['Tamura'], '竹内': ['Takeuchi'], '金子': ['Kaneko'], '和田': ['Wada'],
+    '中山': ['Nakayama'], '上田': ['Ueda'], '森田': ['Morita'], '柴田': ['Shibata'],
+    '酒井': ['Sakai'], '横山': ['Yokoyama'], '宮崎': ['Miyazaki'], '内田': ['Uchida'],
+    '高木': ['Takagi'], '安藤': ['Ando', 'Andoh'], '谷口': ['Taniguchi'], '大野': ['Ono'],
+    '丸山': ['Maruyama'], '今井': ['Imai'], '高田': ['Takada'], '藤原': ['Fujiwara'],
+    '武田': ['Takeda'], '藤本': ['Fujimoto'], '村田': ['Murata'], '土屋': ['Tsuchiya'],
+    '上野': ['Ueno'], '荒木': ['Araki'], '大西': ['Onishi'], '菅原': ['Sugawara'],
+    '神田': ['Kanda'], '小島': ['Kojima'], '佐野': ['Sano'], '高野': ['Takano'],
+    '松岡': ['Matsuoka'], '岩崎': ['Iwasaki'], '西田': ['Nishida'], '菊池': ['Kikuchi'],
+    '山内': ['Yamauchi'], '服部': ['Hattori'], '古川': ['Furukawa'], '大塚': ['Otsuka', 'Ohtsuka'],
+    '中尾': ['Nakao'], '古田': ['Furuta'], '市川': ['Ichikawa'], '上原': ['Uehara'],
+    '野村': ['Nomura'], '吉川': ['Yoshikawa'], '石原': ['Ishihara'], '森本': ['Morimoto'],
+    '久保': ['Kubo'], '白井': ['Shirai'], '中谷': ['Nakatani'], '松尾': ['Matsuo'],
+    '三宅': ['Miyake'], '早川': ['Hayakawa'], '小田': ['Oda'], '増田': ['Masuda'],
+    '青山': ['Aoyama'], '岡崎': ['Okazaki'], '豊田': ['Toyoda'], '平野': ['Hirano'],
+    '藤岡': ['Fujioka'], '河野': ['Kono', 'Kohno'], '大谷': ['Otani'], '宮川': ['Miyagawa'],
+    '片山': ['Katayama'], '竹中': ['Takenaka'], '桜井': ['Sakurai'], '大橋': ['Ohashi', 'Oohashi'],
+    '永井': ['Nagai'], '小西': ['Konishi'], '秋山': ['Akiyama'], '黒田': ['Kuroda'],
+    '天野': ['Amano'], '井出': ['Ide'], '石丸': ['Ishimaru'], '上村': ['Uemura'],
+    '大沢': ['Osawa'], '小倉': ['Ogura'], '篠原': ['Shinohara'], '杉本': ['Sugimoto'],
+    '長尾': ['Nagao'], '西野': ['Nishino'], '平井': ['Hirai'], '松浦': ['Matsuura'],
+    '森下': ['Morishita'], '山岸': ['Yamagishi'], '吉岡': ['Yoshioka'], '三谷': ['Mitani'],
+    '川上': ['Kawakami'], '内藤': ['Naito'], '中井': ['Nakai'], '広田': ['Hirota'],
+    '深谷': ['Fukaya'], '荒川': ['Arakawa'],
+};
+
+function japaneseSurnameOf(name) {
+    for (const len of [3, 2]) {
+        const sur = name.slice(0, len);
+        if (JAPANESE_SURNAMES[sur]) return sur;
+    }
+    return null;
+}
+
+function sameRoman(word, variants) {
+    const norm = (s) => s.toLowerCase().replace(/[^a-z]/g, '');
+    const w = norm(word);
+    return !!w && variants.some((v) => norm(v) === w);
+}
+
+/* Reorder Google's "Given Family" back to "Family Given" (Korean & Japanese),
+ * using the surname detected from the ORIGINAL name. Chinese is left untouched
+ * because Google already renders Chinese names surname-first. */
+function surnameFirst(original, translated) {
+    const t = (translated ?? '').trim();
+    if (!t || /[\u3040-\u30FF\uAC00-\uD7AF\u4E00-\u9FFF]/.test(t)) return t;
+    let variants = null;
+    if (/^[가-힣]+$/.test(original)) {
+        variants = KOREAN_SURNAMES[original[0]] || null;
+    } else if (/^[\u3400-\u4DBF\u4E00-\u9FFF]+$/.test(original)) {
+        const sur = japaneseSurnameOf(original);
+        if (sur) variants = JAPANESE_SURNAMES[sur];
+    }
+    if (!variants) return t;
+    const rest = t.split(/\s+/).filter((w) => !sameRoman(w, variants));
+    return [variants[0], ...rest].join(' ');
+}
 
 /* Lowecase-first words for Title Case, mirroring the shell script. */
 export const LOWER_WORDS = new Set([
@@ -323,7 +442,10 @@ export async function translate(text, opts = {}) {
 export async function translateRank(s, opts = {}) {
     s = (s ?? '').trim();
     if (!s) return s;
-    return RANK_MAP[s] ?? translate(s, opts);
+    if (RANK_MAP[s] !== undefined) return RANK_MAP[s];
+    const pro = s.match(/^[Pp](\d{1,2})段$/);
+    if (pro) return `Pro ${pro[1]}-dan`;
+    return translate(s, opts);
 }
 
 /** Resolve a player name, preferring PLAYER_LOOKUP, else Google. */
@@ -332,7 +454,8 @@ export async function resolvePlayer(name, opts = {}) {
     if (!name) return 'Unknown';
     if (isEnglish(name)) return name;
     if (PLAYER_LOOKUP[name]) return PLAYER_LOOKUP[name];
-    return (await translate(name, opts)) || name;
+    const tr = await translate(name, opts);
+    return surnameFirst(name, tr) || name;
 }
 
 function capWord(word) {
