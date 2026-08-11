@@ -11,7 +11,7 @@
  *  3. Expose window.__SGF_VER for navigation URL busting.
  */
 (function () {
-    var VERSION = '0.3.012';
+    var VERSION = '0.3.013';
 
     /* ── Expose version globally for navigation URL busting ── */
     window.__SGF_VER = VERSION;

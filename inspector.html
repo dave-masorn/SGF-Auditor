@@ -7,7 +7,7 @@
     <title>SGF Inspector - FF[4] Structural Audit</title>
     <meta name="description" content="Block-by-block structural validation and game tree inspection according to SGF FF[4] specification.">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <script src="version.js?v=0.3.012"></script>
+    <script src="version.js?v=0.3.013"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
@@ -509,24 +509,51 @@
         }
 
         /* ── Column 1: Tree View ── */
+        .panel-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-icon-square {
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            border: 1px solid #E2E8F0;
+            background: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748B;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .btn-icon-square:hover {
+            background-color: #F8FAFC;
+            color: #1E293B;
+            border-color: #CBD5E1;
+        }
+
         .tree-container {
             flex: 1;
             padding: 14px;
             overflow-y: auto;
             font-size: 0.85rem;
+            position: relative;
         }
 
         .tree-item {
             display: flex;
             align-items: center;
-            gap: 6px;
-            padding: 6px 10px;
-            border-radius: 6px;
+            gap: 8px;
+            padding: 5px 8px;
+            border-radius: 8px;
             cursor: pointer;
             user-select: none;
             transition: all 0.12s ease;
-            margin-bottom: 2px;
-            color: var(--color-text-main);
+            margin-bottom: 3px;
+            color: #334155;
+            font-size: 0.85rem;
         }
 
         .tree-item:hover {
@@ -536,26 +563,43 @@
         .tree-item.selected {
             background-color: #ECFDF5;
             color: #047857;
-            font-weight: 600;
+            font-weight: 700;
             border-left: 3px solid #10B981;
-        }
-
-        .tree-indent {
-            display: inline-block;
-            width: 16px;
+            border-radius: 8px;
         }
 
         .tree-toggle-icon {
-            font-size: 0.75rem;
-            color: var(--color-text-light);
-            width: 12px;
-            display: inline-block;
-            text-align: center;
+            font-size: 0.65rem;
+            color: #64748B;
+            width: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .tree-block-num {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 6px;
+            background-color: #F1F5F9;
+            color: #475569;
+            border: 1px solid #E2E8F0;
+            flex-shrink: 0;
+        }
+
+        .tree-item.selected .tree-block-num {
+            background-color: #D1FAE5;
+            color: #065F46;
+            border-color: #A7F3D0;
         }
 
         .tree-label {
-            font-family: var(--font-mono);
-            font-size: 0.82rem;
+            font-family: var(--font-sans);
+            font-size: 0.85rem;
+            font-weight: 600;
         }
 
         .tree-badge {
@@ -901,22 +945,38 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: #FAFCFB;
-            border: 1px solid var(--color-border);
-            border-radius: 10px;
-            padding: 16px;
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 12px;
+            padding: 14px 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+        }
+
+        .preview-token-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .preview-blk-num {
+            font-family: var(--font-mono);
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #047857;
         }
 
         .token-big-box {
             font-family: var(--font-mono);
-            font-size: 1.1rem;
+            font-size: 1.15rem;
             font-weight: 700;
-            padding: 6px 14px;
+            padding: 8px 16px;
             background: #FFFFFF;
-            border: 1px solid #CBD5E1;
+            border: 1px solid #E2E8F0;
             border-radius: 8px;
-            color: #047857;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+            color: #1E293B;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+            min-width: 44px;
+            text-align: center;
         }
 
         .details-section-title {
@@ -1666,22 +1726,22 @@
         <div class="inspector-workspace">
             <!-- Left Column: Document Structure (Tree View) -->
             <aside class="panel panel-left">
-                <div class="panel-header clickable-header" onclick="toggleTreePanel()">
+                <div class="panel-header">
                     <h3>DOCUMENT STRUCTURE</h3>
                     <div class="panel-header-actions">
-                        <button class="btn-tree-action" onclick="expandAllTree(event)" title="Expand All Tree Nodes">📂 Expand All</button>
-                        <button class="btn-tree-action" onclick="collapseAllTree(event)" title="Collapse All Tree Nodes">📁 Collapse All</button>
-                        <span class="btn-panel-toggle" id="btn-toggle-tree-panel">▼</span>
+                        <button class="btn-icon-square" onclick="expandAllTree(event)" title="Expand All Tree Nodes">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+                        </button>
+                        <button class="btn-icon-square" onclick="collapseAllTree(event)" title="Collapse All Tree Nodes">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 14 10 14 10 20"></polyline><polyline points="20 10 14 10 14 4"></polyline><line x1="14" y1="10" x2="21" y2="3"></line><line x1="10" y1="14" x2="3" y2="21"></line></svg>
+                        </button>
                     </div>
                 </div>
                 <div class="tree-container" id="tree-container">
                     <!-- Dynamic Tree populated by JS -->
                 </div>
                 <div class="tree-legend" id="tree-legend-box">
-                    <h4 class="legend-header clickable-header" onclick="toggleLegendSection(event)">
-                        <span>LEGEND</span>
-                        <span class="btn-legend-toggle" id="btn-toggle-legend">▼</span>
-                    </h4>
+                    <h4 class="legend-header">LEGEND</h4>
                     <div class="legend-items" id="legend-items-container" style="margin-top: 8px;">
                         <div class="legend-item"><span class="dot dot-syntax"></span> Structure / Syntax</div>
                         <div class="legend-item"><span class="dot dot-root"></span> Root Property</div>
@@ -2491,9 +2551,10 @@
             // Render Right Details Panel
             const detailsContent = document.getElementById('details-content');
             
-            let statusBadge = `<span class="badge badge-valid">VALID</span>`;
-            if (block.issue_level === 'error') statusBadge = `<span class="badge badge-error">SYNTAX ERROR</span>`;
-            if (block.issue_level === 'warning') statusBadge = `<span class="badge badge-warning">WARNING</span>`;
+            const blkNumStr = String(block.index).padStart(3, '0');
+            let statusBadge = `<span class="badge badge-valid">✓ VALID</span>`;
+            if (block.issue_level === 'error') statusBadge = `<span class="badge badge-error">✕ SYNTAX ERROR</span>`;
+            if (block.issue_level === 'warning') statusBadge = `<span class="badge badge-warning">! WARNING</span>`;
 
             // Surrounding tokens context
             const prevToken = idx > 0 ? parsedBlocks[idx - 1].token : '...';
@@ -2502,7 +2563,10 @@
 
             detailsContent.innerHTML = `
                 <div class="token-preview-card">
-                    <div class="token-big-box">${escapeHtml(block.token)}</div>
+                    <div class="preview-token-group">
+                        <span class="preview-blk-num">${blkNumStr}</span>
+                        <div class="token-big-box">${escapeHtml(block.token)}</div>
+                    </div>
                     ${statusBadge}
                 </div>
 
