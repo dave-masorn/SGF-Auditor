@@ -7,7 +7,7 @@
     <title>SGF Inspector - FF[4] Structural Audit</title>
     <meta name="description" content="Block-by-block structural validation and game tree inspection according to SGF FF[4] specification.">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <script src="version.js?v=0.3.005"></script>
+    <script src="version.js?v=0.3.006"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
@@ -1392,6 +1392,29 @@
             font-size: 0.65rem;
             opacity: 0.5;
         }
+
+        .legend-header.clickable-header {
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0 !important;
+        }
+
+        .btn-legend-toggle {
+            font-size: 0.7rem;
+            color: var(--color-text-muted);
+            transition: transform 0.2s ease;
+        }
+
+        .tree-legend.collapsed .legend-items {
+            display: none;
+        }
+
+        .tree-legend.collapsed {
+            padding-bottom: 10px;
+        }
     </style>
 </head>
 <body>
@@ -1510,9 +1533,12 @@
                 <div class="tree-container" id="tree-container">
                     <!-- Dynamic Tree populated by JS -->
                 </div>
-                <div class="tree-legend">
-                    <h4>LEGEND</h4>
-                    <div class="legend-items">
+                <div class="tree-legend" id="tree-legend-box">
+                    <h4 class="legend-header clickable-header" onclick="toggleLegendSection(event)">
+                        <span>LEGEND</span>
+                        <span class="btn-legend-toggle" id="btn-toggle-legend">▼</span>
+                    </h4>
+                    <div class="legend-items" id="legend-items-container" style="margin-top: 8px;">
                         <div class="legend-item"><span class="dot dot-syntax"></span> Structure / Syntax</div>
                         <div class="legend-item"><span class="dot dot-root"></span> Root Property</div>
                         <div class="legend-item"><span class="dot dot-gameinfo"></span> Game Info (Root)</div>
@@ -1641,6 +1667,7 @@
         /* Document Structure Tree State */
         let isCollectionExpanded = true;
         let isGameTreeExpanded = true;
+        let isLegendExpanded = true;
         let isTreePanelCollapsed = false;
         let collapsedVariationDepths = new Set();
 
@@ -2061,11 +2088,32 @@
             renderTree();
         }
 
+        function toggleLegendSection(e) {
+            if (e) e.stopPropagation();
+            const legendBox = document.getElementById('tree-legend-box');
+            const toggleBtn = document.getElementById('btn-toggle-legend');
+            isLegendExpanded = !isLegendExpanded;
+
+            if (legendBox) {
+                legendBox.classList.toggle('collapsed', !isLegendExpanded);
+            }
+            if (toggleBtn) {
+                toggleBtn.textContent = isLegendExpanded ? '▼' : '▶';
+            }
+        }
+
         function expandAllTree(e) {
             if (e) e.stopPropagation();
             isCollectionExpanded = true;
             isGameTreeExpanded = true;
+            isLegendExpanded = true;
             collapsedVariationDepths.clear();
+            
+            const legendBox = document.getElementById('tree-legend-box');
+            const toggleBtn = document.getElementById('btn-toggle-legend');
+            if (legendBox) legendBox.classList.remove('collapsed');
+            if (toggleBtn) toggleBtn.textContent = '▼';
+
             renderTree();
         }
 
@@ -2073,6 +2121,13 @@
             if (e) e.stopPropagation();
             isCollectionExpanded = true;
             isGameTreeExpanded = false;
+            isLegendExpanded = false;
+
+            const legendBox = document.getElementById('tree-legend-box');
+            const toggleBtn = document.getElementById('btn-toggle-legend');
+            if (legendBox) legendBox.classList.add('collapsed');
+            if (toggleBtn) toggleBtn.textContent = '▶';
+
             renderTree();
         }
 
