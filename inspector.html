@@ -7,7 +7,7 @@
     <title>SGF Inspector - FF[4] Structural Audit</title>
     <meta name="description" content="Block-by-block structural validation and game tree inspection according to SGF FF[4] specification.">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <script src="version.js?v=0.3.015"></script>
+    <script src="version.js?v=0.3.016"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
@@ -2260,90 +2260,209 @@
             const branchWrapper = document.createElement('div');
             branchWrapper.className = 'tree-branch-wrapper';
             branchWrapper.style.position = 'relative';
-            branchWrapper.style.paddingLeft = '18px';
+            branchWrapper.style.paddingLeft = '16px';
             branchWrapper.style.marginTop = '4px';
 
             // Vertical Dotted Spine Guide Line
             const spineGuide = document.createElement('div');
             spineGuide.className = 'tree-spine-guide';
             spineGuide.style.position = 'absolute';
-            spineGuide.style.left = '9px';
+            spineGuide.style.left = '8px';
             spineGuide.style.top = '10px';
             spineGuide.style.bottom = '10px';
             spineGuide.style.borderLeft = '1px dotted #CBD5E1';
             branchWrapper.appendChild(spineGuide);
 
-            // GameTree #1 Item
-            const treeNode = document.createElement('div');
-            treeNode.className = 'tree-item tree-gametree-item';
-            treeNode.style.paddingLeft = '4px';
-            treeNode.innerHTML = `
-                <span class="tree-toggle-icon" onclick="toggleGameTree(event)">${isGameTreeExpanded ? '▼' : '▶'}</span>
-                <span class="tree-label" style="font-weight:700;">GameTree #1</span>
+            // ── Section 1: Root Node (= Root Properties) ──
+            const rootProps = getOrderedRootPropertyBlocks();
+            const rootSecItem = document.createElement('div');
+            rootSecItem.className = 'tree-item tree-section-head';
+            rootSecItem.innerHTML = `
+                <span class="tree-toggle-icon" onclick="toggleRootNode(event)">${isRootNodeExpanded ? '▼' : '▶'}</span>
+                <span class="tree-label" style="font-weight:700;">Root Node (${rootProps.length} Properties)</span>
             `;
-            treeNode.onclick = (e) => {
+            rootSecItem.onclick = (e) => {
                 if (e.target.classList.contains('tree-toggle-icon')) return;
-                toggleGameTree(e);
+                toggleRootNode(e);
             };
-            branchWrapper.appendChild(treeNode);
+            branchWrapper.appendChild(rootSecItem);
 
-            if (isGameTreeExpanded) {
-                const nodesWrapper = document.createElement('div');
-                nodesWrapper.style.position = 'relative';
-                nodesWrapper.style.paddingLeft = '14px';
+            if (isRootNodeExpanded && rootProps.length > 0) {
+                const rootWrapper = document.createElement('div');
+                rootWrapper.style.position = 'relative';
+                rootWrapper.style.paddingLeft = '14px';
 
-                // Secondary Sub-spine for nodes
-                const nodeSpine = document.createElement('div');
-                nodeSpine.style.position = 'absolute';
-                nodeSpine.style.left = '4px';
-                nodeSpine.style.top = '8px';
-                nodeSpine.style.bottom = '8px';
-                nodeSpine.style.borderLeft = '1px dotted #CBD5E1';
-                nodesWrapper.appendChild(nodeSpine);
+                const rootSpine = document.createElement('div');
+                rootSpine.style.position = 'absolute';
+                rootSpine.style.left = '4px';
+                rootSpine.style.top = '6px';
+                rootSpine.style.bottom = '6px';
+                rootSpine.style.borderLeft = '1px dotted #CBD5E1';
+                rootWrapper.appendChild(rootSpine);
 
-                let currentCollapsedDepthLevel = 9999;
-
-                parsedNodes.forEach((node, idx) => {
-                    if (node.tree_depth > currentCollapsedDepthLevel) return;
-                    else currentCollapsedDepthLevel = 9999;
-
-                    if (collapsedVariationDepths.has(node.node_index)) {
-                        currentCollapsedDepthLevel = node.tree_depth;
-                    }
-
+                rootProps.forEach(b => {
                     const item = document.createElement('div');
                     item.className = 'tree-item';
-                    if (selectedNodeIndex === node.node_index) item.classList.add('selected');
+                    if (selectedBlockIndex === b.index - 1) item.classList.add('selected');
+                    const blkNumStr = String(b.index).padStart(3, '0');
+                    const valPreview = b.values ? `[${b.values.slice(0, 2).join('][')}]` : '';
+                    item.innerHTML = `
+                        <span class="tree-block-num">${blkNumStr}</span>
+                        <span class="tree-label">${escapeHtml(b.ident)}${escapeHtml(valPreview)}</span>
+                    `;
+                    item.onclick = () => selectBlock(b.index - 1);
+                    rootWrapper.appendChild(item);
+                });
+                branchWrapper.appendChild(rootWrapper);
+            }
 
-                    const indentPx = 8 + (node.tree_depth * 10);
-                    item.style.paddingLeft = `${indentPx}px`;
+            // ── Section 2: Game Trees (= Move Properties) ──
+            const gameTreesSecItem = document.createElement('div');
+            gameTreesSecItem.className = 'tree-item tree-section-head';
+            gameTreesSecItem.style.marginTop = '4px';
+            gameTreesSecItem.innerHTML = `
+                <span class="tree-toggle-icon" onclick="toggleGameTrees(event)">${isGameTreesExpanded ? '▼' : '▶'}</span>
+                <span class="tree-label" style="font-weight:700;">Game Trees (${parsedNodes.length} Nodes)</span>
+            `;
+            gameTreesSecItem.onclick = (e) => {
+                if (e.target.classList.contains('tree-toggle-icon')) return;
+                toggleGameTrees(e);
+            };
+            branchWrapper.appendChild(gameTreesSecItem);
 
-                    const nodeBlock = parsedBlocks.find(b => b.node_index === node.node_index);
+            if (isGameTreesExpanded) {
+                const gtWrapper = document.createElement('div');
+                gtWrapper.style.position = 'relative';
+                gtWrapper.style.paddingLeft = '14px';
+
+                const gtSpine = document.createElement('div');
+                gtSpine.style.position = 'absolute';
+                gtSpine.style.left = '4px';
+                gtSpine.style.top = '6px';
+                gtSpine.style.bottom = '6px';
+                gtSpine.style.borderLeft = '1px dotted #CBD5E1';
+                gtWrapper.appendChild(gtSpine);
+
+                // GameTree #1
+                const treeNode = document.createElement('div');
+                treeNode.className = 'tree-item tree-gametree-item';
+                treeNode.innerHTML = `
+                    <span class="tree-toggle-icon" onclick="toggleGameTree(event)">${isGameTreeExpanded ? '▼' : '▶'}</span>
+                    <span class="tree-label" style="font-weight:700;">GameTree #1</span>
+                `;
+                treeNode.onclick = (e) => {
+                    if (e.target.classList.contains('tree-toggle-icon')) return;
+                    toggleGameTree(e);
+                };
+                gtWrapper.appendChild(treeNode);
+
+                if (isGameTreeExpanded) {
+                    const nodesWrapper = document.createElement('div');
+                    nodesWrapper.style.position = 'relative';
+                    nodesWrapper.style.paddingLeft = '14px';
+
+                    const nodeSpine = document.createElement('div');
+                    nodeSpine.style.position = 'absolute';
+                    nodeSpine.style.left = '4px';
+                    nodeSpine.style.top = '6px';
+                    nodeSpine.style.bottom = '6px';
+                    nodeSpine.style.borderLeft = '1px dotted #CBD5E1';
+                    nodesWrapper.appendChild(nodeSpine);
+
+                    let currentCollapsedDepthLevel = 9999;
+
+                    parsedNodes.forEach((node, idx) => {
+                        if (node.tree_depth > currentCollapsedDepthLevel) return;
+                        else currentCollapsedDepthLevel = 9999;
+
+                        if (collapsedVariationDepths.has(node.node_index)) {
+                            currentCollapsedDepthLevel = node.tree_depth;
+                        }
+
+                        const item = document.createElement('div');
+                        item.className = 'tree-item';
+                        if (selectedNodeIndex === node.node_index) item.classList.add('selected');
+
+                        const indentPx = (node.tree_depth * 8);
+                        item.style.paddingLeft = `${indentPx}px`;
+
+                        const nodeBlock = parsedBlocks.find(b => b.node_index === node.node_index);
+                        const blkNumStr = nodeBlock ? String(nodeBlock.index).padStart(3, '0') : '001';
+
+                        let prefixHtml = '';
+                        if (node.is_root) {
+                            prefixHtml = `<span class="tree-toggle-icon green-arrow" style="color:#10B981; font-size:0.55rem; margin-right:2px;">▶</span>`;
+                        } else if (node.tree_depth > 1) {
+                            const isNodeCollapsed = collapsedVariationDepths.has(node.node_index);
+                            prefixHtml = `<span class="tree-toggle-icon" onclick="toggleNodeCollapse(event, ${node.node_index})">${isNodeCollapsed ? '▶' : '▼'}</span>`;
+                        }
+
+                        const label = node.is_root ? `Root Node (0)` : (node.tree_depth > 1 ? `Variation Node (${node.node_index})` : `Node (${node.node_index})`);
+                        item.innerHTML = `${prefixHtml}<span class="tree-block-num">${blkNumStr}</span> <span class="tree-label">${label}</span>`;
+
+                        item.onclick = (e) => {
+                            if (e.target.classList.contains('tree-toggle-icon')) return;
+                            selectedNodeIndex = node.node_index;
+                            renderTree();
+                            const blockIdx = parsedBlocks.findIndex(b => b.node_index === node.node_index);
+                            if (blockIdx >= 0) selectBlock(blockIdx);
+                        };
+
+                        nodesWrapper.appendChild(item);
+                    });
+
+                    gtWrapper.appendChild(nodesWrapper);
+                }
+
+                branchWrapper.appendChild(gtWrapper);
+            }
+
+            // ── Section 3: Setup Nodes (= Setup Properties) ──
+            const setupMap = getSetupNodesMap();
+            const setupSecItem = document.createElement('div');
+            setupSecItem.className = 'tree-item tree-section-head';
+            setupSecItem.style.marginTop = '4px';
+            setupSecItem.innerHTML = `
+                <span class="tree-toggle-icon" onclick="toggleSetupNodes(event)">${isSetupNodesExpanded ? '▼' : '▶'}</span>
+                <span class="tree-label" style="font-weight:700;">Setup Nodes (${setupMap.size})</span>
+            `;
+            setupSecItem.onclick = (e) => {
+                if (e.target.classList.contains('tree-toggle-icon')) return;
+                toggleSetupNodes(e);
+            };
+            branchWrapper.appendChild(setupSecItem);
+
+            if (isSetupNodesExpanded && setupMap.size > 0) {
+                const setupWrapper = document.createElement('div');
+                setupWrapper.style.position = 'relative';
+                setupWrapper.style.paddingLeft = '14px';
+
+                const setupSpine = document.createElement('div');
+                setupSpine.style.position = 'absolute';
+                setupSpine.style.left = '4px';
+                setupSpine.style.top = '6px';
+                setupSpine.style.bottom = '6px';
+                setupSpine.style.borderLeft = '1px dotted #CBD5E1';
+                setupWrapper.appendChild(setupSpine);
+
+                setupMap.forEach((blocks, nodeIdx) => {
+                    const item = document.createElement('div');
+                    item.className = 'tree-item';
+                    const propIdents = blocks.map(b => `${b.ident}${b.values ? '[' + b.values.join('][') + ']' : ''}`).join(', ');
+                    const nodeBlock = parsedBlocks.find(b => b.node_index === nodeIdx);
                     const blkNumStr = nodeBlock ? String(nodeBlock.index).padStart(3, '0') : '001';
-
-                    let prefixHtml = '';
-                    if (node.is_root) {
-                        prefixHtml = `<span class="tree-toggle-icon green-arrow" style="color:#10B981; font-size:0.55rem; margin-right:2px;">▶</span>`;
-                    } else if (node.tree_depth > 1) {
-                        const isNodeCollapsed = collapsedVariationDepths.has(node.node_index);
-                        prefixHtml = `<span class="tree-toggle-icon" onclick="toggleNodeCollapse(event, ${node.node_index})">${isNodeCollapsed ? '▶' : '▼'}</span>`;
-                    }
-
-                    const label = node.is_root ? `Root Node (0)` : (node.tree_depth > 1 ? `Variation Node (${node.node_index})` : `Node (${node.node_index})`);
-                    item.innerHTML = `${prefixHtml}<span class="tree-block-num">${blkNumStr}</span> <span class="tree-label">${label}</span>`;
-
-                    item.onclick = (e) => {
-                        if (e.target.classList.contains('tree-toggle-icon')) return;
-                        selectedNodeIndex = node.node_index;
-                        renderTree();
-                        const blockIdx = parsedBlocks.findIndex(b => b.node_index === node.node_index);
+                    item.innerHTML = `
+                        <span class="tree-block-num">${blkNumStr}</span>
+                        <span class="tree-label">Setup (Node ${nodeIdx}): ${escapeHtml(propIdents)}</span>
+                    `;
+                    item.onclick = () => {
+                        const blockIdx = parsedBlocks.findIndex(b => b.node_index === nodeIdx);
                         if (blockIdx >= 0) selectBlock(blockIdx);
                     };
-
-                    nodesWrapper.appendChild(item);
+                    setupWrapper.appendChild(item);
                 });
 
-                branchWrapper.appendChild(nodesWrapper);
+                branchWrapper.appendChild(setupWrapper);
             }
 
             container.appendChild(branchWrapper);
