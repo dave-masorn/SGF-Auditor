@@ -7,11 +7,12 @@
     <title>SGF Inspector - FF[4] Structural Audit</title>
     <meta name="description" content="Block-by-block structural validation and game tree inspection according to SGF FF[4] specification.">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <script src="version.js?v=0.3.019"></script>
+    <script src="version.js?v=0.3.020"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Code:ital,wght,MONO@0,300..800,1;1,300..800,1&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Geist+Pixel&display=swap" rel="stylesheet">
     <style>
         :root {
             /* Theme Palette */
@@ -579,9 +580,12 @@
         }
 
         .tree-block-num {
-            font-family: var(--font-mono);
-            font-size: 0.72rem;
-            font-weight: 700;
+            font-family: "Geist Pixel", sans-serif;
+            font-optical-sizing: auto;
+            font-weight: 400;
+            font-style: normal;
+            font-variation-settings: "ELSH" 0;
+            font-size: 0.76rem;
             padding: 2px 6px;
             border-radius: 6px;
             background-color: #F1F5F9;
@@ -597,9 +601,12 @@
         }
 
         .tree-label {
-            font-family: var(--font-sans);
+            font-family: "Geist Pixel", sans-serif;
+            font-optical-sizing: auto;
+            font-weight: 400;
+            font-style: normal;
+            font-variation-settings: "ELSH" 0;
             font-size: 0.85rem;
-            font-weight: 600;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -826,9 +833,12 @@
         }
 
         .timeline-token-chip {
-            font-family: var(--font-mono);
-            font-size: 0.82rem;
-            font-weight: 600;
+            font-family: "Geist Pixel", sans-serif;
+            font-optical-sizing: auto;
+            font-weight: 400;
+            font-style: normal;
+            font-variation-settings: "ELSH" 0;
+            font-size: 0.85rem;
             padding: 3px 8px;
             border-radius: 6px;
             background-color: var(--color-surface-muted);
@@ -975,16 +985,22 @@
         }
 
         .preview-blk-num {
-            font-family: var(--font-mono);
+            font-family: "Geist Pixel", sans-serif;
+            font-optical-sizing: auto;
+            font-weight: 400;
+            font-style: normal;
+            font-variation-settings: "ELSH" 0;
             font-size: 1.1rem;
-            font-weight: 800;
             color: #047857;
         }
 
         .token-big-box {
-            font-family: var(--font-mono);
+            font-family: "Geist Pixel", sans-serif;
+            font-optical-sizing: auto;
+            font-weight: 400;
+            font-style: normal;
+            font-variation-settings: "ELSH" 0;
             font-size: 1.15rem;
-            font-weight: 700;
             padding: 8px 16px;
             background: #FFFFFF;
             border: 1px solid #E2E8F0;
