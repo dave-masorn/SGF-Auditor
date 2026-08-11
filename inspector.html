@@ -7,7 +7,7 @@
     <title>SGF Inspector - FF[4] Structural Audit</title>
     <meta name="description" content="Block-by-block structural validation and game tree inspection according to SGF FF[4] specification.">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <script src="version.js?v=0.3.007"></script>
+    <script src="version.js?v=0.3.008"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
@@ -2181,16 +2181,7 @@
                             toggleIconHtml = `<span class="tree-toggle-icon" onclick="toggleNodeCollapse(event, ${node.node_index})">${isNodeCollapsed ? '▶' : '▼'}</span>`;
                         }
 
-                        // Move description if available in this node
-                        const moveBlock = parsedBlocks.find(b => b.node_index === node.node_index && (b.ident === 'B' || b.ident === 'W'));
-                        let moveInfo = '';
-                        if (moveBlock) {
-                            const player = moveBlock.ident === 'B' ? 'Black' : 'White';
-                            const ptVal = moveBlock.values ? moveBlock.values[0] : '';
-                            moveInfo = ` - ${player} ${formatSgfPoint(ptVal)}`;
-                        }
-
-                        const label = node.is_root ? `Root Node (0)` : (node.tree_depth > 1 ? `Variation Node (${node.node_index})${moveInfo}` : `Node (${node.node_index})${moveInfo}`);
+                        const label = node.is_root ? `Root Node (0)` : (node.tree_depth > 1 ? `Variation Node (${node.node_index})` : `Node (${node.node_index})`);
                         item.innerHTML = `${toggleIconHtml} <span class="tree-label">${label}</span>`;
 
                         item.onclick = (e) => {
