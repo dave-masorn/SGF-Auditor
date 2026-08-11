@@ -7,7 +7,7 @@
     <title>SGF Inspector - FF[4] Structural Audit</title>
     <meta name="description" content="Block-by-block structural validation and game tree inspection according to SGF FF[4] specification.">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <script src="version.js?v=0.3.006"></script>
+    <script src="version.js?v=0.3.007"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
@@ -1415,6 +1415,44 @@
         .tree-legend.collapsed {
             padding-bottom: 10px;
         }
+
+        .tree-badge {
+            font-size: 0.68rem;
+            padding: 1px 6px;
+            border-radius: 4px;
+            margin-left: auto;
+            font-weight: 700;
+            font-family: var(--font-mono);
+        }
+        .cat-root-bg { background-color: var(--cat-root-bg); color: var(--cat-root-text); border: 1px solid var(--cat-root-border); }
+        .cat-setup-bg { background-color: var(--cat-setup-bg); color: var(--cat-setup-text); border: 1px solid var(--cat-setup-border); }
+
+        .tree-token-chip {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            font-weight: 700;
+            background: #F1F5F9;
+            color: #0369A1;
+            padding: 1px 5px;
+            border-radius: 4px;
+            border: 1px solid #CBD5E1;
+        }
+
+        .tree-empty-item {
+            color: var(--color-text-muted);
+            font-size: 0.78rem;
+            font-style: italic;
+        }
+
+        .setup-code {
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            color: #B45309;
+            background: #FFFBEB;
+            padding: 1px 5px;
+            border-radius: 4px;
+            border: 1px solid #FDE68A;
+        }
     </style>
 </head>
 <body>
@@ -1666,7 +1704,10 @@
 
         /* Document Structure Tree State */
         let isCollectionExpanded = true;
+        let isRootNodeExpanded = true;
+        let isGameTreesExpanded = true;
         let isGameTreeExpanded = true;
+        let isSetupNodesExpanded = true;
         let isLegendExpanded = true;
         let isTreePanelCollapsed = false;
         let collapsedVariationDepths = new Set();
@@ -1974,13 +2015,59 @@
             checkModifiedStatus();
         }
 
+        /* Document Structure Helper Functions */
+        function getOrderedRootPropertyBlocks() {
+            const rootBlocks = parsedBlocks.filter(b => b.node_index === 0 && b.ident);
+            const orderedBlocks = [];
+            const addedIndices = new Set();
+
+            const orderGroups = [
+                ['FF', 'CA', 'GM', 'SZ', 'AP'],
+                ['EV'],
+                ['PB', 'BR', 'PW', 'WR', 'KM', 'DT', 'PC', 'RE']
+            ];
+
+            orderGroups.forEach(group => {
+                group.forEach(ident => {
+                    rootBlocks.forEach(b => {
+                        if (b.ident === ident && !addedIndices.has(b.index)) {
+                            orderedBlocks.push(b);
+                            addedIndices.add(b.index);
+                        }
+                    });
+                });
+            });
+
+            rootBlocks.forEach(b => {
+                if (!addedIndices.has(b.index)) {
+                    orderedBlocks.push(b);
+                    addedIndices.add(b.index);
+                }
+            });
+
+            return orderedBlocks;
+        }
+
+        function getSetupNodesMap() {
+            const setupMap = new Map();
+            parsedBlocks.forEach(b => {
+                if (b.category === 'setup' || (b.ident && ['AB', 'AW', 'AE', 'PL'].includes(b.ident))) {
+                    if (!setupMap.has(b.node_index)) {
+                        setupMap.set(b.node_index, []);
+                    }
+                    setupMap.get(b.node_index).push(b);
+                }
+            });
+            return setupMap;
+        }
+
         /* Render Left Panel Document Structure Tree */
         function renderTree() {
             const container = document.getElementById('tree-container');
             if (!container) return;
             container.innerHTML = '';
 
-            // Collection Item
+            // ── TOP LEVEL: Collection (all nodes) ──
             const collectionNode = document.createElement('div');
             collectionNode.className = 'tree-item tree-header-item';
             collectionNode.innerHTML = `
@@ -1995,62 +2082,177 @@
 
             if (!isCollectionExpanded) return;
 
-            // GameTree Item
-            const treeNode = document.createElement('div');
-            treeNode.className = 'tree-item tree-header-item';
-            treeNode.style.paddingLeft = '18px';
-            treeNode.innerHTML = `
-                <span class="tree-toggle-icon" onclick="toggleGameTree(event)">${isGameTreeExpanded ? '▼' : '▶'}</span>
-                <span class="tree-label">GameTree #1</span>
+            // ── 1. Root Node (= Root Properties) ──
+            const rootPropBlocks = getOrderedRootPropertyBlocks();
+            const rootHeader = document.createElement('div');
+            rootHeader.className = 'tree-item tree-header-item';
+            rootHeader.style.paddingLeft = '18px';
+            rootHeader.innerHTML = `
+                <span class="tree-toggle-icon" onclick="toggleRootNode(event)">${isRootNodeExpanded ? '▼' : '▶'}</span>
+                <span class="tree-label">Root Node (= Root Properties)</span>
+                <span class="tree-badge cat-root-bg">${rootPropBlocks.length} Props</span>
             `;
-            treeNode.onclick = (e) => {
+            rootHeader.onclick = (e) => {
                 if (e.target.classList.contains('tree-toggle-icon')) return;
-                toggleGameTree(e);
+                toggleRootNode(e);
             };
-            container.appendChild(treeNode);
+            container.appendChild(rootHeader);
 
-            if (!isGameTreeExpanded) return;
-
-            let currentCollapsedDepthLevel = 9999;
-
-            parsedNodes.forEach((node, idx) => {
-                if (node.tree_depth > currentCollapsedDepthLevel) {
-                    return;
+            if (isRootNodeExpanded) {
+                if (rootPropBlocks.length === 0) {
+                    const emptyItem = document.createElement('div');
+                    emptyItem.className = 'tree-item tree-empty-item';
+                    emptyItem.style.paddingLeft = '36px';
+                    emptyItem.innerHTML = `<span class="tree-label-sub">No root properties in node 0</span>`;
+                    container.appendChild(emptyItem);
                 } else {
-                    currentCollapsedDepthLevel = 9999;
+                    rootPropBlocks.forEach(block => {
+                        const item = document.createElement('div');
+                        item.className = 'tree-item';
+                        const origIdx = parsedBlocks.indexOf(block);
+                        if (selectedBlockIndex === origIdx) item.classList.add('selected');
+                        item.style.paddingLeft = '36px';
+
+                        item.innerHTML = `
+                            <span class="tree-toggle-icon leaf-icon">•</span>
+                            <span class="tree-token-chip">${escapeHtml(block.token)}</span>
+                            <span class="tree-label">${block.ident} (${block.rule_details ? escapeHtml(block.rule_details.name) : 'Property'})</span>
+                        `;
+
+                        item.onclick = (e) => {
+                            if (origIdx >= 0) selectBlock(origIdx);
+                        };
+                        container.appendChild(item);
+                    });
                 }
+            }
 
-                if (collapsedVariationDepths.has(node.node_index)) {
-                    currentCollapsedDepthLevel = node.tree_depth;
-                }
+            // ── 2. Game Trees (= Move Properties) ──
+            const gameTreeHeader = document.createElement('div');
+            gameTreeHeader.className = 'tree-item tree-header-item';
+            gameTreeHeader.style.paddingLeft = '18px';
+            gameTreeHeader.innerHTML = `
+                <span class="tree-toggle-icon" onclick="toggleGameTrees(event)">${isGameTreesExpanded ? '▼' : '▶'}</span>
+                <span class="tree-label">Game Trees (= Move Properties)</span>
+            `;
+            gameTreeHeader.onclick = (e) => {
+                if (e.target.classList.contains('tree-toggle-icon')) return;
+                toggleGameTrees(e);
+            };
+            container.appendChild(gameTreeHeader);
 
-                const item = document.createElement('div');
-                item.className = 'tree-item';
-                if (selectedNodeIndex === node.node_index) item.classList.add('selected');
-
-                const indentPx = 18 + (node.tree_depth * 14);
-                item.style.paddingLeft = `${indentPx}px`;
-
-                const hasChildren = idx < parsedNodes.length - 1 && parsedNodes[idx + 1].tree_depth >= node.tree_depth;
-                let toggleIconHtml = `<span class="tree-toggle-icon leaf-icon">•</span>`;
-                if (hasChildren) {
-                    const isNodeCollapsed = collapsedVariationDepths.has(node.node_index);
-                    toggleIconHtml = `<span class="tree-toggle-icon" onclick="toggleNodeCollapse(event, ${node.node_index})">${isNodeCollapsed ? '▶' : '▼'}</span>`;
-                }
-
-                const label = node.is_root ? `Root Node (0)` : (node.tree_depth > 1 ? `Variation Node (${node.node_index})` : `Node (${node.node_index})`);
-                item.innerHTML = `${toggleIconHtml} <span class="tree-label">${label}</span>`;
-
-                item.onclick = (e) => {
+            if (isGameTreesExpanded) {
+                // GameTree #1 Sub-header
+                const gt1Node = document.createElement('div');
+                gt1Node.className = 'tree-item tree-header-item';
+                gt1Node.style.paddingLeft = '32px';
+                gt1Node.innerHTML = `
+                    <span class="tree-toggle-icon" onclick="toggleGameTree(event)">${isGameTreeExpanded ? '▼' : '▶'}</span>
+                    <span class="tree-label">GameTree #1</span>
+                `;
+                gt1Node.onclick = (e) => {
                     if (e.target.classList.contains('tree-toggle-icon')) return;
-                    selectedNodeIndex = node.node_index;
-                    renderTree();
-                    const blockIdx = parsedBlocks.findIndex(b => b.node_index === node.node_index);
-                    if (blockIdx >= 0) selectBlock(blockIdx);
+                    toggleGameTree(e);
                 };
+                container.appendChild(gt1Node);
 
-                container.appendChild(item);
-            });
+                if (isGameTreeExpanded) {
+                    let currentCollapsedDepthLevel = 9999;
+
+                    parsedNodes.forEach((node, idx) => {
+                        if (node.tree_depth > currentCollapsedDepthLevel) return;
+                        else currentCollapsedDepthLevel = 9999;
+
+                        if (collapsedVariationDepths.has(node.node_index)) {
+                            currentCollapsedDepthLevel = node.tree_depth;
+                        }
+
+                        const item = document.createElement('div');
+                        item.className = 'tree-item';
+                        if (selectedNodeIndex === node.node_index) item.classList.add('selected');
+
+                        const indentPx = 32 + (node.tree_depth * 14);
+                        item.style.paddingLeft = `${indentPx}px`;
+
+                        const hasChildren = idx < parsedNodes.length - 1 && parsedNodes[idx + 1].tree_depth >= node.tree_depth;
+                        let toggleIconHtml = `<span class="tree-toggle-icon leaf-icon">•</span>`;
+                        if (hasChildren) {
+                            const isNodeCollapsed = collapsedVariationDepths.has(node.node_index);
+                            toggleIconHtml = `<span class="tree-toggle-icon" onclick="toggleNodeCollapse(event, ${node.node_index})">${isNodeCollapsed ? '▶' : '▼'}</span>`;
+                        }
+
+                        // Move description if available in this node
+                        const moveBlock = parsedBlocks.find(b => b.node_index === node.node_index && (b.ident === 'B' || b.ident === 'W'));
+                        let moveInfo = '';
+                        if (moveBlock) {
+                            const player = moveBlock.ident === 'B' ? 'Black' : 'White';
+                            const ptVal = moveBlock.values ? moveBlock.values[0] : '';
+                            moveInfo = ` - ${player} ${formatSgfPoint(ptVal)}`;
+                        }
+
+                        const label = node.is_root ? `Root Node (0)` : (node.tree_depth > 1 ? `Variation Node (${node.node_index})${moveInfo}` : `Node (${node.node_index})${moveInfo}`);
+                        item.innerHTML = `${toggleIconHtml} <span class="tree-label">${label}</span>`;
+
+                        item.onclick = (e) => {
+                            if (e.target.classList.contains('tree-toggle-icon')) return;
+                            selectedNodeIndex = node.node_index;
+                            renderTree();
+                            const blockIdx = parsedBlocks.findIndex(b => b.node_index === node.node_index);
+                            if (blockIdx >= 0) selectBlock(blockIdx);
+                        };
+
+                        container.appendChild(item);
+                    });
+                }
+            }
+
+            // ── 3. Setup Nodes (= Setup Properties) ──
+            const setupMap = getSetupNodesMap();
+            const setupHeader = document.createElement('div');
+            setupHeader.className = 'tree-item tree-header-item';
+            setupHeader.style.paddingLeft = '18px';
+            setupHeader.innerHTML = `
+                <span class="tree-toggle-icon" onclick="toggleSetupNodes(event)">${isSetupNodesExpanded ? '▼' : '▶'}</span>
+                <span class="tree-label">Setup Nodes (= Setup Properties)</span>
+                <span class="tree-badge cat-setup-bg">${setupMap.size} Nodes</span>
+            `;
+            setupHeader.onclick = (e) => {
+                if (e.target.classList.contains('tree-toggle-icon')) return;
+                toggleSetupNodes(e);
+            };
+            container.appendChild(setupHeader);
+
+            if (isSetupNodesExpanded) {
+                if (setupMap.size === 0) {
+                    const emptyItem = document.createElement('div');
+                    emptyItem.className = 'tree-item tree-empty-item';
+                    emptyItem.style.paddingLeft = '36px';
+                    emptyItem.innerHTML = `<span class="tree-label-sub">No setup properties (AB, AW, AE, PL) in file</span>`;
+                    container.appendChild(emptyItem);
+                } else {
+                    setupMap.forEach((blocks, nodeIdx) => {
+                        const nodeItem = document.createElement('div');
+                        nodeItem.className = 'tree-item';
+                        if (selectedNodeIndex === nodeIdx) nodeItem.classList.add('selected');
+                        nodeItem.style.paddingLeft = '36px';
+
+                        const propsListStr = blocks.map(b => b.token).join(' ');
+                        nodeItem.innerHTML = `
+                            <span class="tree-toggle-icon leaf-icon">•</span>
+                            <span class="tree-label">Setup Node (${nodeIdx}): <code class="setup-code">${escapeHtml(propsListStr)}</code></span>
+                        `;
+
+                        nodeItem.onclick = (e) => {
+                            selectedNodeIndex = nodeIdx;
+                            renderTree();
+                            const blockIdx = parsedBlocks.findIndex(b => b.node_index === nodeIdx);
+                            if (blockIdx >= 0) selectBlock(blockIdx);
+                        };
+
+                        container.appendChild(nodeItem);
+                    });
+                }
+            }
         }
 
         function toggleTreePanel() {
@@ -2072,9 +2274,27 @@
             renderTree();
         }
 
+        function toggleRootNode(e) {
+            if (e) e.stopPropagation();
+            isRootNodeExpanded = !isRootNodeExpanded;
+            renderTree();
+        }
+
+        function toggleGameTrees(e) {
+            if (e) e.stopPropagation();
+            isGameTreesExpanded = !isGameTreesExpanded;
+            renderTree();
+        }
+
         function toggleGameTree(e) {
             if (e) e.stopPropagation();
             isGameTreeExpanded = !isGameTreeExpanded;
+            renderTree();
+        }
+
+        function toggleSetupNodes(e) {
+            if (e) e.stopPropagation();
+            isSetupNodesExpanded = !isSetupNodesExpanded;
             renderTree();
         }
 
@@ -2105,7 +2325,10 @@
         function expandAllTree(e) {
             if (e) e.stopPropagation();
             isCollectionExpanded = true;
+            isRootNodeExpanded = true;
+            isGameTreesExpanded = true;
             isGameTreeExpanded = true;
+            isSetupNodesExpanded = true;
             isLegendExpanded = true;
             collapsedVariationDepths.clear();
             
@@ -2120,7 +2343,10 @@
         function collapseAllTree(e) {
             if (e) e.stopPropagation();
             isCollectionExpanded = true;
+            isRootNodeExpanded = false;
+            isGameTreesExpanded = false;
             isGameTreeExpanded = false;
+            isSetupNodesExpanded = false;
             isLegendExpanded = false;
 
             const legendBox = document.getElementById('tree-legend-box');
