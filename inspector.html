@@ -7,7 +7,7 @@
     <title>SGF Inspector - FF[4] Structural Audit</title>
     <meta name="description" content="Block-by-block structural validation and game tree inspection according to SGF FF[4] specification.">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <script src="version.js?v=0.3.010"></script>
+    <script src="version.js?v=0.3.011"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
@@ -15,42 +15,46 @@
     <style>
         :root {
             /* Theme Palette */
-            --color-header-bg: #09261E;
-            --color-header-border: #133D32;
-            --color-bg: #F4F6F5;
+            --color-header-bg: #304E55;
+            --color-header-border: #233D43;
+            --color-bg: #FAF7EF;
             --color-surface: #FFFFFF;
-            --color-surface-muted: #F8FAFC;
-            --color-border: #E2E8F0;
-            --color-border-subtle: #F1F5F9;
-            --color-text-main: #0F172A;
-            --color-text-muted: #64748B;
-            --color-text-light: #94A3B8;
+            --color-surface-muted: #FAFAF7;
+            --color-border: rgba(48, 78, 85, 0.12);
+            --color-border-subtle: rgba(48, 78, 85, 0.08);
+            --color-text-main: #161616;
+            --color-text-muted: #4D4D4D;
+            --color-text-light: #718096;
+
+            --color-accent-teal: #478178;
+            --color-accent-gold: #E7C169;
+            --color-dark-gold: #A98B3C;
 
             /* Category Colors */
             --cat-syntax-bg: #ECFDF5;
             --cat-syntax-text: #047857;
             --cat-syntax-border: #A7F3D0;
-            --cat-syntax-dot: #10B981;
+            --cat-syntax-dot: #478178;
 
             --cat-root-bg: #F0F9FF;
             --cat-root-text: #0369A1;
             --cat-root-border: #BAE6FD;
-            --cat-root-dot: #0284C7;
+            --cat-root-dot: #304E55;
 
-            --cat-gameinfo-bg: #F0FDFA;
-            --cat-gameinfo-text: #0F766E;
-            --cat-gameinfo-border: #99F6E4;
-            --cat-gameinfo-dot: #14B8A6;
+            --cat-gameinfo-bg: #FFFBEB;
+            --cat-gameinfo-text: #B45309;
+            --cat-gameinfo-border: #FDE68A;
+            --cat-gameinfo-dot: #D6B66B;
 
             --cat-setup-bg: #FFFBEB;
             --cat-setup-text: #B45309;
             --cat-setup-border: #FDE68A;
-            --cat-setup-dot: #F59E0B;
+            --cat-setup-dot: #E7C169;
 
-            --cat-move-bg: #F3E8FF;
-            --cat-move-text: #6B21A8;
-            --cat-move-border: #D8B4FE;
-            --cat-move-dot: #A855F7;
+            --cat-move-bg: #EFF6FF;
+            --cat-move-text: #1E4ED8;
+            --cat-move-border: #BFDBFE;
+            --cat-move-dot: #1E4ED8;
 
             --cat-other-bg: #F1F5F9;
             --cat-other-text: #475569;
@@ -70,7 +74,7 @@
             --status-warning-border: #FDBA74;
 
             --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            --font-mono: "Google Sans Code", "Fira Code", monospace;
+            --font-mono: "Google Sans Code", "IBM Plex Mono", "Consolas", monospace;
         }
 
         * {
@@ -79,14 +83,18 @@
             padding: 0;
         }
 
-        body {
+        html, body {
+            height: 100%;
+            overflow: hidden;
             font-family: var(--font-sans);
             background-color: var(--color-bg);
             color: var(--color-text-main);
-            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
             display: flex;
             flex-direction: column;
-            -webkit-font-smoothing: antialiased;
         }
 
         /* ── Top Header Bar ── */
@@ -94,56 +102,55 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 24px;
+            padding: 0 20px;
             background-color: var(--color-header-bg);
             border-bottom: 1px solid var(--color-header-border);
-            color: #FFFFFF;
-            height: 56px;
-            position: sticky;
-            top: 0;
+            color: #FAF7EF;
+            height: 48px;
+            flex-shrink: 0;
             z-index: 1000;
         }
 
         .header-left {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
         .header-logo {
             font-weight: 700;
-            font-size: 1.05rem;
-            color: #FFFFFF;
+            font-size: 0.95rem;
+            color: #FAF7EF;
             text-decoration: none;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
         .header-logo-icon {
-            width: 20px;
-            height: 20px;
-            fill: #34D399;
+            width: 18px;
+            height: 18px;
+            fill: #E7C169;
         }
 
         .nav-divider {
-            color: rgba(255, 255, 255, 0.3);
-            font-size: 0.9rem;
+            color: rgba(250, 247, 239, 0.3);
+            font-size: 0.85rem;
         }
 
         .header-title {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-weight: 500;
-            color: rgba(255, 255, 255, 0.9);
+            color: rgba(250, 247, 239, 0.9);
         }
 
         .badge-header {
-            background-color: rgba(52, 211, 153, 0.15);
-            color: #34D399;
-            border: 1px solid rgba(52, 211, 153, 0.3);
-            font-size: 0.68rem;
+            background-color: rgba(71, 129, 120, 0.25);
+            color: #A7F3D0;
+            border: 1px solid rgba(167, 243, 208, 0.3);
+            font-size: 0.65rem;
             font-weight: 700;
-            padding: 2px 8px;
+            padding: 2px 7px;
             border-radius: 4px;
             letter-spacing: 0.5px;
             font-family: var(--font-mono);
@@ -152,13 +159,13 @@
         .header-right {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 14px;
         }
 
         .nav-btn {
-            color: rgba(255, 255, 255, 0.75);
+            color: rgba(250, 247, 239, 0.75);
             text-decoration: none;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             font-weight: 500;
             transition: color 0.15s ease;
         }
@@ -167,30 +174,21 @@
             color: #FFFFFF;
         }
 
-        .nav-btn.legacy-link {
-            color: rgba(255, 255, 255, 0.5);
-            font-style: italic;
-        }
-        .nav-btn.legacy-link:hover {
-            color: rgba(255, 255, 255, 0.85);
-        }
-
         .header-version {
             font-family: var(--font-mono);
-            font-size: 0.75rem;
-            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.72rem;
+            color: rgba(250, 247, 239, 0.5);
         }
 
-        /* ── Main Dashboard Layout ── */
+        /* ── Main Container ── */
         .inspector-container {
-            max-width: 1600px;
-            width: 100%;
-            margin: 0 auto;
-            padding: 24px;
+            flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 20px;
-            flex: 1;
+            padding: 12px 20px;
+            gap: 10px;
+            height: calc(100vh - 48px);
+            overflow: hidden;
         }
 
         /* Dashboard Sub-Header */
@@ -411,30 +409,25 @@
         .inspector-workspace {
             display: grid;
             grid-template-columns: 270px 1fr 340px;
-            gap: 16px;
-            min-height: 680px;
-            align-items: start;
+            gap: 12px;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
         }
 
-        @media (max-width: 1400px) {
+        @media (max-width: 1200px) {
             .inspector-workspace {
                 grid-template-columns: 240px 1fr 310px;
             }
         }
-        @media (max-width: 1080px) {
-            .inspector-workspace {
-                grid-template-columns: 1fr;
-            }
-        }
 
         .panel {
-            background: var(--color-surface);
+            background: #FFFFFF;
             border: 1px solid var(--color-border);
-            border-radius: 12px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+            border-radius: 8px;
             display: flex;
             flex-direction: column;
-            height: 720px;
+            height: 100%;
             overflow: hidden;
         }
 
@@ -1564,45 +1557,41 @@
             </div>
         </div>
 
-        <!-- Metrics Cards Row -->
-        <div class="metrics-grid">
-            <div class="metric-card overall-status-card" id="metric-status-card">
-                <div class="metric-label">OVERALL STATUS <span class="info-icon" title="FF[4] Specification compliance status">i</span></div>
-                <div class="metric-status-val" id="overall-status-text">
-                    <span class="status-icon success-icon" id="status-main-icon">✓</span>
-                    <span class="status-title" id="status-main-title">VALID</span>
+        <!-- Restrained Information Strip -->
+        <div class="metrics-strip-wrapper" id="metric-status-card">
+            <div class="status-rail-group" id="overall-status-text">
+                <span class="status-rail-icon success-icon" id="status-main-icon">✓</span>
+                <div style="display: flex; align-items: baseline;">
+                    <span class="status-rail-title" id="status-main-title">VALID</span>
+                    <span class="status-rail-sub" id="overall-status-sub">No critical errors</span>
                 </div>
-                <div class="metric-subtext" id="overall-status-sub">No critical errors</div>
             </div>
 
-            <div class="metric-card">
-                <div class="metric-label">BLOCKS</div>
-                <div class="metric-number" id="metric-blocks-count">0</div>
-                <div class="metric-subtext">Total blocks</div>
-            </div>
-
-            <div class="metric-card">
-                <div class="metric-label">NODES</div>
-                <div class="metric-number" id="metric-nodes-count">0</div>
-                <div class="metric-subtext">Total nodes</div>
-            </div>
-
-            <div class="metric-card">
-                <div class="metric-label">PROPERTIES</div>
-                <div class="metric-number" id="metric-props-count">0</div>
-                <div class="metric-subtext">Total properties</div>
-            </div>
-
-            <div class="metric-card">
-                <div class="metric-label">VARIATIONS</div>
-                <div class="metric-number" id="metric-vars-count">0</div>
-                <div class="metric-subtext">Total variations</div>
-            </div>
-
-            <div class="metric-card">
-                <div class="metric-label">BOARD SIZE</div>
-                <div class="metric-number" id="metric-board-size">19 × 19</div>
-                <div class="metric-subtext" id="metric-board-size-sub">From SZ[19]</div>
+            <div class="metrics-strip-items">
+                <div class="strip-item">
+                    <span class="strip-val" id="metric-blocks-count">0</span>
+                    <span class="strip-lbl">BLOCKS</span>
+                </div>
+                <div class="strip-divider"></div>
+                <div class="strip-item">
+                    <span class="strip-val" id="metric-nodes-count">0</span>
+                    <span class="strip-lbl">NODES</span>
+                </div>
+                <div class="strip-divider"></div>
+                <div class="strip-item">
+                    <span class="strip-val" id="metric-props-count">0</span>
+                    <span class="strip-lbl">PROPERTIES</span>
+                </div>
+                <div class="strip-divider"></div>
+                <div class="strip-item">
+                    <span class="strip-val" id="metric-vars-count">0</span>
+                    <span class="strip-lbl">VARIATIONS</span>
+                </div>
+                <div class="strip-divider"></div>
+                <div class="strip-item">
+                    <span class="strip-val" id="metric-board-size">19 × 19</span>
+                    <span class="strip-lbl" id="metric-board-size-sub">BOARD SIZE</span>
+                </div>
             </div>
         </div>
 
