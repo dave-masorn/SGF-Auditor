@@ -7,7 +7,7 @@
     <title>SGF Inspector - FF[4] Structural Audit</title>
     <meta name="description" content="Block-by-block structural validation and game tree inspection according to SGF FF[4] specification.">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <script src="version.js?v=0.3.011"></script>
+    <script src="version.js?v=0.3.012"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
@@ -690,50 +690,50 @@
 
         .timeline-container {
             flex: 1;
-            padding: 8px 12px;
+            padding: 10px 14px;
             overflow-y: auto;
             position: relative;
         }
 
-        /* Continuous SGF Document Spine Line */
+        /* Continuous SGF Document Spine Line - Aligned through Note Dots */
         .timeline-container::before {
             content: "";
             position: absolute;
             top: 0;
             bottom: 0;
-            left: 64px;
+            left: 94px;
             width: 2px;
-            background-color: rgba(48, 78, 85, 0.12);
+            background-color: rgba(48, 78, 85, 0.15);
             z-index: 1;
         }
 
         .timeline-card {
+            position: relative;
+            z-index: 2;
             display: flex;
             align-items: center;
             gap: 10px;
-            position: relative;
-            z-index: 2;
-            padding: 8px 10px;
-            border-radius: 4px;
-            border: none;
-            border-bottom: 1px solid rgba(48, 78, 85, 0.08);
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(48, 78, 85, 0.1);
             background: #FFFFFF;
             cursor: pointer;
-            transition: all 0.12s ease;
-            margin-bottom: 1px;
+            transition: all 0.15s ease;
+            margin-bottom: 6px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
         }
 
         .timeline-card:hover {
-            background-color: #FAFAF7;
-            border-color: rgba(48, 78, 85, 0.08);
-            box-shadow: none;
-            transform: none;
+            border-color: rgba(48, 78, 85, 0.22);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+            transform: translateY(-1px);
         }
 
         .timeline-card.selected {
-            border-left: 3px solid var(--color-accent-teal) !important;
-            background-color: rgba(71, 129, 120, 0.055) !important;
-            box-shadow: none !important;
+            border-color: #478178 !important;
+            border-left: 4px solid #478178 !important;
+            background-color: rgba(71, 129, 120, 0.065) !important;
+            box-shadow: 0 2px 6px rgba(71, 129, 120, 0.1) !important;
         }
 
         .timeline-dot-wrapper {
@@ -743,10 +743,10 @@
             width: 20px;
             height: 20px;
             border-radius: 50%;
-            background: var(--color-surface);
-            border: 2px solid var(--color-border);
-            margin-top: 4px;
+            background: #FFFFFF;
+            border: 2px solid rgba(48, 78, 85, 0.2);
             flex-shrink: 0;
+            z-index: 3;
         }
 
         .timeline-dot {
