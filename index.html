@@ -800,6 +800,174 @@
             white-space: nowrap;
             color: var(--color-muted);
         }
+
+        .kifudepot-section {
+            max-width: 600px;
+            width: 100%;
+            margin-bottom: 12px;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 12px 16px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .kifudepot-logo {
+            display: inline-flex;
+            align-items: center;
+            flex-shrink: 0;
+            flex-grow: 0;
+            text-decoration: none;
+            line-height: 1;
+            transition: opacity 0.15s ease;
+        }
+
+        .kifudepot-logo:hover {
+            opacity: 0.75;
+        }
+
+        .kifudepot-logo img.kifudepot-logo-img {
+            height: 32px;
+            width: auto;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+
+        .kifudepot-logo .kifudepot-word {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #000;
+            margin-left: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .kifudepot-row {
+            display: contents;
+        }
+
+        .kifudepot-input {
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid var(--border);
+            background-color: azure;
+            border-radius: 2px;
+            font-size: 0.85rem;
+            font-family: "Google Sans Code", monospace;
+            outline: none;
+            min-width: 0;
+        }
+
+        .kifudepot-input:focus {
+            border-color: var(--primary);
+        }
+
+        .kifudepot-input::placeholder {
+            color: var(--color-muted);
+        }
+
+        .kifudepot-btn {
+            padding: 6px 16px;
+            background: var(--color-header);
+            color: white;
+            border: 1px solid var(--color-header);
+            border-radius: 2px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .kifudepot-btn:hover {
+            background: var(--color-primary-hover);
+            border-color: var(--color-primary-hover);
+        }
+
+        .kifudepot-btn:disabled {
+            background: var(--color-muted);
+            border-color: var(--color-muted);
+            cursor: wait;
+        }
+
+        .kifudepot-status {
+            font-size: 0.78rem;
+            color: var(--color-muted);
+            margin-bottom: 36px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .kifudepot-status.error {
+            color: var(--danger);
+        }
+
+        .kifudepot-status.ok {
+            color: var(--color-success);
+        }
+
+        .kifudepot-gamelist {
+            display: none;
+            width: 100%;
+            border: 1px solid var(--border);
+            max-height: 360px;
+            overflow-y: auto;
+        }
+
+        .kifudepot-gamelist.open {
+            display: block;
+        }
+
+        .kifudepot-gamelist table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+        }
+
+        .kifudepot-gamelist thead th {
+            position: sticky;
+            top: 0;
+            background: var(--color-surface-muted);
+            border-bottom: 1px solid var(--border);
+            padding: 6px 10px;
+            text-align: left;
+            font-weight: 700;
+            font-size: 0.78rem;
+            color: var(--color-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .kifudepot-gamelist tbody tr {
+            cursor: pointer;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .kifudepot-gamelist tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .kifudepot-gamelist tbody tr:hover {
+            background: var(--color-surface-muted);
+        }
+
+        .kifudepot-gamelist td {
+            padding: 7px 10px;
+            color: var(--color-text);
+            vertical-align: top;
+        }
+
+        .kifudepot-gamelist td.kifudepot-evt {
+            max-width: 180px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: var(--color-muted);
+        }
     </style>
 </head>
 <body>
@@ -831,6 +999,19 @@
         </div>
         <input type="file" id="file-input" accept=".sgf">
     </div>
+
+    <div class="kifudepot-section">
+        <a class="kifudepot-logo" href="https://kifudepot.net/" target="_blank" rel="noopener noreferrer">
+            <img class="kifudepot-logo-img" src="img/kifudepot-logo.png" alt="KifuDepot" onerror="this.onerror=null;this.src='img/kifudepot-favicon.png'">
+            <span class="kifudepot-word">KifuDepot</span>
+        </a>
+        <div class="kifudepot-row">
+            <input class="kifudepot-input" id="kifudepot-input" type="text" placeholder="Search KifuDepot by player or event ...">
+            <button class="kifudepot-btn" id="kifudepot-btn" onclick="searchKifudepot()">Search</button>
+        </div>
+        <div class="kifudepot-gamelist" id="kifudepot-gamelist"></div>
+    </div>
+    <div class="kifudepot-status" id="kifudepot-status"></div>
 
     <div class="foxwq-section">
         <a href="https://www.foxwq.com/" target="_blank" rel="noopener noreferrer" style="text-decoration:none;line-height:0"><img class="foxwq-logo" src="img/foxwq-logo.png" alt="FoxWq"></a>
@@ -1854,6 +2035,334 @@
         // Allow Enter key to trigger EidoGo search
         document.getElementById('eidogo-input').addEventListener('keydown', function(e) {
             if (e.key === 'Enter') searchEidogo();
+        });
+
+        // ── KifuDepot Game Archive ──
+        var kdpProxy = 'https://foxwq-proxy.dave-42c.workers.dev/?url=';
+        var kdpAllGames = [];
+        var kdpShownCount = 0;
+        var kdpBatchSize = 10;
+        var kdpInitialSize = 50;
+        var kdpSearchState = null;
+
+        function kdpIsCjk(s) {
+            return /[\u3040-\u30FF\uAC00-\uD7AF\u4E00-\u9FFF]/.test(s);
+        }
+
+        function kdpGoogleTranslate(text, sl, tl) {
+            var api = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=' + sl + '&tl=' + tl + '&dt=t&q=' + encodeURIComponent(text);
+            return fetch(api)
+                .then(function(r) { return r.text(); })
+                .then(function(body) {
+                    try {
+                        var data = JSON.parse(body);
+                        if (data && data[0] && data[0][0] && data[0][0][0]) return data[0][0][0];
+                    } catch (e) {}
+                    return text;
+                })
+                .catch(function() { return text; });
+        }
+
+        function searchKifudepot() {
+            var input = document.getElementById('kifudepot-input');
+            var btn = document.getElementById('kifudepot-btn');
+            var status = document.getElementById('kifudepot-status');
+            var gamelist = document.getElementById('kifudepot-gamelist');
+            var query = input.value.trim();
+            if (!query) {
+                status.className = 'kifudepot-status error';
+                status.textContent = 'Please enter a search query.';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Searching...';
+            status.className = 'kifudepot-status';
+            status.textContent = 'Preparing search...';
+            gamelist.classList.remove('open');
+            gamelist.innerHTML = '';
+            kdpAllGames = [];
+            kdpShownCount = 0;
+            kdpSearchState = null;
+
+            var jaPromise = kdpIsCjk(query) ? Promise.resolve(query) : kdpGoogleTranslate(query, 'en', 'ja');
+
+            jaPromise.then(function(jaQuery) {
+                kdpSearchState = { player: jaQuery, event: jaQuery, nextPage: 1, maxPage: 1 };
+                status.textContent = 'Searching KifuDepot for "' + jaQuery + '"...';
+                return fetchKdpPage(1);
+            }).then(function(result) {
+                if (result.games.length === 0) {
+                    btn.disabled = false;
+                    btn.textContent = 'Search';
+                    status.className = 'kifudepot-status error';
+                    status.textContent = 'No games found for "' + query + '".';
+                    return;
+                }
+                kdpSearchState.maxPage = result.maxPage;
+                status.textContent = 'Translating results...';
+                return translateKdpGames(result.games).then(function(trGames) {
+                    kdpAllGames = trGames;
+                    gamelist.innerHTML = '';
+                    var initialCount = Math.min(kdpInitialSize, trGames.length);
+                    renderKdpRows(trGames.slice(0, initialCount), 0);
+                    kdpShownCount = initialCount;
+                    gamelist.classList.add('open');
+                    appendKdpFetchMoreBtn();
+                    btn.disabled = false;
+                    btn.textContent = 'Search';
+                    status.className = 'kifudepot-status ok';
+                    status.textContent = trGames.length + ' games found for "' + query + '" (page 1 of ' + kdpSearchState.maxPage + ').';
+                });
+            }).catch(function(err) {
+                btn.disabled = false;
+                btn.textContent = 'Search';
+                status.className = 'kifudepot-status error';
+                status.textContent = 'Error searching KifuDepot: ' + err.message;
+            });
+        }
+
+        function fetchKdpPage(page) {
+            var st = kdpSearchState;
+            var uPlayer = 'https://kifudepot.net/index.php?page=' + page + '&move=&player=' + encodeURIComponent(st.player) + '&event=&sort=';
+            var uEvent = 'https://kifudepot.net/index.php?page=' + page + '&move=&player=&event=' + encodeURIComponent(st.event) + '&sort=';
+            return Promise.all([
+                fetch(kdpProxy + encodeURIComponent(uPlayer)).then(function(r) { return r.text(); }),
+                fetch(kdpProxy + encodeURIComponent(uEvent)).then(function(r) { return r.text(); })
+            ]).then(function(results) {
+                var p1 = parseKdpPage(results[0]);
+                var p2 = parseKdpPage(results[1]);
+                var maxPage = Math.max(p1.maxPage, p2.maxPage);
+                var seen = {};
+                var merged = [];
+                for (var i = 0; i < p1.games.length; i++) {
+                    var g = p1.games[i];
+                    if (!seen[g.url]) { seen[g.url] = 1; merged.push(g); }
+                }
+                for (var j = 0; j < p2.games.length; j++) {
+                    var g2 = p2.games[j];
+                    if (!seen[g2.url]) { seen[g2.url] = 1; merged.push(g2); }
+                }
+                return { games: merged, maxPage: maxPage };
+            });
+        }
+
+        function parseKdpPage(html) {
+            var doc = new DOMParser().parseFromString(html, 'text/html');
+            var rows = doc.querySelectorAll('table.dataTable tr.tr_green, table.dataTable tr.tr_white');
+            var games = [];
+            for (var i = 0; i < rows.length; i++) {
+                var tr = rows[i];
+                var evA = tr.querySelector('.td_ev a');
+                if (!evA) continue;
+                var href = evA.getAttribute('href') || '';
+                if (href.indexOf('id=') === -1) continue;
+                var evTd = tr.querySelector('.td_ev');
+                var pbTd = tr.querySelector('.td_pb');
+                var pwTd = tr.querySelector('.td_pw');
+                var reTd = tr.querySelector('.td_re .resultSpan');
+                var dtTd = tr.querySelector('.td_dt');
+                games.push({
+                    url: href,
+                    event: evTd ? evTd.textContent.trim() : '',
+                    black: pbTd ? pbTd.textContent.trim() : '',
+                    white: pwTd ? pwTd.textContent.trim() : '',
+                    result: reTd ? reTd.textContent.trim() : '',
+                    date: dtTd ? dtTd.textContent.trim() : ''
+                });
+            }
+            var maxPage = 1;
+            var pagul = doc.querySelector('.pagination .pagul');
+            if (pagul) {
+                var links = pagul.querySelectorAll('a[href*="page="]');
+                for (var k = 0; k < links.length; k++) {
+                    var num = parseInt(links[k].textContent.trim(), 10);
+                    if (!isNaN(num) && num > maxPage) maxPage = num;
+                }
+            }
+            return { games: games, maxPage: maxPage };
+        }
+
+        function translateKdpGames(games) {
+            return import('./kifu-translate.js').then(function(mod) {
+                var nameSet = {};
+                var evtSet = {};
+                games.forEach(function(g) {
+                    if (g.black) nameSet[g.black] = 1;
+                    if (g.white) nameSet[g.white] = 1;
+                    if (g.event) evtSet[g.event] = 1;
+                });
+                var names = Object.keys(nameSet).filter(function(n) { return n && !mod.isEnglish(n); });
+                var evts = Object.keys(evtSet).filter(function(e) { return e && !mod.isEnglish(e); });
+                var nameMap = {};
+                var evtMap = {};
+                var queue = [];
+                names.forEach(function(n) {
+                    queue.push(mod.resolvePlayer(n, { delayMs: 0 }).then(function(v) { nameMap[n] = v; }));
+                });
+                evts.forEach(function(e) {
+                    queue.push(mod.translate(e, { delayMs: 0 }).then(function(v) { evtMap[e] = mod.titleCase(v); }));
+                });
+                return Promise.all(queue).then(function() {
+                    return games.map(function(g) {
+                        return {
+                            url: g.url,
+                            date: g.date,
+                            result: g.result,
+                            event: evtMap[g.event] || g.event,
+                            black: nameMap[g.black] || g.black,
+                            white: nameMap[g.white] || g.white
+                        };
+                    });
+                });
+            });
+        }
+
+        function renderKdpRows(games, startIdx) {
+            var gamelist = document.getElementById('kifudepot-gamelist');
+            var table = gamelist.querySelector('table');
+            if (!table) {
+                table = document.createElement('table');
+                var thead = document.createElement('thead');
+                thead.innerHTML = '<tr><th>Date</th><th>Event</th><th>Black</th><th>White</th><th>Result</th></tr>';
+                table.appendChild(thead);
+                var tbody = document.createElement('tbody');
+                tbody.id = 'kifudepot-tbody';
+                table.appendChild(tbody);
+                gamelist.appendChild(table);
+            }
+            var tbody = document.getElementById('kifudepot-tbody');
+            for (var i = 0; i < games.length; i++) {
+                var g = games[i];
+                var globalIdx = startIdx + i;
+                var tr = document.createElement('tr');
+                tr.setAttribute('data-idx', globalIdx);
+                tr.setAttribute('onclick', 'selectKifudepotGame(' + globalIdx + ')');
+                var evtText = g.event;
+                if (evtText.length > 40) evtText = evtText.substring(0, 37) + '...';
+                tr.innerHTML =
+                    '<td>' + g.date + '</td>' +
+                    '<td class="kifudepot-evt" title="' + g.event.replace(/"/g, '&quot;') + '">' + evtText + '</td>' +
+                    '<td>' + g.black + '</td>' +
+                    '<td>' + g.white + '</td>' +
+                    '<td>' + g.result + '</td>';
+                tbody.appendChild(tr);
+            }
+        }
+
+        function appendKdpFetchMoreBtn() {
+            var existing = document.getElementById('kifudepot-fetch-more');
+            if (existing) existing.remove();
+            var gamelist = document.getElementById('kifudepot-gamelist');
+            var hasMoreLocal = kdpAllGames.length - kdpShownCount > 0;
+            var hasMorePages = kdpSearchState && kdpSearchState.nextPage < kdpSearchState.maxPage;
+            if (!hasMoreLocal && !hasMorePages) return;
+            var div = document.createElement('div');
+            div.id = 'kifudepot-fetch-more';
+            div.style.textAlign = 'center';
+            div.style.marginTop = '12px';
+            div.style.fontSize = '0.85rem';
+            div.style.cursor = 'pointer';
+            div.style.color = 'var(--color-primary)';
+            div.style.display = 'flex';
+            div.style.alignItems = 'center';
+            div.style.justifyContent = 'center';
+            div.style.gap = '6px';
+            div.innerHTML = '<svg fill="currentColor" width="14" height="14" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><defs><style>.cls-1{fill:none;}</style></defs><title>fetch-upload</title><path d="M16,7,6,17l1.41,1.41L15,10.83V28H2v2H15a2,2,0,0,0,2-2V10.83l7.59,7.58L26,17Z"/><path d="M6,8V4H26V8h2V4a2,2,0,0,0-2-2H6A2,2,0,0,0,4,4V8Z"/><rect class="cls-1" width="32" height="32"/></svg><span>' + (hasMoreLocal ? 'Fetch more games?' : 'Load next page?') + '</span>';
+            div.onclick = function() { fetchMoreKdpGames(); };
+            gamelist.appendChild(div);
+        }
+
+        function fetchMoreKdpGames() {
+            var status = document.getElementById('kifudepot-status');
+            var btn = document.getElementById('kifudepot-btn');
+            var remaining = kdpAllGames.length - kdpShownCount;
+            if (remaining > 0) {
+                var count = Math.min(kdpBatchSize, remaining);
+                renderKdpRows(kdpAllGames.slice(kdpShownCount, kdpShownCount + count), kdpShownCount);
+                kdpShownCount += count;
+                appendKdpFetchMoreBtn();
+                return;
+            }
+            if (!kdpSearchState || kdpSearchState.nextPage >= kdpSearchState.maxPage) return;
+            var nextPage = kdpSearchState.nextPage + 1;
+            btn.disabled = true;
+            btn.textContent = 'Loading...';
+            status.className = 'kifudepot-status';
+            status.textContent = 'Loading page ' + nextPage + ' of ' + kdpSearchState.maxPage + '...';
+            fetchKdpPage(nextPage).then(function(result) {
+                kdpSearchState.nextPage = nextPage;
+                if (result.games.length === 0) {
+                    btn.disabled = false;
+                    btn.textContent = 'Search';
+                    appendKdpFetchMoreBtn();
+                    return;
+                }
+                return translateKdpGames(result.games).then(function(trGames) {
+                    kdpAllGames = kdpAllGames.concat(trGames);
+                    var count = Math.min(kdpBatchSize, trGames.length);
+                    renderKdpRows(trGames.slice(0, count), kdpShownCount);
+                    kdpShownCount += count;
+                    btn.disabled = false;
+                    btn.textContent = 'Search';
+                    status.className = 'kifudepot-status ok';
+                    status.textContent = kdpAllGames.length + ' games found for your query.';
+                    appendKdpFetchMoreBtn();
+                });
+            }).catch(function(err) {
+                btn.disabled = false;
+                btn.textContent = 'Search';
+                status.className = 'kifudepot-status error';
+                status.textContent = 'Error loading page: ' + err.message;
+            });
+        }
+
+        function selectKifudepotGame(idx) {
+            var game = kdpAllGames[idx];
+            if (!game) return;
+            var status = document.getElementById('kifudepot-status');
+            var btn = document.getElementById('kifudepot-btn');
+            status.className = 'kifudepot-status';
+            status.textContent = 'Fetching SGF for ' + game.black + ' vs ' + game.white + '...';
+            btn.disabled = true;
+            btn.textContent = 'Fetching...';
+            var pageUrl = game.url.indexOf('http') === 0 ? game.url : 'https://kifudepot.net/' + game.url;
+            fetch(kdpProxy + encodeURIComponent(pageUrl))
+                .then(function(r) {
+                    if (!r.ok) throw new Error('Game page not found (HTTP ' + r.status + ')');
+                    return r.text();
+                })
+                .then(function(html) {
+                    var doc = new DOMParser().parseFromString(html, 'text/html');
+                    var ta = doc.getElementById('sgf');
+                    var sgf = ta && ta.value ? ta.value.trim() : '';
+                    if (!sgf || sgf.indexOf(';') === -1) throw new Error('Invalid SGF content');
+                    status.textContent = 'Translating SGF...';
+                    return import('./kifu-translate.js').then(function(mod) {
+                        return mod.translateSgf(sgf, { delayMs: 0 }).then(function(eng) {
+                            return mod.englishFilenameFromSgf(eng, { delayMs: 0 }).then(function(fname) {
+                                status.className = 'kifudepot-status ok';
+                                status.textContent = 'Loaded: ' + fname + ' — opening reviewer...';
+                                btn.disabled = false;
+                                btn.textContent = 'Search';
+                                setTimeout(function() {
+                                    openReviewer(eng, sgf, fname);
+                                }, 400);
+                            });
+                        });
+                    });
+                })
+                .catch(function(err) {
+                    btn.disabled = false;
+                    btn.textContent = 'Search';
+                    status.className = 'kifudepot-status error';
+                    status.textContent = 'Error fetching SGF: ' + err.message;
+                });
+        }
+
+        // Allow Enter key to trigger KifuDepot search
+        document.getElementById('kifudepot-input').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') searchKifudepot();
         });
     </script>
 </body>
