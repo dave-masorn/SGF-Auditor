@@ -7,7 +7,7 @@
     <title>SGF Inspector - FF[4] Structural Audit</title>
     <meta name="description" content="Block-by-block structural validation and game tree inspection according to SGF FF[4] specification.">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <script src="version.js?v=0.3.024"></script>
+    <script src="version.js?v=0.3.025"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
@@ -786,15 +786,37 @@
             transform: translateY(-1px);
         }
 
-        .timeline-card.selected {
+        /* Selected: valid (default green) */
+        .timeline-card.selected,
+        .timeline-card.card-valid.selected {
             border-color: #10B981 !important;
             border-left: 4px solid #10B981 !important;
             background-color: #F0FDF4 !important;
-            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.12) !important;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.18) !important;
+        }
+        /* Selected: error → stays red, brighter ring */
+        .timeline-card.card-error.selected {
+            border-color: #EF4444 !important;
+            border-left: 4px solid #EF4444 !important;
+            background-color: #FEE2E2 !important;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.18) !important;
+        }
+        /* Selected: warning → stays amber */
+        .timeline-card.card-warning.selected {
+            border-color: #F59E0B !important;
+            border-left: 4px solid #F59E0B !important;
+            background-color: #FEF3C7 !important;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.18) !important;
         }
 
         .timeline-card.selected .timeline-dot-wrapper {
             border-color: #10B981 !important;
+        }
+        .timeline-card.card-error.selected .timeline-dot-wrapper {
+            border-color: #EF4444 !important;
+        }
+        .timeline-card.card-warning.selected .timeline-dot-wrapper {
+            border-color: #F59E0B !important;
         }
 
         /* ── Issue-level card tints ── */
