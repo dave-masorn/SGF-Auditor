@@ -7,7 +7,7 @@
     <title>SGF Inspector - FF[4] Structural Audit</title>
     <meta name="description" content="Block-by-block structural validation and game tree inspection according to SGF FF[4] specification.">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <script src="version.js?v=0.3.014"></script>
+    <script src="version.js?v=0.3.015"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
@@ -2247,77 +2247,106 @@
             if (!container) return;
             container.innerHTML = '';
 
-            // Collection Item
+            // Collection Item (Green Dot + Text)
             const collectionNode = document.createElement('div');
-            collectionNode.className = 'tree-item tree-header-item';
+            collectionNode.className = 'tree-collection-head';
             collectionNode.innerHTML = `
-                <span class="tree-toggle-icon" onclick="toggleCollection(event)">${isCollectionExpanded ? '▼' : '▶'}</span>
-                <span class="tree-label">Collection (${parsedNodes.length} Nodes)</span>
+                <span class="dot-collection"></span>
+                <span class="tree-label" style="font-weight:700;">Collection (${parsedNodes.length} Nodes)</span>
             `;
-            collectionNode.onclick = (e) => {
-                if (e.target.classList.contains('tree-toggle-icon')) return;
-                toggleCollection(e);
-            };
             container.appendChild(collectionNode);
 
-            if (!isCollectionExpanded) return;
+            // Dotted Tree Branch Container
+            const branchWrapper = document.createElement('div');
+            branchWrapper.className = 'tree-branch-wrapper';
+            branchWrapper.style.position = 'relative';
+            branchWrapper.style.paddingLeft = '18px';
+            branchWrapper.style.marginTop = '4px';
 
-            // GameTree Item
+            // Vertical Dotted Spine Guide Line
+            const spineGuide = document.createElement('div');
+            spineGuide.className = 'tree-spine-guide';
+            spineGuide.style.position = 'absolute';
+            spineGuide.style.left = '9px';
+            spineGuide.style.top = '10px';
+            spineGuide.style.bottom = '10px';
+            spineGuide.style.borderLeft = '1px dotted #CBD5E1';
+            branchWrapper.appendChild(spineGuide);
+
+            // GameTree #1 Item
             const treeNode = document.createElement('div');
-            treeNode.className = 'tree-item tree-header-item';
-            treeNode.style.paddingLeft = '18px';
+            treeNode.className = 'tree-item tree-gametree-item';
+            treeNode.style.paddingLeft = '4px';
             treeNode.innerHTML = `
                 <span class="tree-toggle-icon" onclick="toggleGameTree(event)">${isGameTreeExpanded ? '▼' : '▶'}</span>
-                <span class="tree-label">GameTree #1</span>
+                <span class="tree-label" style="font-weight:700;">GameTree #1</span>
             `;
             treeNode.onclick = (e) => {
                 if (e.target.classList.contains('tree-toggle-icon')) return;
                 toggleGameTree(e);
             };
-            container.appendChild(treeNode);
+            branchWrapper.appendChild(treeNode);
 
-            if (!isGameTreeExpanded) return;
+            if (isGameTreeExpanded) {
+                const nodesWrapper = document.createElement('div');
+                nodesWrapper.style.position = 'relative';
+                nodesWrapper.style.paddingLeft = '14px';
 
-            let currentCollapsedDepthLevel = 9999;
+                // Secondary Sub-spine for nodes
+                const nodeSpine = document.createElement('div');
+                nodeSpine.style.position = 'absolute';
+                nodeSpine.style.left = '4px';
+                nodeSpine.style.top = '8px';
+                nodeSpine.style.bottom = '8px';
+                nodeSpine.style.borderLeft = '1px dotted #CBD5E1';
+                nodesWrapper.appendChild(nodeSpine);
 
-            parsedNodes.forEach((node, idx) => {
-                if (node.tree_depth > currentCollapsedDepthLevel) return;
-                else currentCollapsedDepthLevel = 9999;
+                let currentCollapsedDepthLevel = 9999;
 
-                if (collapsedVariationDepths.has(node.node_index)) {
-                    currentCollapsedDepthLevel = node.tree_depth;
-                }
+                parsedNodes.forEach((node, idx) => {
+                    if (node.tree_depth > currentCollapsedDepthLevel) return;
+                    else currentCollapsedDepthLevel = 9999;
 
-                const item = document.createElement('div');
-                item.className = 'tree-item';
-                if (selectedNodeIndex === node.node_index) item.classList.add('selected');
+                    if (collapsedVariationDepths.has(node.node_index)) {
+                        currentCollapsedDepthLevel = node.tree_depth;
+                    }
 
-                const indentPx = 18 + (node.tree_depth * 14);
-                item.style.paddingLeft = `${indentPx}px`;
+                    const item = document.createElement('div');
+                    item.className = 'tree-item';
+                    if (selectedNodeIndex === node.node_index) item.classList.add('selected');
 
-                const hasChildren = idx < parsedNodes.length - 1 && parsedNodes[idx + 1].tree_depth >= node.tree_depth;
-                let toggleIconHtml = `<span class="tree-toggle-icon leaf-icon">•</span>`;
-                if (hasChildren) {
-                    const isNodeCollapsed = collapsedVariationDepths.has(node.node_index);
-                    toggleIconHtml = `<span class="tree-toggle-icon" onclick="toggleNodeCollapse(event, ${node.node_index})">${isNodeCollapsed ? '▶' : '▼'}</span>`;
-                }
+                    const indentPx = 8 + (node.tree_depth * 10);
+                    item.style.paddingLeft = `${indentPx}px`;
 
-                const nodeBlock = parsedBlocks.find(b => b.node_index === node.node_index);
-                const blkNumStr = nodeBlock ? String(nodeBlock.index).padStart(3, '0') : '001';
+                    const nodeBlock = parsedBlocks.find(b => b.node_index === node.node_index);
+                    const blkNumStr = nodeBlock ? String(nodeBlock.index).padStart(3, '0') : '001';
 
-                const label = node.is_root ? `Root Node (0)` : (node.tree_depth > 1 ? `Variation Node (${node.node_index})` : `Node (${node.node_index})`);
-                item.innerHTML = `${toggleIconHtml} <span class="tree-block-num">${blkNumStr}</span> <span class="tree-label">${label}</span>`;
+                    let prefixHtml = '';
+                    if (node.is_root) {
+                        prefixHtml = `<span class="tree-toggle-icon green-arrow" style="color:#10B981; font-size:0.55rem; margin-right:2px;">▶</span>`;
+                    } else if (node.tree_depth > 1) {
+                        const isNodeCollapsed = collapsedVariationDepths.has(node.node_index);
+                        prefixHtml = `<span class="tree-toggle-icon" onclick="toggleNodeCollapse(event, ${node.node_index})">${isNodeCollapsed ? '▶' : '▼'}</span>`;
+                    }
 
-                item.onclick = (e) => {
-                    if (e.target.classList.contains('tree-toggle-icon')) return;
-                    selectedNodeIndex = node.node_index;
-                    renderTree();
-                    const blockIdx = parsedBlocks.findIndex(b => b.node_index === node.node_index);
-                    if (blockIdx >= 0) selectBlock(blockIdx);
-                };
+                    const label = node.is_root ? `Root Node (0)` : (node.tree_depth > 1 ? `Variation Node (${node.node_index})` : `Node (${node.node_index})`);
+                    item.innerHTML = `${prefixHtml}<span class="tree-block-num">${blkNumStr}</span> <span class="tree-label">${label}</span>`;
 
-                container.appendChild(item);
-            });
+                    item.onclick = (e) => {
+                        if (e.target.classList.contains('tree-toggle-icon')) return;
+                        selectedNodeIndex = node.node_index;
+                        renderTree();
+                        const blockIdx = parsedBlocks.findIndex(b => b.node_index === node.node_index);
+                        if (blockIdx >= 0) selectBlock(blockIdx);
+                    };
+
+                    nodesWrapper.appendChild(item);
+                });
+
+                branchWrapper.appendChild(nodesWrapper);
+            }
+
+            container.appendChild(branchWrapper);
         }
 
         function toggleTreePanel() {
