@@ -7,7 +7,7 @@
     <title>SGF Inspector - FF[4] Structural Audit</title>
     <meta name="description" content="Block-by-block structural validation and game tree inspection according to SGF FF[4] specification.">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <script src="version.js?v=0.3.003"></script>
+    <script src="version.js?v=0.3.004"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
@@ -2334,20 +2334,161 @@
             }
         }
 
+        class SgfDiagnosticFormatter {
+            static format(rawSgf) {
+                if (!rawSgf) return '';
+                const startIdx = rawSgf.indexOf('(;');
+                if (startIdx === -1) return '';
+                const text = rawSgf.slice(startIdx);
+
+                // --- 1. FINITE STATE MACHINE TOKENIZER ---
+                const nodes = [];
+                let currentNode = null;
+                let currentProp = '';
+                let currentValues = [];
+
+                let inValue = false;
+                let valueBuffer = '';
+                let escape = false;
+                let parenCount = 0;
+
+                for (let i = 0; i < text.length; i++) {
+                    const c = text[i];
+
+                    if (inValue) {
+                        if (escape) {
+                            valueBuffer += c;
+                            escape = false;
+                        } else if (c === '\\') {
+                            valueBuffer += '\\'; // Preserve escape character for output
+                            escape = true;
+                        } else if (c === ']') {
+                            currentValues.push(valueBuffer);
+                            valueBuffer = '';
+                            inValue = false;
+                        } else {
+                            valueBuffer += c;
+                        }
+                    } else {
+                        if (c === '(') {
+                            parenCount++;
+                        } else if (c === ')') {
+                            if (currentNode && currentProp && currentValues.length > 0) {
+                                currentNode.props.set(currentProp, currentValues);
+                                currentProp = ''; currentValues = [];
+                            }
+                            parenCount--;
+                            if (parenCount === 0) break;
+                        } else if (c === ';') {
+                            if (currentNode && currentProp && currentValues.length > 0) {
+                                currentNode.props.set(currentProp, currentValues);
+                                currentProp = ''; currentValues = [];
+                            }
+                            currentNode = { props: new Map() };
+                            nodes.push(currentNode);
+                        } else if (c === '[') {
+                            inValue = true;
+                            valueBuffer = '';
+                        } else if (/[A-Z]/.test(c)) {
+                            if (currentProp !== '' && currentValues.length > 0) {
+                                currentNode.props.set(currentProp, currentValues);
+                                currentProp = ''; currentValues = [];
+                            }
+                            currentProp += c;
+                        }
+                    }
+                }
+
+                if (nodes.length === 0) return '';
+
+                // --- 2. DIAGNOSTIC PRESERVATION ---
+                const root = nodes[0].props;
+
+                // ONLY inject structural necessities if they do not exist.
+                if (!root.has('FF')) root.set('FF', ['4']);
+                if (!root.has('CA')) root.set('CA', ['UTF-8']);
+                if (!root.has('GM')) root.set('GM', ['1']);
+
+                // --- 3. CUSTOM SGFC REASSEMBLY ---
+                let out = '(\n\n;';
+
+                // Header Group
+                const headerProps = ['FF', 'CA', 'GM', 'SZ', 'AP'];
+                headerProps.forEach(p => {
+                    if (root.has(p)) out += `${p}[${root.get(p).join('][')}]`;
+                });
+                out += '\n\n';
+
+                // Event Group
+                if (root.has('EV')) {
+                    out += `EV[${root.get('EV').join('][')}]\n\n`;
+                }
+
+                // Vertical Player/Game Info Group
+                const verticalProps = ['PB', 'BR', 'PW', 'WR', 'KM', 'DT', 'PC', 'RE'];
+                verticalProps.forEach(p => {
+                    if (root.has(p)) out += `${p}[${root.get(p).join('][')}]\n`;
+                });
+                out += '\n';
+
+                // Catch-all for proprietary or unknown root properties
+                const orderedProps = new Set([...headerProps, 'EV', ...verticalProps]);
+                let hasOtherProps = false;
+                for (const [k, v] of root.entries()) {
+                    if (!orderedProps.has(k)) {
+                        out += `${k}[${v.join('][')}]`;
+                        hasOtherProps = true;
+                    }
+                }
+                if (hasOtherProps) out += '\n\n';
+
+                // Move Group (10 moves per line, isolating comments)
+                let moveCount = 0;
+                for (let i = 1; i < nodes.length; i++) {
+                    const node = nodes[i].props;
+                    let nodeStr = ';';
+                    let hasComment = node.has('C');
+
+                    for (const [k, v] of node.entries()) {
+                        nodeStr += `${k}[${v.join('][')}]`;
+                    }
+
+                    if (hasComment) {
+                        if (moveCount > 0) {
+                            out += '\n';
+                        }
+                        out += nodeStr + '\n';
+                        moveCount = 0;
+                    } else {
+                        out += nodeStr;
+                        moveCount++;
+                        if (moveCount >= 10) {
+                            out += '\n';
+                            moveCount = 0;
+                        }
+                    }
+                }
+
+                // Close out the tree safely
+                if (moveCount > 0) out += '\n';
+                out += '\n)\n';
+
+                return out;
+            }
+        }
+
         function formatRawSgfInModal() {
             const ta = document.getElementById('raw-sgf-textarea');
             if (!ta) return;
             const val = ta.value;
-            const formatted = val
-                .replace(/\s+/g, ' ')
-                .replace(/;\s*/g, '\n  ;')
-                .replace(/\(\s*/g, '(\n  ')
-                .replace(/\)\s*/g, '\n)\n')
-                .replace(/\n\s*\n/g, '\n')
-                .trim();
-            ta.value = formatted;
-            updateModalCharCount();
-            showToast('SGF formatted cleanly');
+            const formatted = SgfDiagnosticFormatter.format(val);
+            if (formatted) {
+                ta.value = formatted;
+                updateModalCharCount();
+                showToast('Diagnostic SGF format applied');
+            } else {
+                showToast('SGF tree start "(;" not found in input');
+            }
         }
 
         function applyRawEditorChanges() {
