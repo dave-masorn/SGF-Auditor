@@ -7,7 +7,7 @@
     <title>SGF Inspector - FF[4] Structural Audit</title>
     <meta name="description" content="Block-by-block structural validation and game tree inspection according to SGF FF[4] specification.">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <script src="version.js?v=0.3.020"></script>
+    <script src="version.js?v=0.3.021"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
@@ -968,47 +968,113 @@
         }
 
         .token-preview-card {
+            position: relative;
             display: flex;
             align-items: center;
             justify-content: space-between;
             background: #FFFFFF;
-            border: 1px solid #E2E8F0;
-            border-radius: 12px;
-            padding: 14px 16px;
+            border: 1px solid #CBD5E1;
+            border-radius: 14px;
+            padding: 16px 20px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+            margin-top: 8px;
         }
 
-        .preview-token-group {
+        .card-floating-idx {
+            position: absolute;
+            top: -10px;
+            left: 14px;
+            background: #FFFFFF;
+            padding: 0 6px;
+            color: #047857;
+            font-style: italic;
+            font-weight: 700;
+            font-size: 0.85rem;
+            font-family: "Geist Pixel", sans-serif;
+            line-height: 1;
+        }
+
+        .preview-property-row {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 6px;
+            font-family: "Geist Pixel", sans-serif;
+            font-size: 1.25rem;
+            color: #0F172A;
         }
 
-        .preview-blk-num {
+        .prop-ident-label {
             font-family: "Geist Pixel", sans-serif;
-            font-optical-sizing: auto;
+            font-size: 1.25rem;
             font-weight: 400;
-            font-style: normal;
-            font-variation-settings: "ELSH" 0;
-            font-size: 1.1rem;
-            color: #047857;
+            color: #0F172A;
         }
 
-        .token-big-box {
-            font-family: "Geist Pixel", sans-serif;
-            font-optical-sizing: auto;
-            font-weight: 400;
-            font-style: normal;
-            font-variation-settings: "ELSH" 0;
-            font-size: 1.15rem;
-            padding: 8px 16px;
-            background: #FFFFFF;
-            border: 1px solid #E2E8F0;
+        .prop-value-box {
+            background: #F1F5F9;
+            border: 1px dashed #CBD5E1;
             border-radius: 8px;
-            color: #1E293B;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
-            min-width: 44px;
-            text-align: center;
+            padding: 6px 14px;
+            font-family: "Geist Pixel", sans-serif;
+            font-size: 1.05rem;
+            color: #0F172A;
+            max-width: 170px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+        }
+
+        .prop-value-box:hover {
+            background: #E2E8F0;
+            border-color: #10B981;
+        }
+
+        .prop-val-input {
+            background: #FFFFFF;
+            border: 1px solid #10B981;
+            border-radius: 6px;
+            padding: 4px 8px;
+            font-family: "Geist Pixel", sans-serif;
+            font-size: 1rem;
+            color: #0F172A;
+            width: 150px;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+        }
+
+        .status-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .status-circle-valid {
+            background: #DCFCE7;
+            color: #16A34A;
+            border: 1px solid #86EFAC;
+        }
+
+        .status-circle-error {
+            background: #FEE2E2;
+            color: #DC2626;
+            border: 1px solid #FCA5A5;
+        }
+
+        .status-circle-warning {
+            background: #FEF3C7;
+            color: #D97706;
+            border: 1px solid #FCD34D;
         }
 
         .details-section-title {
@@ -2725,14 +2791,38 @@
             const nextToken = idx < parsedBlocks.length - 1 ? parsedBlocks[idx + 1].token : '...';
             const prev2Token = idx > 1 ? parsedBlocks[idx - 2].token : '...';
 
-            detailsContent.innerHTML = `
-                <div class="token-preview-card">
-                    <div class="preview-token-group">
-                        <span class="preview-blk-num">${blkNumStr}</span>
-                        <div class="token-big-box">${escapeHtml(block.token)}</div>
+            // Build status circle
+            let statusCircle = `<span class="status-circle status-circle-valid">✓</span>`;
+            if (block.issue_level === 'error') statusCircle = `<span class="status-circle status-circle-error">✕</span>`;
+            if (block.issue_level === 'warning') statusCircle = `<span class="status-circle status-circle-warning">!</span>`;
+
+            // Build preview card — structured as: floating idx / IDENT[ value_box ] circle
+            let previewCardHtml = '';
+            if (block.ident && block.values) {
+                const rawVal = block.values.join('][');
+                previewCardHtml = `
+                <div class="token-preview-card" id="preview-card-${idx}">
+                    <span class="card-floating-idx">${blkNumStr}</span>
+                    <div class="preview-property-row">
+                        <span class="prop-ident-label">${escapeHtml(block.ident)}[</span>
+                        <span class="prop-value-box" id="prop-val-display-${idx}" title="Click to edit value" onclick="activatePropInlineEdit(${idx})">${escapeHtml(rawVal)}</span>
+                        <span class="prop-ident-label">]</span>
                     </div>
-                    ${statusBadge}
-                </div>
+                    ${statusCircle}
+                </div>`;
+            } else {
+                previewCardHtml = `
+                <div class="token-preview-card" id="preview-card-${idx}">
+                    <span class="card-floating-idx">${blkNumStr}</span>
+                    <div class="preview-property-row">
+                        <span class="prop-ident-label">${escapeHtml(block.token)}</span>
+                    </div>
+                    ${statusCircle}
+                </div>`;
+            }
+
+            detailsContent.innerHTML = `
+                ${previewCardHtml}
 
                 <div>
                     <div class="details-section-title">BASIC INFORMATION</div>
@@ -2956,6 +3046,73 @@
 
             const newSgf = rebuildSgfFromBlocks();
             saveAndReloadSgf(newSgf, `Added property ${propIdent}[${propValue}] to Node ${nodeIndex}`, newBlockIdx);
+        }
+
+        /* ── Inline property editing from preview card ── */
+        function activatePropInlineEdit(idx) {
+            const block = parsedBlocks[idx];
+            if (!block || !block.ident || !block.values) return;
+
+            const displaySpan = document.getElementById(`prop-val-display-${idx}`);
+            if (!displaySpan) return;
+
+            const currentVal = block.values.join('][');
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'prop-val-input';
+            input.value = currentVal;
+            input.id = `prop-val-input-${idx}`;
+
+            displaySpan.replaceWith(input);
+            input.focus();
+            input.select();
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') commitPropInlineEdit(idx);
+                if (e.key === 'Escape') {
+                    // Restore display
+                    const span = document.createElement('span');
+                    span.className = 'prop-value-box';
+                    span.id = `prop-val-display-${idx}`;
+                    span.title = 'Click to edit value';
+                    span.onclick = () => activatePropInlineEdit(idx);
+                    span.textContent = currentVal;
+                    input.replaceWith(span);
+                }
+            });
+
+            input.addEventListener('blur', () => {
+                // Small delay so Enter keydown fires first
+                setTimeout(() => commitPropInlineEdit(idx), 150);
+            });
+        }
+
+        function commitPropInlineEdit(idx) {
+            const block = parsedBlocks[idx];
+            if (!block || !block.ident) return;
+
+            const input = document.getElementById(`prop-val-input-${idx}`);
+            if (!input) return;
+
+            const newVal = input.value.trim();
+            const oldVal = block.values ? block.values.join('][') : '';
+
+            if (newVal === oldVal) {
+                // No change — restore display span quietly
+                const span = document.createElement('span');
+                span.className = 'prop-value-box';
+                span.id = `prop-val-display-${idx}`;
+                span.title = 'Click to edit value';
+                span.onclick = () => activatePropInlineEdit(idx);
+                span.textContent = oldVal;
+                input.replaceWith(span);
+                return;
+            }
+
+            // Value changed — update block and show toast
+            const newValues = newVal.split('][');
+            updateBlockProperty(idx, newValues);
+            showToast(`✓ Change saved — ${block.ident}[${newVal}]`);
         }
 
         function saveAndReloadSgf(newSgf, toastMsg, targetBlockIdx) {
