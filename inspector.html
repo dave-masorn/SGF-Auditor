@@ -3209,7 +3209,7 @@
             const a = document.createElement('a');
             a.href = url;
             const filename = sessionStorage.getItem('sgf_filename') || 'game.sgf';
-            const fn = filename.replace(/\.sgf$/i, '') + '_edited.sgf';
+            const fn = filename.toLowerCase().endsWith('.sgf') ? filename : filename + '.sgf';
             a.download = fn;
             document.body.appendChild(a);
             a.click();
