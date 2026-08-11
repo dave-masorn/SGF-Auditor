@@ -7,7 +7,7 @@
     <title>SGF Inspector - FF[4] Structural Audit</title>
     <meta name="description" content="Block-by-block structural validation and game tree inspection according to SGF FF[4] specification.">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <script src="version.js?v=0.3.022"></script>
+    <script src="version.js?v=0.3.023"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
@@ -1324,6 +1324,25 @@
         .btn-editor-tool:hover {
             background: #F1F5F9;
             border-color: #CBD5E1;
+        }
+
+        .btn-translate-eng {
+            background: #ECFDF5;
+            border-color: #6EE7B7;
+            color: #065F46;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn-translate-eng:hover:not(:disabled) {
+            background: #D1FAE5;
+            border-color: #10B981;
+            color: #047857;
+        }
+        .btn-translate-eng:disabled {
+            opacity: 0.6;
+            cursor: wait;
         }
 
         #raw-sgf-textarea {
@@ -3200,6 +3219,13 @@
                 updateModalCharCount();
                 modal.style.display = 'flex';
                 ta.focus();
+
+                // Detect non-English text → show ENG button
+                const engBtn = document.getElementById('btn-translate-eng');
+                if (engBtn) {
+                    const hasNonEnglish = /[\u3000-\u9FFF\uAC00-\uD7AF\uF900-\uFAFF\uFF00-\uFFEF]/.test(currentRawSgf);
+                    engBtn.style.display = hasNonEnglish ? 'inline-flex' : 'none';
+                }
             }
         }
 
@@ -3401,6 +3427,45 @@
                 updateModalCharCount();
             }
         }
+
+        async function translateModalSgf() {
+            const ta = document.getElementById('raw-sgf-textarea');
+            const btn = document.getElementById('btn-translate-eng');
+            if (!ta || !btn) return;
+
+            const original = ta.value;
+            btn.disabled = true;
+            btn.textContent = 'Translating…';
+
+            try {
+                const { translateSgf, englishFilenameFromSgf } = await import('./kifu-translate.js');
+
+                const translated = await translateSgf(original, { delayMs: 0 });
+                const engFilename = await englishFilenameFromSgf(translated, { delayMs: 0 });
+
+                // Swap textarea
+                ta.value = translated;
+                updateModalCharCount();
+
+                // Update stored filename
+                if (engFilename) {
+                    sessionStorage.setItem('sgf_filename', engFilename);
+                    const filenameOpt = document.getElementById('current-filename-opt');
+                    if (filenameOpt) filenameOpt.textContent = engFilename;
+                }
+
+                // Hide ENG button — text is now English
+                btn.style.display = 'none';
+                showToast(`✓ Translated to English — filename: ${engFilename || 'game.sgf'}`);
+
+            } catch (err) {
+                showToast('⚠ Translation failed — check network connection');
+                console.error('[kifu-translate]', err);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px;"><path d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/></svg>ENG`;
+            }
+        }
     </script>
 
     <!-- Raw SGF Code Editor Modal -->
@@ -3417,6 +3482,14 @@
                 <div class="editor-toolbar">
                     <span class="editor-info" id="modal-char-count">0 chars | 0 tokens</span>
                     <div class="editor-actions">
+                        <button id="btn-translate-eng"
+                                class="btn-editor-tool btn-translate-eng"
+                                style="display:none;"
+                                onclick="translateModalSgf()"
+                                title="Translate all non-English SGF text to English">
+                            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px;"><path d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/></svg>
+                            ENG
+                        </button>
                         <button class="btn-editor-tool" onclick="formatRawSgfInModal()">✨ Beautify / Format SGF</button>
                     </div>
                 </div>
