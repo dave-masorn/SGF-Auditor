@@ -7,7 +7,7 @@
     <title>SGF Inspector - FF[4] Structural Audit</title>
     <meta name="description" content="Block-by-block structural validation and game tree inspection according to SGF FF[4] specification.">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <script src="version.js?v=0.3.004"></script>
+    <script src="version.js?v=0.3.005"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
@@ -1319,6 +1319,79 @@
             opacity: 1;
             transform: translateY(0);
         }
+
+        /* Document Structure Collapsible CSS */
+        .panel-header.clickable-header {
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-tree-action {
+            background: transparent;
+            border: none;
+            color: var(--color-text-muted);
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: all 0.15s ease;
+        }
+        .btn-tree-action:hover {
+            background: #F1F5F9;
+            color: var(--color-text-main);
+        }
+
+        .btn-panel-toggle {
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            padding: 2px 4px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s ease;
+        }
+
+        .panel-left.collapsed #tree-container,
+        .panel-left.collapsed .tree-legend {
+            display: none;
+        }
+
+        .tree-header-item {
+            font-weight: 700;
+        }
+
+        .tree-toggle-icon {
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            width: 16px;
+            height: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 3px;
+            user-select: none;
+        }
+        .tree-toggle-icon:hover {
+            background: rgba(0,0,0,0.06);
+            color: var(--color-text-main);
+        }
+
+        .leaf-icon {
+            cursor: default;
+            font-size: 0.65rem;
+            opacity: 0.5;
+        }
     </style>
 </head>
 <body>
@@ -1426,8 +1499,13 @@
         <div class="inspector-workspace">
             <!-- Left Column: Document Structure (Tree View) -->
             <aside class="panel panel-left">
-                <div class="panel-header">
+                <div class="panel-header clickable-header" onclick="toggleTreePanel()">
                     <h3>DOCUMENT STRUCTURE</h3>
+                    <div class="panel-header-actions">
+                        <button class="btn-tree-action" onclick="expandAllTree(event)" title="Expand All Tree Nodes">📂 Expand All</button>
+                        <button class="btn-tree-action" onclick="collapseAllTree(event)" title="Collapse All Tree Nodes">📁 Collapse All</button>
+                        <span class="btn-panel-toggle" id="btn-toggle-tree-panel">▼</span>
+                    </div>
                 </div>
                 <div class="tree-container" id="tree-container">
                     <!-- Dynamic Tree populated by JS -->
@@ -1559,6 +1637,12 @@
         let parsedTree = [];
         let selectedBlockIndex = 0;
         let selectedNodeIndex = null;
+
+        /* Document Structure Tree State */
+        let isCollectionExpanded = true;
+        let isGameTreeExpanded = true;
+        let isTreePanelCollapsed = false;
+        let collapsedVariationDepths = new Set();
 
         /* Initialization */
         window.addEventListener('DOMContentLoaded', () => {
@@ -1866,40 +1950,130 @@
         /* Render Left Panel Document Structure Tree */
         function renderTree() {
             const container = document.getElementById('tree-container');
+            if (!container) return;
             container.innerHTML = '';
 
+            // Collection Item
             const collectionNode = document.createElement('div');
-            collectionNode.className = 'tree-item';
-            collectionNode.innerHTML = `<span class="tree-toggle-icon">▼</span> <span class="tree-label">Collection</span>`;
+            collectionNode.className = 'tree-item tree-header-item';
+            collectionNode.innerHTML = `
+                <span class="tree-toggle-icon" onclick="toggleCollection(event)">${isCollectionExpanded ? '▼' : '▶'}</span>
+                <span class="tree-label">Collection (${parsedNodes.length} Nodes)</span>
+            `;
+            collectionNode.onclick = (e) => {
+                if (e.target.classList.contains('tree-toggle-icon')) return;
+                toggleCollection(e);
+            };
             container.appendChild(collectionNode);
 
+            if (!isCollectionExpanded) return;
+
+            // GameTree Item
             const treeNode = document.createElement('div');
-            treeNode.className = 'tree-item';
+            treeNode.className = 'tree-item tree-header-item';
             treeNode.style.paddingLeft = '18px';
-            treeNode.innerHTML = `<span class="tree-toggle-icon">▼</span> <span class="tree-label">GameTree #1</span>`;
+            treeNode.innerHTML = `
+                <span class="tree-toggle-icon" onclick="toggleGameTree(event)">${isGameTreeExpanded ? '▼' : '▶'}</span>
+                <span class="tree-label">GameTree #1</span>
+            `;
+            treeNode.onclick = (e) => {
+                if (e.target.classList.contains('tree-toggle-icon')) return;
+                toggleGameTree(e);
+            };
             container.appendChild(treeNode);
 
+            if (!isGameTreeExpanded) return;
+
+            let currentCollapsedDepthLevel = 9999;
+
             parsedNodes.forEach((node, idx) => {
+                if (node.tree_depth > currentCollapsedDepthLevel) {
+                    return;
+                } else {
+                    currentCollapsedDepthLevel = 9999;
+                }
+
+                if (collapsedVariationDepths.has(node.node_index)) {
+                    currentCollapsedDepthLevel = node.tree_depth;
+                }
+
                 const item = document.createElement('div');
                 item.className = 'tree-item';
                 if (selectedNodeIndex === node.node_index) item.classList.add('selected');
-                
+
                 const indentPx = 18 + (node.tree_depth * 14);
                 item.style.paddingLeft = `${indentPx}px`;
 
+                const hasChildren = idx < parsedNodes.length - 1 && parsedNodes[idx + 1].tree_depth >= node.tree_depth;
+                let toggleIconHtml = `<span class="tree-toggle-icon leaf-icon">•</span>`;
+                if (hasChildren) {
+                    const isNodeCollapsed = collapsedVariationDepths.has(node.node_index);
+                    toggleIconHtml = `<span class="tree-toggle-icon" onclick="toggleNodeCollapse(event, ${node.node_index})">${isNodeCollapsed ? '▶' : '▼'}</span>`;
+                }
+
                 const label = node.is_root ? `Root Node (0)` : (node.tree_depth > 1 ? `Variation Node (${node.node_index})` : `Node (${node.node_index})`);
-                item.innerHTML = `<span class="tree-label">${label}</span>`;
-                
-                item.onclick = () => {
+                item.innerHTML = `${toggleIconHtml} <span class="tree-label">${label}</span>`;
+
+                item.onclick = (e) => {
+                    if (e.target.classList.contains('tree-toggle-icon')) return;
                     selectedNodeIndex = node.node_index;
                     renderTree();
-                    // Select first block of this node
                     const blockIdx = parsedBlocks.findIndex(b => b.node_index === node.node_index);
                     if (blockIdx >= 0) selectBlock(blockIdx);
                 };
 
                 container.appendChild(item);
             });
+        }
+
+        function toggleTreePanel() {
+            const panel = document.querySelector('.panel-left');
+            const toggleBtn = document.getElementById('btn-toggle-tree-panel');
+            isTreePanelCollapsed = !isTreePanelCollapsed;
+
+            if (panel) {
+                panel.classList.toggle('collapsed', isTreePanelCollapsed);
+            }
+            if (toggleBtn) {
+                toggleBtn.textContent = isTreePanelCollapsed ? '▶' : '▼';
+            }
+        }
+
+        function toggleCollection(e) {
+            if (e) e.stopPropagation();
+            isCollectionExpanded = !isCollectionExpanded;
+            renderTree();
+        }
+
+        function toggleGameTree(e) {
+            if (e) e.stopPropagation();
+            isGameTreeExpanded = !isGameTreeExpanded;
+            renderTree();
+        }
+
+        function toggleNodeCollapse(e, nodeIndex) {
+            if (e) e.stopPropagation();
+            if (collapsedVariationDepths.has(nodeIndex)) {
+                collapsedVariationDepths.delete(nodeIndex);
+            } else {
+                collapsedVariationDepths.add(nodeIndex);
+            }
+            renderTree();
+        }
+
+        function expandAllTree(e) {
+            if (e) e.stopPropagation();
+            isCollectionExpanded = true;
+            isGameTreeExpanded = true;
+            collapsedVariationDepths.clear();
+            renderTree();
+        }
+
+        function collapseAllTree(e) {
+            if (e) e.stopPropagation();
+            isCollectionExpanded = true;
+            isGameTreeExpanded = false;
+            renderTree();
         }
 
         /* Render Center Panel Block Timeline */
