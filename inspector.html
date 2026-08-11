@@ -7,7 +7,7 @@
     <title>SGF Inspector - FF[4] Structural Audit</title>
     <meta name="description" content="Block-by-block structural validation and game tree inspection according to SGF FF[4] specification.">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <script src="version.js?v=0.3.013"></script>
+    <script src="version.js?v=0.3.014"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
@@ -739,15 +739,15 @@
             position: relative;
         }
 
-        /* Continuous SGF Document Spine Line - Aligned through Note Dots */
+        /* Continuous SGF Document Spine Line - Aligned Dead-Center Through Radio Dots */
         .timeline-container::before {
             content: "";
             position: absolute;
             top: 0;
             bottom: 0;
-            left: 94px;
+            left: 77px;
             width: 2px;
-            background-color: rgba(48, 78, 85, 0.15);
+            background-color: #E2E8F0;
             z-index: 1;
         }
 
@@ -757,7 +757,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 10px 14px;
+            padding: 10px 12px;
             border-radius: 8px;
             border: 1px solid rgba(48, 78, 85, 0.1);
             background: #FFFFFF;
@@ -774,23 +774,38 @@
         }
 
         .timeline-card.selected {
-            border-color: #478178 !important;
-            border-left: 4px solid #478178 !important;
-            background-color: rgba(71, 129, 120, 0.065) !important;
-            box-shadow: 0 2px 6px rgba(71, 129, 120, 0.1) !important;
+            border-color: #10B981 !important;
+            border-left: 4px solid #10B981 !important;
+            background-color: #F0FDF4 !important;
+            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.12) !important;
+        }
+
+        .timeline-card.selected .timeline-dot-wrapper {
+            border-color: #10B981 !important;
+        }
+
+        .timeline-index {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #64748B;
+            width: 32px;
+            flex-shrink: 0;
+            text-align: center;
         }
 
         .timeline-dot-wrapper {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
             background: #FFFFFF;
-            border: 2px solid rgba(48, 78, 85, 0.2);
+            border: 2px solid #CBD5E1;
             flex-shrink: 0;
             z-index: 3;
+            transition: border-color 0.15s ease;
         }
 
         .timeline-dot {
@@ -798,11 +813,6 @@
             height: 8px;
             border-radius: 50%;
         }
-
-        .timeline-index {
-            font-family: var(--font-mono);
-            font-size: 0.72rem;
-            color: var(--color-text-light);
             width: 28px;
             flex-shrink: 0;
             margin-top: 5px;
@@ -2449,7 +2459,6 @@
                 if (block.issue_level === 'warning') badgeHtml = `<span class="timeline-status-badge badge-warning">WARN</span>`;
 
                 card.innerHTML = `
-                    <div class="drag-handle" title="Drag to reorder block">⋮⋮</div>
                     <div class="timeline-index">${numPadded}</div>
                     <div class="timeline-dot-wrapper">
                         <span class="timeline-dot dot-${block.category}"></span>
