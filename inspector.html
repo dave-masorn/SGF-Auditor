@@ -7,7 +7,7 @@
     <title>SGF Inspector - FF[4] Structural Audit</title>
     <meta name="description" content="Block-by-block structural validation and game tree inspection according to SGF FF[4] specification.">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <script src="version.js?v=0.3.023"></script>
+    <script src="version.js?v=0.3.024"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
@@ -795,6 +795,30 @@
 
         .timeline-card.selected .timeline-dot-wrapper {
             border-color: #10B981 !important;
+        }
+
+        /* ── Issue-level card tints ── */
+        .timeline-card.card-error {
+            background: #FEF2F2;
+            border-color: #FECACA;
+            border-left: 4px solid #EF4444;
+        }
+        .timeline-card.card-error:hover {
+            background: #FEE2E2;
+            border-color: #FCA5A5;
+        }
+        .timeline-card.card-warning {
+            background: #FFFBEB;
+            border-color: #FDE68A;
+            border-left: 4px solid #F59E0B;
+        }
+        .timeline-card.card-warning:hover {
+            background: #FEF3C7;
+            border-color: #FCD34D;
+        }
+        .timeline-card.card-valid {
+            background: #F8FAFC;
+            border-color: rgba(48, 78, 85, 0.1);
         }
 
         .timeline-index {
@@ -2688,7 +2712,10 @@
 
             filtered.forEach((block, arrayIdx) => {
                 const card = document.createElement('div');
-                card.className = 'timeline-card draggable-card';
+                const issueClass = block.issue_level === 'error' ? 'card-error'
+                                 : block.issue_level === 'warning' ? 'card-warning'
+                                 : 'card-valid';
+                card.className = `timeline-card draggable-card ${issueClass}`;
                 card.draggable = true;
                 const originalIndex = parsedBlocks.indexOf(block);
                 if (originalIndex === selectedBlockIndex) card.classList.add('selected');
