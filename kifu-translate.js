@@ -407,8 +407,14 @@ function encodeSgfValue(s) {
  * Walk an SGF's property values, calling cb(isRoot, propId, valueStart, valueEnd)
  * for every value. Root = first node; comments (C) are translated everywhere.
  */
+function sgfRootStart(sgfText) {
+    const paren = sgfText.indexOf('(;');
+    if (paren !== -1) return paren;
+    return sgfText.indexOf(';');
+}
+
 function walkSgfValues(sgfText, cb) {
-    const start = sgfText.indexOf('(;');
+    const start = sgfRootStart(sgfText);
     if (start === -1) return;
     let nodeCount = 0;
     let inValue = false;
@@ -469,7 +475,7 @@ export function rootProps(sgfText) {
  */
 export async function translateSgf(sgfText, opts = {}) {
     const { delayMs = 100, fetchImpl = fetch } = opts;
-    if (sgfText.indexOf('(;') === -1) return sgfText;
+    if (sgfRootStart(sgfText) === -1) return sgfText;
 
     const targets = [];
     walkSgfValues(sgfText, (isRoot, id, start, end) => {
