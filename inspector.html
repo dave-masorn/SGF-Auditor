@@ -7,7 +7,7 @@
     <title>SGF Inspector - FF[4] Structural Audit</title>
     <meta name="description" content="Block-by-block structural validation and game tree inspection according to SGF FF[4] specification.">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <script src="version.js?v=0.3.025"></script>
+    <script src="version.js?v=0.3.026"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
@@ -2075,6 +2075,18 @@
             return `${pt} (${col}-${row})`;
         }
 
+        /* Resolve SGF Specification URL for a block or property */
+        function getSpecLink(block) {
+            if (!block) return 'https://www.red-bean.com/sgf/sgf4.html';
+            if (block.ident) {
+                return `https://www.red-bean.com/sgf/properties.html#${encodeURIComponent(block.ident)}`;
+            }
+            if (block.token === '(' || block.token === ')' || block.token === ';') {
+                return 'https://www.red-bean.com/sgf/sgf4.html#ebnf-def';
+            }
+            return 'https://www.red-bean.com/sgf/sgf4.html';
+        }
+
         /* Main Inspector Tokenization & Parsing Pipeline */
         function processSgfString(sgfStr, filename) {
             currentRawSgf = sgfStr;
@@ -2890,6 +2902,8 @@
                 </div>`;
             }
 
+            const specUrl = getSpecLink(block);
+
             detailsContent.innerHTML = `
                 ${previewCardHtml}
 
@@ -2925,7 +2939,7 @@
                 <div>
                     <div class="details-section-title">REFERENCE</div>
                     <div style="font-size:0.8rem; font-weight:600; color:var(--color-text-main);">${escapeHtml(block.spec_ref || 'SGF FF[4] Specification')}</div>
-                    <a href="https://www.red-bean.com/sgf/sgf4.html" target="_blank" rel="noopener" class="ref-link">View in Specification →</a>
+                    <a href="${specUrl}" target="_blank" rel="noopener" class="ref-link">View in Specification →</a>
                 </div>
 
                 <div>
