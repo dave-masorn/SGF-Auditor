@@ -7,7 +7,7 @@
     <title>SGF Auditor</title>
     <meta name="description" content="SGF Auditor - 100% Compliance Audit for SGF FF[4] Standard with Phase-Detector function.">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <script src="version.js?v=0.3.026"></script>
+    <script src="version.js?v=0.3.027"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
@@ -2071,6 +2071,85 @@
                 .catch(function() { return text; });
         }
 
+        /* Fallback: Search English Wikipedia to retrieve Japanese title (ja interlanguage link) */
+        function kdpWikiTranslate(query) {
+            var cleanQuery = query.trim();
+            if (!cleanQuery) return Promise.resolve(null);
+
+            var wikiSlug = cleanQuery.replace(/\s+/g, '_');
+
+            // 1. Direct Wikipedia Action API with langlinks & redirects (CORS-enabled via origin=*)
+            var apiUrl = 'https://en.wikipedia.org/w/api.php?action=query&prop=langlinks&lllang=ja&titles='
+                + encodeURIComponent(wikiSlug) + '&redirects=1&format=json&origin=*';
+
+            return fetch(apiUrl)
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data && data.query && data.query.pages) {
+                        var pages = data.query.pages;
+                        for (var pid in pages) {
+                            if (pages[pid] && pages[pid].langlinks && pages[pid].langlinks.length > 0) {
+                                var jaTitle = pages[pid].langlinks[0]['*'] || pages[pid].langlinks[0].title;
+                                if (jaTitle) return jaTitle.trim();
+                            }
+                        }
+                    }
+                    // 2. If direct article title has no ja langlink, search Wikipedia for top relevant page
+                    var searchApiUrl = 'https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch='
+                        + encodeURIComponent(cleanQuery) + '&format=json&origin=*';
+                    return fetch(searchApiUrl)
+                        .then(function(r) { return r.json(); })
+                        .then(function(sData) {
+                            if (sData && sData.query && sData.query.search && sData.query.search.length > 0) {
+                                var topTitle = sData.query.search[0].title;
+                                var topApiUrl = 'https://en.wikipedia.org/w/api.php?action=query&prop=langlinks&lllang=ja&titles='
+                                    + encodeURIComponent(topTitle) + '&redirects=1&format=json&origin=*';
+                                return fetch(topApiUrl)
+                                    .then(function(r) { return r.json(); })
+                                    .then(function(tData) {
+                                        if (tData && tData.query && tData.query.pages) {
+                                            var tPages = tData.query.pages;
+                                            for (var tpid in tPages) {
+                                                if (tPages[tpid] && tPages[tpid].langlinks && tPages[tpid].langlinks.length > 0) {
+                                                    var jaTitle2 = tPages[tpid].langlinks[0]['*'] || tPages[tpid].langlinks[0].title;
+                                                    if (jaTitle2) return jaTitle2.trim();
+                                                }
+                                            }
+                                        }
+                                        return null;
+                                    });
+                            }
+                            return null;
+                        });
+                })
+                .then(function(resultJa) {
+                    if (resultJa) return resultJa;
+
+                    // 3. Fallback to scraping Wikipedia HTML via proxy:
+                    // Looks for <a href="https://ja.wikipedia.org/wiki/..." hreflang="ja" title="趙治勲 – Japanese">
+                    var wikiPageUrl = 'https://en.wikipedia.org/wiki/' + encodeURIComponent(wikiSlug);
+                    return fetch(kdpProxy + encodeURIComponent(wikiPageUrl))
+                        .then(function(r) { return r.text(); })
+                        .then(function(html) {
+                            var doc = new DOMParser().parseFromString(html, 'text/html');
+                            var jaLink = doc.querySelector('a[hreflang="ja"], a.interlanguage-link-target[hreflang="ja"], a[href*="ja.wikipedia.org"]');
+                            if (jaLink) {
+                                var titleAttr = jaLink.getAttribute('title') || '';
+                                var m = titleAttr.match(/^([^–\-—]+)/);
+                                if (m && m[1]) return m[1].trim();
+
+                                var href = jaLink.getAttribute('href') || '';
+                                var hm = href.match(/ja\.wikipedia\.org\/wiki\/([^?#]+)/);
+                                if (hm && hm[1]) return decodeURIComponent(hm[1]).replace(/_/g, ' ').trim();
+                            }
+                            return null;
+                        });
+                })
+                .catch(function() {
+                    return null;
+                });
+        }
+
         function searchKifudepot() {
             var input = document.getElementById('kifudepot-input');
             var btn = document.getElementById('kifudepot-btn');
@@ -2093,19 +2172,9 @@
             kdpShownCount = 0;
             kdpSearchState = null;
 
-            var jaPromise = kdpIsCjk(query) ? Promise.resolve(query) : kdpGoogleTranslate(query, 'en', 'ja');
-
-            jaPromise.then(function(jaQuery) {
-                kdpSearchState = { player: jaQuery, event: jaQuery, nextPage: 1, maxPage: 1 };
-                status.textContent = 'Searching KifuDepot for "' + jaQuery + '"...';
-                return fetchKdpPage(1);
-            }).then(function(result) {
+            function handleResults(result, searchLabel) {
                 if (result.games.length === 0) {
-                    btn.disabled = false;
-                    btn.textContent = 'Search';
-                    status.className = 'kifudepot-status error';
-                    status.textContent = 'No games found for "' + query + '".';
-                    return;
+                    return false;
                 }
                 kdpSearchState.maxPage = result.maxPage;
                 status.textContent = 'Translating results...';
@@ -2120,7 +2189,53 @@
                     btn.disabled = false;
                     btn.textContent = 'Search';
                     status.className = 'kifudepot-status ok';
-                    status.textContent = trGames.length + ' games found for "' + query + '" (page 1 of ' + kdpSearchState.maxPage + ').';
+                    status.textContent = trGames.length + ' games found for "' + query + '"' + (searchLabel ? ' (' + searchLabel + ')' : '') + ' (page 1 of ' + kdpSearchState.maxPage + ').';
+                    return true;
+                });
+            }
+
+            // Step 1: Translate query to Japanese as it is (or as-is if CJK)
+            var jaPromise = kdpIsCjk(query) ? Promise.resolve(query) : kdpGoogleTranslate(query, 'en', 'ja');
+
+            jaPromise.then(function(jaQuery) {
+                kdpSearchState = { player: jaQuery, event: jaQuery, nextPage: 1, maxPage: 1 };
+                status.textContent = 'Searching KifuDepot for "' + jaQuery + '"...';
+                return fetchKdpPage(1).then(function(result) {
+                    if (result.games.length > 0) {
+                        return handleResults(result, '');
+                    }
+
+                    // Step 2: Fallback — search input name in English Wikipedia and retrieve Japanese title
+                    if (!kdpIsCjk(query)) {
+                        status.textContent = 'Searching Wikipedia for Japanese name of "' + query + '"...';
+                        return kdpWikiTranslate(query).then(function(wikiJa) {
+                            if (wikiJa && wikiJa !== jaQuery) {
+                                kdpSearchState = { player: wikiJa, event: wikiJa, nextPage: 1, maxPage: 1 };
+                                status.textContent = 'Searching KifuDepot for "' + wikiJa + '" (via Wikipedia)...';
+                                return fetchKdpPage(1).then(function(res2) {
+                                    if (res2.games.length > 0) {
+                                        return handleResults(res2, 'matched as ' + wikiJa);
+                                    }
+                                    btn.disabled = false;
+                                    btn.textContent = 'Search';
+                                    status.className = 'kifudepot-status error';
+                                    status.textContent = 'No games found for "' + query + '" (searched as "' + wikiJa + '").';
+                                    return false;
+                                });
+                            }
+                            btn.disabled = false;
+                            btn.textContent = 'Search';
+                            status.className = 'kifudepot-status error';
+                            status.textContent = 'No games found for "' + query + '".';
+                            return false;
+                        });
+                    }
+
+                    btn.disabled = false;
+                    btn.textContent = 'Search';
+                    status.className = 'kifudepot-status error';
+                    status.textContent = 'No games found for "' + query + '".';
+                    return false;
                 });
             }).catch(function(err) {
                 btn.disabled = false;
