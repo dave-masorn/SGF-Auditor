@@ -7,7 +7,7 @@
     <title>SGF Inspector - FF[4] Structural Audit</title>
     <meta name="description" content="Block-by-block structural validation and game tree inspection according to SGF FF[4] specification.">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <script src="version.js?v=0.3.029"></script>
+    <script src="version.js?v=0.3.030"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
@@ -1968,53 +1968,88 @@
     <script>
         /* ── SGF Inspector Engine & Property Rules Definitions ── */
         const SGF_PROPERTY_RULES = {
-            'FF': { name: 'File Format', category: 'root', type: 'Root Property', format: 'Number', range: '1-4', req: 'Yes (Recommended)', multi: 'No', scope: 'Root Node', exp: 'Defines the SGF file format version. For modern engines this should strictly be 4.', ref: 'SGF FF[4] Section 7.6 File Format (FF)' },
-            'CA': { name: 'Character Set', category: 'root', type: 'Root Property', format: 'SimpleText', range: 'Charset (e.g., UTF-8)', req: 'Optional (Default ISO-8859-1)', multi: 'No', scope: 'Root Node', exp: 'Provides the character set used for SimpleText and Text types in the file. UTF-8 is universally preferred.', ref: 'SGF FF[4] Section 7.6 Charset (CA)' },
-            'GM': { name: 'Game', category: 'root', type: 'Root Property', format: 'Number', range: '1-16 (1 = Go)', req: 'Yes (Recommended)', multi: 'No', scope: 'Root Node', exp: 'Defines the type of game stored in the GameTree. 1 indicates Go (WeiQi/Baduk).', ref: 'SGF FF[4] Section 7.6 Game (GM)' },
-            'SZ': { name: 'Board Size', category: 'root', type: 'Root Property', format: 'Number', range: '1-52 (Default 19)', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Defines the size of the Go board (e.g. 19 for 19x19).', ref: 'SGF FF[4] Section 7.6 Board Size (SZ)' },
-            'AP': { name: 'Application', category: 'root', type: 'Root Property', format: 'SimpleText', range: 'Name:Version', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Identifies the application that created or modified this SGF file.', ref: 'SGF FF[4] Section 7.6 Application (AP)' },
-            'ST': { name: 'Style', category: 'root', type: 'Root Property', format: 'Number', range: '0-3', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Defines variation rendering style in UI viewers.', ref: 'SGF FF[4] Section 7.6 Style (ST)' },
-            'RU': { name: 'Rules', category: 'root', type: 'Root Property', format: 'SimpleText', range: 'Ruleset Name', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Specifies the Go ruleset applied (e.g., Japanese, Chinese, AGA).', ref: 'SGF FF[4] Section 7.6 Rules (RU)' },
-            'KM': { name: 'Komi', category: 'root', type: 'Root Property', format: 'Real', range: 'Real Number (e.g. 6.5)', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Komi compensation given to White.', ref: 'SGF FF[4] Section 7.6 Komi (KM)' },
-            'HA': { name: 'Handicap', category: 'root', type: 'Root Property', format: 'Number', range: 'Handicap count (>= 2)', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Number of handicap stones given to Black.', ref: 'SGF FF[4] Section 7.6 Handicap (HA)' },
-            'TM': { name: 'Time Limit', category: 'root', type: 'Root Property', format: 'Real', range: 'Seconds', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Time limit in seconds per player.', ref: 'SGF FF[4] Section 7.6 Time Limit (TM)' },
-            'OT': { name: 'Overtime', category: 'root', type: 'Root Property', format: 'SimpleText', range: 'Byo-yomi description', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Description of overtime rules.', ref: 'SGF FF[4] Section 7.6 Overtime (OT)' },
+            // Root Properties (FF[4] Section 2.2.1)
+            'FF': { name: 'File Format', category: 'root', type: 'Root Property', format: 'Number', range: '1-4 (Default 4)', req: 'Yes (Recommended)', multi: 'No', scope: 'Root Node', exp: 'Defines the SGF file format version. Standard for modern engines is FF[4].', ref: 'SGF FF[4] Root Property: File Format (FF)' },
+            'CA': { name: 'Character Set', category: 'root', type: 'Root Property', format: 'SimpleText', range: 'Charset (e.g., UTF-8, ISO-8859-1)', req: 'Optional (Default ISO-8859-1)', multi: 'No', scope: 'Root Node', exp: 'Provides the character set used for SimpleText and Text types in the file. UTF-8 is universally preferred.', ref: 'SGF FF[4] Root Property: Charset (CA)' },
+            'GM': { name: 'Game', category: 'root', type: 'Root Property', format: 'Number', range: '1-16 (1 = Go)', req: 'Yes (Recommended)', multi: 'No', scope: 'Root Node', exp: 'Defines the type of game stored in the GameTree. 1 indicates Go (WeiQi/Baduk).', ref: 'SGF FF[4] Root Property: Game (GM)' },
+            'SZ': { name: 'Board Size', category: 'root', type: 'Root Property', format: 'Number / Composed', range: '1-52 (Default 19)', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Defines the size of the Go board (e.g. 19 for 19x19, or col:row for rectangular).', ref: 'SGF FF[4] Root Property: Board Size (SZ)' },
+            'AP': { name: 'Application', category: 'root', type: 'Root Property', format: 'Composed SimpleText:SimpleText', range: 'Name:Version', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Identifies the application that created or modified this SGF file.', ref: 'SGF FF[4] Root Property: Application (AP)' },
+            'ST': { name: 'Style', category: 'root', type: 'Root Property', format: 'Number', range: '0-3', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Defines variation rendering style in UI viewers.', ref: 'SGF FF[4] Root Property: Style (ST)' },
 
-            'PB': { name: 'Black Player', category: 'gameinfo', type: 'Game Info', format: 'SimpleText', range: 'Player Name', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Name of the player playing Black.', ref: 'SGF FF[4] Section 7.7 Player Black (PB)' },
-            'PW': { name: 'White Player', category: 'gameinfo', type: 'Game Info', format: 'SimpleText', range: 'Player Name', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Name of the player playing White.', ref: 'SGF FF[4] Section 7.7 Player White (PW)' },
-            'BR': { name: 'Black Rank', category: 'gameinfo', type: 'Game Info', format: 'SimpleText', range: 'Rank (e.g. 9p, 1d)', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Rank of Black player.', ref: 'SGF FF[4] Section 7.7 Black Rank (BR)' },
-            'WR': { name: 'White Rank', category: 'gameinfo', type: 'Game Info', format: 'SimpleText', range: 'Rank (e.g. 9p, 1d)', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Rank of White player.', ref: 'SGF FF[4] Section 7.7 White Rank (WR)' },
-            'DT': { name: 'Date', category: 'gameinfo', type: 'Game Info', format: 'SimpleText', range: 'YYYY-MM-DD', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Date when the game was played.', ref: 'SGF FF[4] Section 7.7 Date (DT)' },
-            'EV': { name: 'Event', category: 'gameinfo', type: 'Game Info', format: 'SimpleText', range: 'Tournament Name', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Event or tournament name.', ref: 'SGF FF[4] Section 7.7 Event (EV)' },
-            'RO': { name: 'Round', category: 'gameinfo', type: 'Game Info', format: 'SimpleText', range: 'Round Number', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Round number or match description.', ref: 'SGF FF[4] Section 7.7 Round (RO)' },
-            'PC': { name: 'Place', category: 'gameinfo', type: 'Game Info', format: 'SimpleText', range: 'City / Location', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Location where the game took place.', ref: 'SGF FF[4] Section 7.7 Place (PC)' },
-            'RE': { name: 'Result', category: 'gameinfo', type: 'Game Info', format: 'SimpleText', range: 'B+R, W+3.5, etc.', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Final result of the game.', ref: 'SGF FF[4] Section 7.7 Result (RE)' },
-            'GN': { name: 'Game Name', category: 'gameinfo', type: 'Game Info', format: 'SimpleText', range: 'Game Title', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Title or name given to this game record.', ref: 'SGF FF[4] Section 7.7 Game Name (GN)' },
-            'GC': { name: 'Game Comment', category: 'gameinfo', type: 'Game Info', format: 'Text', range: 'Multi-line Text', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Background commentary or summary of the game.', ref: 'SGF FF[4] Section 7.7 Game Comment (GC)' },
-            'SO': { name: 'Source', category: 'gameinfo', type: 'Game Info', format: 'SimpleText', range: 'Source Name', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Source of the SGF file (publication or database).', ref: 'SGF FF[4] Section 7.7 Source (SO)' },
-            'US': { name: 'User / Creator', category: 'gameinfo', type: 'Game Info', format: 'SimpleText', range: 'User Name', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Person who transcribed the SGF record.', ref: 'SGF FF[4] Section 7.7 User (US)' },
-            'AN': { name: 'Annotator', category: 'gameinfo', type: 'Game Info', format: 'SimpleText', range: 'Annotator Name', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Person who provided commentary.', ref: 'SGF FF[4] Section 7.7 Annotator (AN)' },
-            'CP': { name: 'Copyright', category: 'gameinfo', type: 'Game Info', format: 'SimpleText', range: 'Copyright Text', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Copyright declaration for game record.', ref: 'SGF FF[4] Section 7.7 Copyright (CP)' },
+            // Game-Info Properties (FF[4] Section 2.2.1)
+            'RU': { name: 'Rules', category: 'gameinfo', type: 'Game-Info Property', format: 'SimpleText', range: 'Ruleset Name (e.g. Japanese, Chinese, AGA, Korean)', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Specifies the Go ruleset applied for scoring and play.', ref: 'SGF FF[4] Game-Info Property: Rules (RU)' },
+            'KM': { name: 'Komi', category: 'gameinfo', type: 'Game-Info Property (Go GM[1])', format: 'Real', range: 'Real Number (e.g. 6.5, 7.5)', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Komi compensation given to White.', ref: 'SGF FF[4] Game-Info Property: Komi (KM)' },
+            'HA': { name: 'Handicap', category: 'gameinfo', type: 'Game-Info Property (Go GM[1])', format: 'Number', range: 'Handicap count (>= 2)', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Number of handicap stones given to Black.', ref: 'SGF FF[4] Game-Info Property: Handicap (HA)' },
+            'TM': { name: 'Time Limit', category: 'gameinfo', type: 'Game-Info Property', format: 'Real', range: 'Seconds', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Time limit in seconds per player.', ref: 'SGF FF[4] Game-Info Property: Time Limit (TM)' },
+            'OT': { name: 'Overtime', category: 'gameinfo', type: 'Game-Info Property', format: 'SimpleText', range: 'Overtime description (e.g. 3x30s byo-yomi)', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Description of overtime rules.', ref: 'SGF FF[4] Game-Info Property: Overtime (OT)' },
+            'PB': { name: 'Player Black', category: 'gameinfo', type: 'Game-Info Property', format: 'SimpleText', range: 'Player Name', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Name of the player playing Black.', ref: 'SGF FF[4] Game-Info Property: Player Black (PB)' },
+            'PW': { name: 'Player White', category: 'gameinfo', type: 'Game-Info Property', format: 'SimpleText', range: 'Player Name', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Name of the player playing White.', ref: 'SGF FF[4] Game-Info Property: Player White (PW)' },
+            'BR': { name: 'Black Rank', category: 'gameinfo', type: 'Game-Info Property', format: 'SimpleText', range: 'Rank (e.g. 9p, 1d, 5k)', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Rank of Black player.', ref: 'SGF FF[4] Game-Info Property: Black Rank (BR)' },
+            'WR': { name: 'White Rank', category: 'gameinfo', type: 'Game-Info Property', format: 'SimpleText', range: 'Rank (e.g. 9p, 1d, 5k)', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Rank of White player.', ref: 'SGF FF[4] Game-Info Property: White Rank (WR)' },
+            'BT': { name: 'Black Team', category: 'gameinfo', type: 'Game-Info Property', format: 'SimpleText', range: 'Team Name', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Team name for Black player.', ref: 'SGF FF[4] Game-Info Property: Black Team (BT)' },
+            'WT': { name: 'White Team', category: 'gameinfo', type: 'Game-Info Property', format: 'SimpleText', range: 'Team Name', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Team name for White player.', ref: 'SGF FF[4] Game-Info Property: White Team (WT)' },
+            'DT': { name: 'Date', category: 'gameinfo', type: 'Game-Info Property', format: 'SimpleText', range: 'YYYY-MM-DD', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Date when the game was played.', ref: 'SGF FF[4] Game-Info Property: Date (DT)' },
+            'EV': { name: 'Event', category: 'gameinfo', type: 'Game-Info Property', format: 'SimpleText', range: 'Tournament / Event Name', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Event or tournament name.', ref: 'SGF FF[4] Game-Info Property: Event (EV)' },
+            'RO': { name: 'Round', category: 'gameinfo', type: 'Game-Info Property', format: 'SimpleText', range: 'Round Number', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Round number or match description.', ref: 'SGF FF[4] Game-Info Property: Round (RO)' },
+            'PC': { name: 'Place', category: 'gameinfo', type: 'Game-Info Property', format: 'SimpleText', range: 'City / Location', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Location where the game took place.', ref: 'SGF FF[4] Game-Info Property: Place (PC)' },
+            'RE': { name: 'Result', category: 'gameinfo', type: 'Game-Info Property', format: 'SimpleText', range: 'B+R, W+3.5, Void, Draw, etc.', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Final result of the game.', ref: 'SGF FF[4] Game-Info Property: Result (RE)' },
+            'GN': { name: 'Game Name', category: 'gameinfo', type: 'Game-Info Property', format: 'SimpleText', range: 'Game Title', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Title or name given to this game record.', ref: 'SGF FF[4] Game-Info Property: Game Name (GN)' },
+            'GC': { name: 'Game Comment', category: 'gameinfo', type: 'Game-Info Property', format: 'Text', range: 'Multi-line Text', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Background commentary or summary of the game.', ref: 'SGF FF[4] Game-Info Property: Game Comment (GC)' },
+            'ON': { name: 'Opening', category: 'gameinfo', type: 'Game-Info Property', format: 'SimpleText', range: 'Opening info', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Information about the opening (fuseki) used.', ref: 'SGF FF[4] Game-Info Property: Opening (ON)' },
+            'SO': { name: 'Source', category: 'gameinfo', type: 'Game-Info Property', format: 'SimpleText', range: 'Source Name', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Source of the SGF file (publication or database).', ref: 'SGF FF[4] Game-Info Property: Source (SO)' },
+            'US': { name: 'User / Creator', category: 'gameinfo', type: 'Game-Info Property', format: 'SimpleText', range: 'User Name', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Person who transcribed the SGF record.', ref: 'SGF FF[4] Game-Info Property: User (US)' },
+            'AN': { name: 'Annotator', category: 'gameinfo', type: 'Game-Info Property', format: 'SimpleText', range: 'Annotator Name', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Person who provided commentary.', ref: 'SGF FF[4] Game-Info Property: Annotator (AN)' },
+            'CP': { name: 'Copyright', category: 'gameinfo', type: 'Game-Info Property', format: 'SimpleText', range: 'Copyright Text', req: 'Optional', multi: 'No', scope: 'Root Node', exp: 'Copyright declaration for game record.', ref: 'SGF FF[4] Game-Info Property: Copyright (CP)' },
 
-            'B': { name: 'Black Move', category: 'move', type: 'Move Property', format: 'Point', range: 'Go Coordinate (e.g. pd)', req: 'Optional', multi: 'No', scope: 'Any Node', exp: 'Places a Black stone on specified board point.', ref: 'SGF FF[4] Section 7.1 Move Black (B)' },
-            'W': { name: 'White Move', category: 'move', type: 'Move Property', format: 'Point', range: 'Go Coordinate (e.g. dd)', req: 'Optional', multi: 'No', scope: 'Any Node', exp: 'Places a White stone on specified board point.', ref: 'SGF FF[4] Section 7.1 Move White (W)' },
-            'KO': { name: 'Ko Move', category: 'move', type: 'Move Property', format: 'None', range: 'None', req: 'Optional', multi: 'No', scope: 'Move Node', exp: 'Declares move as forced (illegal move executed due to Ko).', ref: 'SGF FF[4] Section 7.1 Ko (KO)' },
-            'MN': { name: 'Move Number', category: 'move', type: 'Move Property', format: 'Number', range: 'Move count', req: 'Optional', multi: 'No', scope: 'Move Node', exp: 'Explicitly sets move number.', ref: 'SGF FF[4] Section 7.1 Move Number (MN)' },
-            'BL': { name: 'Black Time Left', category: 'move', type: 'Move Property', format: 'Real', range: 'Seconds', req: 'Optional', multi: 'No', scope: 'Move Node', exp: 'Time remaining for Black after move.', ref: 'SGF FF[4] Section 7.1 Time Left Black (BL)' },
-            'WL': { name: 'White Time Left', category: 'move', type: 'Move Property', format: 'Real', range: 'Seconds', req: 'Optional', multi: 'No', scope: 'Move Node', exp: 'Time remaining for White after move.', ref: 'SGF FF[4] Section 7.1 Time Left White (WL)' },
+            // Move Properties (FF[4] Section 2.2.1)
+            'B': { name: 'Black Move', category: 'move', type: 'Move Property', format: 'Point', range: 'Go Coordinate (e.g. pd)', req: 'Optional', multi: 'No', scope: 'Any Node', exp: 'Places a Black stone on specified board point.', ref: 'SGF FF[4] Move Property: Move Black (B)' },
+            'W': { name: 'White Move', category: 'move', type: 'Move Property', format: 'Point', range: 'Go Coordinate (e.g. dd)', req: 'Optional', multi: 'No', scope: 'Any Node', exp: 'Places a White stone on specified board point.', ref: 'SGF FF[4] Move Property: Move White (W)' },
+            'KO': { name: 'Ko Move', category: 'move', type: 'Move Property', format: 'None', range: 'None', req: 'Optional', multi: 'No', scope: 'Move Node', exp: 'Declares move as forced (illegal move executed due to Ko).', ref: 'SGF FF[4] Move Property: Ko (KO)' },
+            'MN': { name: 'Move Number', category: 'move', type: 'Move Property', format: 'Number', range: 'Move count', req: 'Optional', multi: 'No', scope: 'Move Node', exp: 'Explicitly sets move number.', ref: 'SGF FF[4] Move Property: Move Number (MN)' },
+            'BL': { name: 'Black Time Left', category: 'move', type: 'Move Property (Timing)', format: 'Real', range: 'Seconds', req: 'Optional', multi: 'No', scope: 'Move Node', exp: 'Time remaining for Black after move.', ref: 'SGF FF[4] Move Property: Time Left Black (BL)' },
+            'WL': { name: 'White Time Left', category: 'move', type: 'Move Property (Timing)', format: 'Real', range: 'Seconds', req: 'Optional', multi: 'No', scope: 'Move Node', exp: 'Time remaining for White after move.', ref: 'SGF FF[4] Move Property: Time Left White (WL)' },
+            'BM': { name: 'Bad Move', category: 'move', type: 'Move Property (Move Annotation)', format: 'Double', range: '1 (bad) | 2 (very bad)', req: 'Optional', multi: 'No', scope: 'Move Node', exp: 'Marks move as bad or mistake.', ref: 'SGF FF[4] Move Property: Bad Move (BM)' },
+            'DO': { name: 'Doubtful Move', category: 'move', type: 'Move Property (Move Annotation)', format: 'None', range: 'None', req: 'Optional', multi: 'No', scope: 'Move Node', exp: 'Marks move as doubtful / questionable.', ref: 'SGF FF[4] Move Property: Doubtful (DO)' },
+            'IT': { name: 'Interesting Move', category: 'move', type: 'Move Property (Move Annotation)', format: 'None', range: 'None', req: 'Optional', multi: 'No', scope: 'Move Node', exp: 'Marks move as interesting.', ref: 'SGF FF[4] Move Property: Interesting (IT)' },
+            'TE': { name: 'Tesuji', category: 'move', type: 'Move Property (Move Annotation)', format: 'Double', range: '1 (good) | 2 (very good / brilliant)', req: 'Optional', multi: 'No', scope: 'Move Node', exp: 'Marks move as tesuji / brilliant move.', ref: 'SGF FF[4] Move Property: Tesuji (TE)' },
+            'OB': { name: 'OtStones Black', category: 'move', type: 'Move Property (Timing)', format: 'Number', range: 'Stones count', req: 'Optional', multi: 'No', scope: 'Move Node', exp: 'Number of overtime stones Black must play.', ref: 'SGF FF[4] Move Property: Overtime Stones Black (OB)' },
+            'OW': { name: 'OtStones White', category: 'move', type: 'Move Property (Timing)', format: 'Number', range: 'Stones count', req: 'Optional', multi: 'No', scope: 'Move Node', exp: 'Number of overtime stones White must play.', ref: 'SGF FF[4] Move Property: Overtime Stones White (OW)' },
 
-            'AB': { name: 'Add Black', category: 'setup', type: 'Setup Property', format: 'List of Point', range: 'Point list / Rect (pd:dd)', req: 'Optional', multi: 'Yes', scope: 'Setup Node', exp: 'Adds Black handicap or diagram stones.', ref: 'SGF FF[4] Section 7.2 Add Black (AB)' },
-            'AW': { name: 'Add White', category: 'setup', type: 'Setup Property', format: 'List of Point', range: 'Point list / Rect', req: 'Optional', multi: 'Yes', scope: 'Setup Node', exp: 'Adds White diagram stones.', ref: 'SGF FF[4] Section 7.2 Add White (AW)' },
-            'AE': { name: 'Add Empty', category: 'setup', type: 'Setup Property', format: 'List of Point', range: 'Point list', req: 'Optional', multi: 'Yes', scope: 'Setup Node', exp: 'Removes stones from specified points.', ref: 'SGF FF[4] Section 7.2 Add Empty (AE)' },
-            'PL': { name: 'Player Next', category: 'setup', type: 'Setup Property', format: 'Color', range: 'B or W', req: 'Optional', multi: 'No', scope: 'Setup Node', exp: 'Explicitly sets whose turn it is to play next.', ref: 'SGF FF[4] Section 7.2 Player (PL)' },
+            // Setup Properties (FF[4] Section 2.2.1)
+            'AB': { name: 'Add Black', category: 'setup', type: 'Setup Property', format: 'List of Point', range: 'Point list / Rect (pd:dd)', req: 'Optional', multi: 'Yes', scope: 'Setup Node', exp: 'Adds Black handicap or diagram stones.', ref: 'SGF FF[4] Setup Property: Add Black (AB)' },
+            'AW': { name: 'Add White', category: 'setup', type: 'Setup Property', format: 'List of Point', range: 'Point list / Rect', req: 'Optional', multi: 'Yes', scope: 'Setup Node', exp: 'Adds White diagram stones.', ref: 'SGF FF[4] Setup Property: Add White (AW)' },
+            'AE': { name: 'Add Empty', category: 'setup', type: 'Setup Property', format: 'List of Point', range: 'Point list', req: 'Optional', multi: 'Yes', scope: 'Setup Node', exp: 'Removes stones from specified points.', ref: 'SGF FF[4] Setup Property: Add Empty (AE)' },
+            'PL': { name: 'Player Next', category: 'setup', type: 'Setup Property', format: 'Color', range: 'B or W', req: 'Optional', multi: 'No', scope: 'Setup Node', exp: 'Explicitly sets whose turn it is to play next.', ref: 'SGF FF[4] Setup Property: Player to Play (PL)' },
 
-            'C': { name: 'Comment', category: 'other', type: 'Annotation', format: 'Text', range: 'Comment String', req: 'Optional', multi: 'No', scope: 'Any Node', exp: 'Commentary or annotations for the node.', ref: 'SGF FF[4] Section 7.3 Comment (C)' },
-            'N': { name: 'Node Name', category: 'other', type: 'Annotation', format: 'SimpleText', range: 'Name String', req: 'Optional', multi: 'No', scope: 'Any Node', exp: 'Title or name given to this specific node.', ref: 'SGF FF[4] Section 7.3 Node Name (N)' },
-            'TR': { name: 'Triangle Mark', category: 'other', type: 'Markup Property', format: 'List of Point', range: 'Point list', req: 'Optional', multi: 'Yes', scope: 'Any Node', exp: 'Marks points with a triangle.', ref: 'SGF FF[4] Section 7.5 Markup (TR)' },
-            'CR': { name: 'Circle Mark', category: 'other', type: 'Markup Property', format: 'List of Point', range: 'Point list', req: 'Optional', multi: 'Yes', scope: 'Any Node', exp: 'Marks points with a circle.', ref: 'SGF FF[4] Section 7.5 Markup (CR)' },
-            'MA': { name: 'Mark (X)', category: 'other', type: 'Markup Property', format: 'List of Point', range: 'Point list', req: 'Optional', multi: 'Yes', scope: 'Any Node', exp: 'Marks points with an X.', ref: 'SGF FF[4] Section 7.5 Markup (MA)' },
-            'SQ': { name: 'Square Mark', category: 'other', type: 'Markup Property', format: 'List of Point', range: 'Point list', req: 'Optional', multi: 'Yes', scope: 'Any Node', exp: 'Marks points with a square.', ref: 'SGF FF[4] Section 7.5 Markup (SQ)' },
-            'LB': { name: 'Label', category: 'other', type: 'Markup Property', format: 'List of Point:Text', range: 'point:char list', req: 'Optional', multi: 'Yes', scope: 'Any Node', exp: 'Places text/letter labels on board points.', ref: 'SGF FF[4] Section 7.5 Label (LB)' }
+            // Node Annotation Properties (FF[4] Section 2.2.1)
+            'C': { name: 'Comment', category: 'other', type: 'Node Annotation Property', format: 'Text', range: 'Comment String', req: 'Optional', multi: 'No', scope: 'Any Node', exp: 'Commentary or annotations for the node.', ref: 'SGF FF[4] Annotation Property: Comment (C)' },
+            'N': { name: 'Node Name', category: 'other', type: 'Node Annotation Property', format: 'SimpleText', range: 'Name String', req: 'Optional', multi: 'No', scope: 'Any Node', exp: 'Title or name given to this specific node.', ref: 'SGF FF[4] Annotation Property: Node Name (N)' },
+            'DM': { name: 'Even Position', category: 'other', type: 'Node Annotation Property', format: 'Double', range: '1 (even) | 2 (unclear)', req: 'Optional', multi: 'No', scope: 'Any Node', exp: 'Position is evaluated as even.', ref: 'SGF FF[4] Annotation Property: Even Position (DM)' },
+            'GB': { name: 'Good for Black', category: 'other', type: 'Node Annotation Property', format: 'Double', range: '1 (good) | 2 (very good)', req: 'Optional', multi: 'No', scope: 'Any Node', exp: 'Position is evaluated as good for Black.', ref: 'SGF FF[4] Annotation Property: Good for Black (GB)' },
+            'GW': { name: 'Good for White', category: 'other', type: 'Node Annotation Property', format: 'Double', range: '1 (good) | 2 (very good)', req: 'Optional', multi: 'No', scope: 'Any Node', exp: 'Position is evaluated as good for White.', ref: 'SGF FF[4] Annotation Property: Good for White (GW)' },
+            'HO': { name: 'Hotspot', category: 'other', type: 'Node Annotation Property', format: 'Double', range: '1 (interesting) | 2 (game-deciding)', req: 'Optional', multi: 'No', scope: 'Any Node', exp: 'Marks current node as a critical hotspot.', ref: 'SGF FF[4] Annotation Property: Hotspot (HO)' },
+            'UC': { name: 'Unclear Position', category: 'other', type: 'Node Annotation Property', format: 'Double', range: '1 (unclear) | 2 (very unclear)', req: 'Optional', multi: 'No', scope: 'Any Node', exp: 'Position is evaluated as unclear.', ref: 'SGF FF[4] Annotation Property: Unclear Position (UC)' },
+            'V': { name: 'Value', category: 'other', type: 'Node Annotation Property', format: 'Real', range: 'Real Number', req: 'Optional', multi: 'No', scope: 'Any Node', exp: 'Estimated value of the board position.', ref: 'SGF FF[4] Annotation Property: Value (V)' },
+
+            // Markup Properties (FF[4] Section 2.2.1)
+            'TR': { name: 'Triangle Mark', category: 'other', type: 'Markup Property', format: 'List of Point', range: 'Point list', req: 'Optional', multi: 'Yes', scope: 'Any Node', exp: 'Marks points with a triangle.', ref: 'SGF FF[4] Markup Property: Triangle (TR)' },
+            'CR': { name: 'Circle Mark', category: 'other', type: 'Markup Property', format: 'List of Point', range: 'Point list', req: 'Optional', multi: 'Yes', scope: 'Any Node', exp: 'Marks points with a circle.', ref: 'SGF FF[4] Markup Property: Circle (CR)' },
+            'MA': { name: 'Mark (X)', category: 'other', type: 'Markup Property', format: 'List of Point', range: 'Point list', req: 'Optional', multi: 'Yes', scope: 'Any Node', exp: 'Marks points with an X.', ref: 'SGF FF[4] Markup Property: Mark (MA)' },
+            'SQ': { name: 'Square Mark', category: 'other', type: 'Markup Property', format: 'List of Point', range: 'Point list', req: 'Optional', multi: 'Yes', scope: 'Any Node', exp: 'Marks points with a square.', ref: 'SGF FF[4] Markup Property: Square (SQ)' },
+            'LB': { name: 'Label', category: 'other', type: 'Markup Property', format: 'List of Point:SimpleText', range: 'point:char list', req: 'Optional', multi: 'Yes', scope: 'Any Node', exp: 'Places text/letter labels on board points.', ref: 'SGF FF[4] Markup Property: Label (LB)' },
+            'AR': { name: 'Arrow', category: 'other', type: 'Markup Property', format: 'List of Point:Point', range: 'point:point list', req: 'Optional', multi: 'Yes', scope: 'Any Node', exp: 'Draws directional arrows between board points.', ref: 'SGF FF[4] Markup Property: Arrow (AR)' },
+            'LN': { name: 'Line', category: 'other', type: 'Markup Property', format: 'List of Point:Point', range: 'point:point list', req: 'Optional', multi: 'Yes', scope: 'Any Node', exp: 'Draws lines between board points.', ref: 'SGF FF[4] Markup Property: Line (LN)' },
+            'SL': { name: 'Selected', category: 'other', type: 'Markup Property', format: 'List of Point', range: 'Point list', req: 'Optional', multi: 'Yes', scope: 'Any Node', exp: 'Marks selected points on the board.', ref: 'SGF FF[4] Markup Property: Selected (SL)' },
+            'DD': { name: 'Dim Points', category: 'other', type: 'Markup Property (Inherited)', format: 'Elist of Point', range: 'Point list / empty', req: 'Optional', multi: 'Yes', scope: 'Any Node', exp: 'Dims (shadows) points on the board.', ref: 'SGF FF[4] Markup Property: Dim Points (DD)' },
+
+            // Misc / Inherited Properties (FF[4] Section 2.2.2)
+            'VW': { name: 'View', category: 'other', type: 'View Property (Inherited)', format: 'Elist of Point', range: 'Point list / empty', req: 'Optional', multi: 'Yes', scope: 'Any Node', exp: 'Specifies visible subset of board points.', ref: 'SGF FF[4] View Property: View (VW)' },
+            'PM': { name: 'Print Move Mode', category: 'other', type: 'Print Property (Inherited)', format: 'Number', range: '0-2', req: 'Optional', multi: 'No', scope: 'Any Node', exp: 'Controls move number printing in diagrams.', ref: 'SGF FF[4] Print Property: Print Move Mode (PM)' },
+            'FG': { name: 'Figure', category: 'other', type: 'Figure Property', format: 'None / Composed', range: 'none | number:simpletext', req: 'Optional', multi: 'No', scope: 'Any Node', exp: 'Signals node starts a new printed diagram/figure.', ref: 'SGF FF[4] Figure Property: Figure (FG)' },
+
+            // Go GM[1] Specific Properties
+            'TB': { name: 'Territory Black', category: 'other', type: 'Go Property (GM[1])', format: 'Elist of Point', range: 'Point list', req: 'Optional', multi: 'Yes', scope: 'Any Node', exp: 'Specifies final Black territory.', ref: 'SGF FF[4] Go (GM[1]) Property: Territory Black (TB)' },
+            'TW': { name: 'Territory White', category: 'other', type: 'Go Property (GM[1])', format: 'Elist of Point', range: 'Point list', req: 'Optional', multi: 'Yes', scope: 'Any Node', exp: 'Specifies final White territory.', ref: 'SGF FF[4] Go (GM[1]) Property: Territory White (TW)' }
         };
 
         // Sample SGF datasets for file selector
@@ -2122,7 +2157,7 @@
                     expected_format: '( ... )',
                     node_index: 0,
                     tree_depth: 0,
-                    spec_ref: 'SGF FF[4] Section 4.1 EBNF'
+                    spec_ref: 'SGF FF[4] Section 2.1 EBNF (Collection)'
                 });
                 hasCriticalError = true;
             } else {
@@ -2139,7 +2174,7 @@
                         expected_format: '(',
                         node_index: 0,
                         tree_depth: 0,
-                        spec_ref: 'SGF FF[4] Section 4.1 Gametree Definition'
+                        spec_ref: 'SGF FF[4] Section 2.1 EBNF (GameTree Definition)'
                     });
                     hasCriticalError = true;
                 }
@@ -2165,7 +2200,7 @@
                             expected_format: '(',
                             node_index: currentNodeIndex >= 0 ? currentNodeIndex : 0,
                             tree_depth: currentTreeDepth,
-                            spec_ref: 'SGF FF[4] Section 4.1'
+                            spec_ref: 'SGF FF[4] Section 2.1 EBNF (GameTree Start)'
                         });
                     } else if (token === ')') {
                         parsedBlocks.push({
@@ -2179,7 +2214,7 @@
                             expected_format: ')',
                             node_index: currentNodeIndex >= 0 ? currentNodeIndex : 0,
                             tree_depth: currentTreeDepth,
-                            spec_ref: 'SGF FF[4] Section 4.1'
+                            spec_ref: 'SGF FF[4] Section 2.1 EBNF (GameTree End)'
                         });
                         currentTreeDepth = Math.max(0, currentTreeDepth - 1);
                     } else if (token === ';') {
@@ -2205,7 +2240,7 @@
                             expected_format: ';',
                             node_index: currentNodeIndex,
                             tree_depth: currentTreeDepth,
-                            spec_ref: 'SGF FF[4] Section 4.1 Node Definition'
+                            spec_ref: 'SGF FF[4] Section 2.1 EBNF (Node Definition)'
                         });
                     } else {
                         // Property Block parsing
@@ -2301,7 +2336,7 @@
                                 expected_format: `SimpleText / Text`,
                                 node_index: currentNodeIndex >= 0 ? currentNodeIndex : 0,
                                 tree_depth: currentTreeDepth,
-                                spec_ref: 'SGF FF[4] Section 4.2.3 Unknown Properties'
+                                spec_ref: `SGF FF[4] Section 2.2.3 Unknown Property (${ident})`
                             });
                         }
                     }
